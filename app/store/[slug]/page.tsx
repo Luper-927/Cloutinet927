@@ -67,7 +67,13 @@ export default async function StorePage({ params }: { params: { slug: string } }
 
   const { profile, products } = data
 
-  const schema = {
+  const sameAs: string[] = []
+  if (profile.facebook_url) sameAs.push(profile.facebook_url)
+  if (profile.instagram_url) sameAs.push(profile.instagram_url)
+  if (profile.youtube_url) sameAs.push(profile.youtube_url)
+  if (profile.tiktok_url) sameAs.push(profile.tiktok_url)
+
+  const schema: any = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: profile.business_name,
@@ -75,14 +81,37 @@ export default async function StorePage({ params }: { params: { slug: string } }
     address: profile.location,
     telephone: profile.phone,
   }
+  if (sameAs.length > 0) schema.sameAs = sameAs
+  if (profile.business_hours) schema.openingHours = profile.business_hours
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://cloutinet927.vercel.app' },
+      { '@type': 'ListItem', position: 2, name: profile.business_name, item: 'https://cloutinet927.vercel.app/store/' + params.slug },
+    ]
+  }
 
   const whatsappLink = profile.phone
     ? 'https://wa.me/' + profile.phone.replace(/[^0-9]/g, '') + '?text=' + encodeURIComponent('Hello, I found your business on Cloutinet and would like to know more.')
     : null
 
+  const servicesList = profile.services
+    ? profile.services.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
+    : []
+
+  const socialLinks = [
+    { url: profile.facebook_url, label: 'Facebook', icon: '📘' },
+    { url: profile.instagram_url, label: 'Instagram', icon: '📷' },
+    { url: profile.youtube_url, label: 'YouTube', icon: '▶️' },
+    { url: profile.tiktok_url, label: 'TikTok', icon: '🎵' },
+  ].filter(s => s.url)
+
   return (
     <div style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#fff', color: '#1a1a2e' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
@@ -106,6 +135,58 @@ export default async function StorePage({ params }: { params: { slug: string } }
             borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 700
           }}>💬 Contact on WhatsApp</a>
         </div>
+      )}
+
+      {(profile.business_hours || servicesList.length > 0 || socialLinks.length > 0) && (
+        <section style={{ maxWidth: '700px', margin: '0 auto 24px', padding: '0 16px' }}>
+          <div style={{ background: '#f9f5ff', border: '1px solid #e5d5ff', borderRadius: '12px', padding: '16px' }}>
+            <h2 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '10px', color: '#6B21A8' }}>Business Info</h2>
+
+            {profile.business_hours && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', fontSize: '13px' }}>
+                <span>🕒</span>
+                <span style={{ color: '#444' }}>{profile.business_hours}</span>
+              </div>
+            )}
+
+            {profile.location && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', fontSize: '13px' }}>
+                <span>📍</span>
+                <span style={{ color: '#444' }}>{profile.location}</span>
+              </div>
+            )}
+
+            {profile.phone && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', fontSize: '13px' }}>
+                <span>📞</span>
+                <span style={{ color: '#444' }}>{profile.phone}</span>
+              </div>
+            )}
+
+            {servicesList.length > 0 && (
+              <div style={{ marginTop: '10px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#6B21A8', marginBottom: '6px' }}>Services & Products</div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {servicesList.map((s: string, i: number) => (
+                    <span key={i} style={{ background: '#fff', border: '1px solid #e5d5ff', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', color: '#6B21A8' }}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {socialLinks.length > 0 && (
+              <div style={{ marginTop: '12px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {socialLinks.map(s => (
+                  <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    fontSize: '12px', color: '#6B21A8', textDecoration: 'none',
+                    background: '#fff', border: '1px solid #e5d5ff', borderRadius: '6px', padding: '4px 10px'
+                  }}>{s.icon} {s.label}</a>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
       )}
 
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 16px 40px' }}>
