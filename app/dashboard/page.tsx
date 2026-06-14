@@ -64,6 +64,18 @@ export default function Dashboard() {
     window.location.href = '/auth'
   }
 
+  async function togglePublish(id: string, current: boolean) {
+    await supabase.from('products').update({ is_published: !current }).eq('id', id)
+    load()
+  }
+
+  async function deleteProduct(id: string, name: string) {
+    const confirmed = confirm('Delete "' + name + '"? This cannot be undone.')
+    if (!confirmed) return
+    await supabase.from('products').delete().eq('id', id)
+    load()
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#07070f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -156,13 +168,31 @@ export default function Dashboard() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ color: '#f0f0ff', fontWeight: 600, fontSize: '13px' }}>{p.name}</div>
                     {p.price && <div style={{ color: '#FF6B35', fontSize: '12px' }}>{p.currency} {p.price}</div>}
-                    <div style={{ marginTop: '4px' }}>
+                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
                       <span style={{
                         fontSize: '10px', padding: '2px 8px', borderRadius: '5px',
                         background: p.is_published ? 'rgba(0,230,118,0.1)' : '#161625',
                         color: p.is_published ? '#00e676' : '#8888aa',
                         border: '1px solid ' + (p.is_published ? '#00e676' : '#252535')
                       }}>{p.is_published ? 'Live' : 'Hidden'}</span>
+
+                      <Link href={'/products/edit/' + p.id} style={{
+                        fontSize: '10px', padding: '2px 8px', borderRadius: '5px',
+                        background: '#161625', color: '#06B6D4',
+                        border: '1px solid #252535', textDecoration: 'none'
+                      }}>Edit</Link>
+
+                      <button onClick={() => togglePublish(p.id, p.is_published)} style={{
+                        fontSize: '10px', padding: '2px 8px', borderRadius: '5px',
+                        background: '#161625', color: '#8888aa',
+                        border: '1px solid #252535', cursor: 'pointer', fontFamily: 'inherit'
+                      }}>{p.is_published ? 'Hide' : 'Publish'}</button>
+
+                      <button onClick={() => deleteProduct(p.id, p.name)} style={{
+                        fontSize: '10px', padding: '2px 8px', borderRadius: '5px',
+                        background: 'transparent', color: '#ff4444',
+                        border: '1px solid #ff4444', cursor: 'pointer', fontFamily: 'inherit'
+                      }}>Delete</button>
                     </div>
                   </div>
                 </div>
