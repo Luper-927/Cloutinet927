@@ -48,32 +48,30 @@ export default function AuthPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#07070f',
+      minHeight: '100vh', background: '#fff',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '16px', fontFamily: 'Segoe UI, system-ui, sans-serif'
     }}>
       <div style={{
-        background: '#0f0f1a', border: '1px solid #252535',
+        background: '#fff', border: '1px solid #e5e7eb',
         borderRadius: '16px', padding: '32px',
-        width: '100%', maxWidth: '380px'
+        width: '100%', maxWidth: '380px', boxShadow: '0 10px 40px rgba(0,0,0,0.06)'
       }}>
         <div style={{
-          fontSize: '22px', fontWeight: 900,
-          background: 'linear-gradient(135deg, #FF6B35, #E91E8C)',
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          fontSize: '22px', fontWeight: 900, color: '#6B21A8',
           marginBottom: '8px'
         }}>⚡ Cloutinet</div>
-        <p style={{ color: '#8888aa', fontSize: '13px', marginBottom: '24px' }}>
+        <p style={{ color: '#888', fontSize: '13px', marginBottom: '24px' }}>
           {mode === 'login' ? 'Welcome back' : 'Create your free account'}
         </p>
 
-        <div style={{ display: 'flex', background: '#161625', borderRadius: '10px', padding: '4px', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', background: '#f5f5f5', borderRadius: '10px', padding: '4px', marginBottom: '20px' }}>
           {(['signup', 'login'] as const).map(m => (
             <button key={m} onClick={() => { setMode(m); setError(''); setMessage('') }} style={{
               flex: 1, padding: '8px', borderRadius: '8px', border: 'none', cursor: 'pointer',
               fontSize: '13px', fontWeight: 600,
-              background: mode === m ? 'linear-gradient(135deg, #FF6B35, #E91E8C)' : 'transparent',
-              color: mode === m ? '#fff' : '#8888aa'
+              background: mode === m ? '#6B21A8' : 'transparent',
+              color: mode === m ? '#fff' : '#888'
             }}>
               {m === 'signup' ? 'Sign Up' : 'Log In'}
             </button>
@@ -96,14 +94,14 @@ export default function AuthPage() {
         />
 
         {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
-        {message && <p style={{ color: '#00e676', fontSize: '12px', marginBottom: '12px' }}>{message}</p>}
+        {message && <p style={{ color: '#00aa55', fontSize: '12px', marginBottom: '12px' }}>{message}</p>}
 
         <button
           onClick={mode === 'login' ? handleLogin : handleSignup}
           disabled={loading}
           style={{
             width: '100%', padding: '12px',
-            background: 'linear-gradient(135deg, #FF6B35, #E91E8C)',
+            background: '#6B21A8',
             border: 'none', borderRadius: '10px', color: '#fff',
             fontSize: '14px', fontWeight: 700,
             cursor: loading ? 'not-allowed' : 'pointer',
@@ -118,7 +116,7 @@ export default function AuthPage() {
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#161625', border: '1px solid #252535',
-  borderRadius: '10px', padding: '12px 14px', color: '#f0f0ff',
+  width: '100%', background: '#fafafa', border: '1px solid #e5e7eb',
+  borderRadius: '10px', padding: '12px 14px', color: '#1a1a2e',
   fontSize: '14px', marginBottom: '12px', outline: 'none', fontFamily: 'inherit'
 }
