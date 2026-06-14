@@ -14,6 +14,12 @@ export default function OnboardingPage() {
   const [bizPhone, setBizPhone] = useState('')
   const [bizLocation, setBizLocation] = useState('')
   const [bizTagline, setBizTagline] = useState('')
+  const [bizHours, setBizHours] = useState('')
+  const [bizServices, setBizServices] = useState('')
+  const [bizFacebook, setBizFacebook] = useState('')
+  const [bizInstagram, setBizInstagram] = useState('')
+  const [bizYoutube, setBizYoutube] = useState('')
+  const [bizTiktok, setBizTiktok] = useState('')
 
   useEffect(() => {
     load()
@@ -44,6 +50,12 @@ export default function OnboardingPage() {
       setBizPhone(profileData.phone || '')
       setBizLocation(profileData.location || '')
       setBizTagline(profileData.tagline || '')
+      setBizHours(profileData.business_hours || '')
+      setBizServices(profileData.services || '')
+      setBizFacebook(profileData.facebook_url || '')
+      setBizInstagram(profileData.instagram_url || '')
+      setBizYoutube(profileData.youtube_url || '')
+      setBizTiktok(profileData.tiktok_url || '')
     }
 
     setLoading(false)
@@ -74,6 +86,12 @@ export default function OnboardingPage() {
       phone: bizPhone,
       location: bizLocation,
       tagline: bizTagline,
+      business_hours: bizHours,
+      services: bizServices,
+      facebook_url: bizFacebook,
+      instagram_url: bizInstagram,
+      youtube_url: bizYoutube,
+      tiktok_url: bizTiktok,
     })
 
     setSaving(false)
@@ -96,7 +114,7 @@ export default function OnboardingPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07070f', fontFamily: 'Segoe UI, system-ui, sans-serif', padding: '16px' }}>
-      <div style={{ maxWidth: '420px', margin: '0 auto', paddingTop: '20px' }}>
+      <div style={{ maxWidth: '420px', margin: '0 auto', paddingTop: '20px', paddingBottom: '40px' }}>
 
         <div style={{
           fontSize: '20px', fontWeight: 900,
@@ -124,6 +142,28 @@ export default function OnboardingPage() {
 
         <label style={labelStyle}>Short Tagline</label>
         <input placeholder="e.g. Quality foodstuffs at affordable prices" value={bizTagline} onChange={e => setBizTagline(e.target.value)} style={inputStyle} />
+
+        <label style={labelStyle}>Business Hours</label>
+        <input placeholder="e.g. Mon-Sat 8am-7pm" value={bizHours} onChange={e => setBizHours(e.target.value)} style={inputStyle} />
+
+        <label style={labelStyle}>Services / Products Offered</label>
+        <textarea placeholder="e.g. Rice, Beans, Garri, Palm Oil (comma separated)" value={bizServices} onChange={e => setBizServices(e.target.value)} style={{ ...inputStyle, minHeight: '70px', resize: 'vertical' }} />
+
+        <div style={{ borderTop: '1px solid #252535', margin: '8px 0 16px', paddingTop: '16px' }}>
+          <div style={{ color: '#8888aa', fontSize: '12px', fontWeight: 700, marginBottom: '12px' }}>SOCIAL LINKS (optional)</div>
+
+          <label style={labelStyle}>Facebook</label>
+          <input placeholder="https://facebook.com/yourpage" value={bizFacebook} onChange={e => setBizFacebook(e.target.value)} style={inputStyle} />
+
+          <label style={labelStyle}>Instagram</label>
+          <input placeholder="https://instagram.com/yourpage" value={bizInstagram} onChange={e => setBizInstagram(e.target.value)} style={inputStyle} />
+
+          <label style={labelStyle}>YouTube</label>
+          <input placeholder="https://youtube.com/@yourchannel" value={bizYoutube} onChange={e => setBizYoutube(e.target.value)} style={inputStyle} />
+
+          <label style={labelStyle}>TikTok</label>
+          <input placeholder="https://tiktok.com/@yourhandle" value={bizTiktok} onChange={e => setBizTiktok(e.target.value)} style={inputStyle} />
+        </div>
 
         {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
 
