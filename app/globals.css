@@ -1,0 +1,29 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background: #07070f;
+  color: #f0f0ff;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #252535;
+  border-radius: 2px;
+}
