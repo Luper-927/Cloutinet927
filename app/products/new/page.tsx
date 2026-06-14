@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -15,7 +16,8 @@ export default function NewProductPage() {
   const [pPrice, setPPrice] = useState('')
   const [pCurrency, setPCurrency] = useState('NGN')
   const [pDesc, setPDesc] = useState('')
-  const [pImage, setPImage] = useState<string | null>(null)
+  const [pImageFile, setPImageFile] = useState<File | null>(null)
+  const [pImagePreview, setPImagePreview] = useState<string | null>(null)
 
   useEffect(() => {
     load()
@@ -52,9 +54,10 @@ export default function NewProductPage() {
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files && e.target.files[0]
     if (!file) return
+    setPImageFile(file)
     const reader = new FileReader()
     reader.onload = function (ev) {
-      setPImage(ev.target?.result as string)
+      setPImagePreview(ev.target?.result as string)
     }
     reader.readAsDataURL(file)
   }
@@ -69,6 +72,29 @@ export default function NewProductPage() {
     setSaving(true)
     setError('')
 
+    let imageUrl: string | null = null
+
+    if (pImageFile) {
+      const fileExt = pImageFile.name.split('.').pop()
+      const fileName = user.id + '/' + Date.now() + '.' + fileExt
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, pImageFile)
+
+      if (uploadError) {
+        setError('Image upload failed: ' + uploadError.message)
+        setSaving(false)
+        return
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName)
+
+      imageUrl = publicUrlData.publicUrl
+    }
+
     const slug = slugify(pName) + '-' + Date.now().toString().slice(-5)
     const location = profile.location || ''
     const seoTitle = pName + ' in ' + (location || 'Nigeria') + ' | ' + profile.business_name
@@ -81,7 +107,7 @@ export default function NewProductPage() {
       description: pDesc,
       price: pPrice ? parseFloat(pPrice) : null,
       currency: pCurrency,
-      image_url: pImage,
+      image_url: imageUrl,
       is_published: true,
       seo_title: seoTitle,
       seo_description: seoDescription,
@@ -119,12 +145,12 @@ export default function NewProductPage() {
         <label style={{ display: 'block', marginBottom: '14px' }}>
           <div style={{
             border: '1px dashed #252535', borderRadius: '12px',
-            height: pImage ? 'auto' : '120px',
+            height: pImagePreview ? 'auto' : '120px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', overflow: 'hidden', background: '#161625'
           }}>
-            {pImage ? (
-              <img src={pImage} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
+            {pImagePreview ? (
+              <img src={pImagePreview} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
             ) : (
               <span style={{ color: '#8888aa', fontSize: '13px' }}>📷 Tap to add photo</span>
             )}
