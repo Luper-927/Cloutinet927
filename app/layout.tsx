@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'Cloutinet — Create. Share. Grow.',
   description: 'Create a free business page, list your products and services, and get found on Google. Built for small businesses in Nigeria and beyond.',
   metadataBase: new URL('https://cloutinet.online'),
+  verification: {
+    google: 'CRx67pQlEwCou57kseSwTkoeWymJL2M9wqv6CtY9FKA',
+  },
 }
 
 export default function RootLayout({
