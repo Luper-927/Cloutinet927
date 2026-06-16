@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { supabase } from '../lib/supabase'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://cloutinet927.vercel.app'
+  const baseUrl = 'https://cloutinet.online'
 
   const entries: MetadataRoute.Sitemap = [
     {
@@ -16,6 +16,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
+    },
+    {
+      url: baseUrl + '/feedback',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.4,
     },
   ]
 
