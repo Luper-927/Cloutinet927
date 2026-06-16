@@ -67,7 +67,10 @@ export default function HomePage() {
         <div style={{ fontSize: '14px', fontWeight: 900, color: '#6B21A8' }}>⚡ Cloutinet</div>
         <p style={{ color: '#888', fontSize: '11px', marginTop: '6px' }}>© 2026 Cloutinet. Create. Share. Grow.</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px', flexWrap: 'wrap' }}>
-          <Link href="/feedback" style={{ color: '#6B21A8', fontSize: '12px', textDecoration: 'none' }}>Share Feedback</Link>
+          <Link href="/about" style={{ color: '#6B21A8', fontSize: '12px', textDecoration: 'none' }}>About</Link>
+          <Link href="/feedback" style={{ color: '#6B21A8', fontSize: '12px', textDecoration: 'none' }}>Feedback</Link>
+          <Link href="/privacy" style={{ color: '#6B21A8', fontSize: '12px', textDecoration: 'none' }}>Privacy</Link>
+          <Link href="/terms" style={{ color: '#6B21A8', fontSize: '12px', textDecoration: 'none' }}>Terms</Link>
           <Link href="/auth" style={{ color: '#6B21A8', fontSize: '12px', textDecoration: 'none' }}>Get Started</Link>
         </div>
       </footer>
