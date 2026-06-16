@@ -118,8 +118,18 @@ export default function Dashboard() {
         ) : (
           <>
             <div style={{ background: '#0f0f1a', border: '1px solid #252535', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <div style={{ color: '#f0f0ff', fontWeight: 700, fontSize: '15px' }}>{profile.business_name}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div>
+                  {profile.business_id && (
+                    <div style={{
+                      display: 'inline-block',
+                      background: 'linear-gradient(135deg, #FF6B35, #E91E8C)',
+                      color: '#fff', fontSize: '10px', fontWeight: 700,
+                      padding: '2px 10px', borderRadius: '20px', marginBottom: '6px'
+                    }}>{profile.business_id}</div>
+                  )}
+                  <div style={{ color: '#f0f0ff', fontWeight: 700, fontSize: '15px' }}>{profile.business_name}</div>
+                </div>
                 <Link href="/onboarding" style={{ background: '#161625', color: '#FF6B35', border: '1px solid #252535', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', textDecoration: 'none' }}>Edit</Link>
               </div>
               <div style={{ color: '#8888aa', fontSize: '12px', marginBottom: '8px' }}>
@@ -186,22 +196,3 @@ export default function Dashboard() {
                         fontSize: '10px', padding: '2px 8px', borderRadius: '5px',
                         background: '#161625', color: '#8888aa',
                         border: '1px solid #252535', cursor: 'pointer', fontFamily: 'inherit'
-                      }}>{p.is_published ? 'Hide' : 'Publish'}</button>
-
-                      <button onClick={() => deleteProduct(p.id, p.name)} style={{
-                        fontSize: '10px', padding: '2px 8px', borderRadius: '5px',
-                        background: 'transparent', color: '#ff4444',
-                        border: '1px solid #ff4444', cursor: 'pointer', fontFamily: 'inherit'
-                      }}>Delete</button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </>
-        )}
-
-      </div>
-    </div>
-  )
-}
