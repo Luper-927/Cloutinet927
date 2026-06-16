@@ -196,3 +196,22 @@ export default function Dashboard() {
                         fontSize: '10px', padding: '2px 8px', borderRadius: '5px',
                         background: '#161625', color: '#8888aa',
                         border: '1px solid #252535', cursor: 'pointer', fontFamily: 'inherit'
+                      }}>{p.is_published ? 'Hide' : 'Publish'}</button>
+
+                      <button onClick={() => deleteProduct(p.id, p.name)} style={{
+                        fontSize: '10px', padding: '2px 8px', borderRadius: '5px',
+                        background: 'transparent', color: '#ff4444',
+                        border: '1px solid #ff4444', cursor: 'pointer', fontFamily: 'inherit'
+                      }}>Delete</button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </>
+        )}
+
+      </div>
+    </div>
+  )
+}
