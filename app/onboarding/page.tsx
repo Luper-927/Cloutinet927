@@ -21,6 +21,65 @@ export default function OnboardingPage() {
   const [bizYoutube, setBizYoutube] = useState('')
   const [bizTiktok, setBizTiktok] = useState('')
 
+  const categories = [
+    'Food & Groceries',
+    'Fashion & Clothing',
+    'Electronics & Gadgets',
+    'Furniture & Interior',
+    'Building Materials',
+    'Supermarket & Store',
+    'Wholesale & Distribution',
+    'Salon & Hair',
+    'Barber Shop',
+    'Spa & Massage',
+    'Cosmetics & Skincare',
+    'Gym & Fitness',
+    'Restaurant & Eatery',
+    'Fast Food & Snacks',
+    'Catering Services',
+    'Bakery & Pastry',
+    'Bar & Drinks',
+    'Logistics & Delivery',
+    'Printing & Graphics',
+    'Photography & Video',
+    'Event Planning',
+    'Cleaning Services',
+    'Security Services',
+    'Laundry & Dry Cleaning',
+    'Tailoring & Fashion Design',
+    'Shoe Making & Repair',
+    'Pharmacy & Chemist',
+    'Hospital & Clinic',
+    'Optical Services',
+    'Dental Care',
+    'Herbal & Natural Health',
+    'Real Estate & Property',
+    'Architecture & Design',
+    'Plumbing & Electrical',
+    'Building & Construction',
+    'Paint & Finishing',
+    'School & Tutorial',
+    'Church & Ministry',
+    'Mosque & Islamic Center',
+    'Skills & Training',
+    'Tech & IT Services',
+    'Phone Repair',
+    'Computer Services',
+    'Digital Marketing',
+    'Farming & Agriculture',
+    'Livestock & Poultry',
+    'Fish Farming',
+    'Crop Production',
+    'Car Sales',
+    'Auto Repair & Mechanic',
+    'Spare Parts',
+    'Car Wash & Detailing',
+    'Financial Services',
+    'Insurance',
+    'POS & Mobile Money',
+    'Other',
+  ]
+
   useEffect(() => {
     load()
   }, [])
@@ -69,6 +128,10 @@ export default function OnboardingPage() {
     }
     if (!bizPhone.trim()) {
       setError('Phone / WhatsApp number is required')
+      return
+    }
+    if (!bizCategory) {
+      setError('Please select a business category')
       return
     }
 
@@ -129,40 +192,99 @@ export default function OnboardingPage() {
         </p>
 
         <label style={labelStyle}>Business Name *</label>
-        <input placeholder="e.g. Mary's Foodstuff Store" value={bizName} onChange={e => setBizName(e.target.value)} style={inputStyle} />
+        <input
+          placeholder="e.g. Mary's Foodstuff Store"
+          value={bizName}
+          onChange={e => setBizName(e.target.value)}
+          style={inputStyle}
+        />
 
-        <label style={labelStyle}>Category</label>
-        <input placeholder="e.g. Foodstuff, Salon, Electronics" value={bizCategory} onChange={e => setBizCategory(e.target.value)} style={inputStyle} />
+        <label style={labelStyle}>Business Category *</label>
+        <select
+          value={bizCategory}
+          onChange={e => setBizCategory(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="">Select your business category</option>
+          {categories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
 
         <label style={labelStyle}>Phone / WhatsApp Number *</label>
-        <input placeholder="e.g. 08012345678" value={bizPhone} onChange={e => setBizPhone(e.target.value)} style={inputStyle} />
+        <input
+          placeholder="e.g. 08012345678 (include country code for intl)"
+          value={bizPhone}
+          onChange={e => setBizPhone(e.target.value)}
+          style={inputStyle}
+        />
 
         <label style={labelStyle}>Location</label>
-        <input placeholder="e.g. Port Harcourt, Rivers State" value={bizLocation} onChange={e => setBizLocation(e.target.value)} style={inputStyle} />
+        <input
+          placeholder="e.g. Port Harcourt, Rivers State"
+          value={bizLocation}
+          onChange={e => setBizLocation(e.target.value)}
+          style={inputStyle}
+        />
 
         <label style={labelStyle}>Short Tagline</label>
-        <input placeholder="e.g. Quality foodstuffs at affordable prices" value={bizTagline} onChange={e => setBizTagline(e.target.value)} style={inputStyle} />
+        <input
+          placeholder="e.g. Quality foodstuffs at affordable prices"
+          value={bizTagline}
+          onChange={e => setBizTagline(e.target.value)}
+          style={inputStyle}
+        />
 
         <label style={labelStyle}>Business Hours</label>
-        <input placeholder="e.g. Mon-Sat 8am-7pm" value={bizHours} onChange={e => setBizHours(e.target.value)} style={inputStyle} />
+        <input
+          placeholder="e.g. Mon-Sat 8am-7pm"
+          value={bizHours}
+          onChange={e => setBizHours(e.target.value)}
+          style={inputStyle}
+        />
 
         <label style={labelStyle}>Services / Products Offered</label>
-        <textarea placeholder="e.g. Rice, Beans, Garri, Palm Oil (comma separated)" value={bizServices} onChange={e => setBizServices(e.target.value)} style={{ ...inputStyle, minHeight: '70px', resize: 'vertical' }} />
+        <textarea
+          placeholder="e.g. Rice, Beans, Garri, Palm Oil (comma separated)"
+          value={bizServices}
+          onChange={e => setBizServices(e.target.value)}
+          style={{ ...inputStyle, minHeight: '70px', resize: 'vertical' }}
+        />
 
         <div style={{ borderTop: '1px solid #252535', margin: '8px 0 16px', paddingTop: '16px' }}>
           <div style={{ color: '#8888aa', fontSize: '12px', fontWeight: 700, marginBottom: '12px' }}>SOCIAL LINKS (optional)</div>
 
           <label style={labelStyle}>Facebook</label>
-          <input placeholder="https://facebook.com/yourpage" value={bizFacebook} onChange={e => setBizFacebook(e.target.value)} style={inputStyle} />
+          <input
+            placeholder="https://facebook.com/yourpage"
+            value={bizFacebook}
+            onChange={e => setBizFacebook(e.target.value)}
+            style={inputStyle}
+          />
 
           <label style={labelStyle}>Instagram</label>
-          <input placeholder="https://instagram.com/yourpage" value={bizInstagram} onChange={e => setBizInstagram(e.target.value)} style={inputStyle} />
+          <input
+            placeholder="https://instagram.com/yourpage"
+            value={bizInstagram}
+            onChange={e => setBizInstagram(e.target.value)}
+            style={inputStyle}
+          />
 
           <label style={labelStyle}>YouTube</label>
-          <input placeholder="https://youtube.com/@yourchannel" value={bizYoutube} onChange={e => setBizYoutube(e.target.value)} style={inputStyle} />
+          <input
+            placeholder="https://youtube.com/@yourchannel"
+            value={bizYoutube}
+            onChange={e => setBizYoutube(e.target.value)}
+            style={inputStyle}
+          />
 
           <label style={labelStyle}>TikTok</label>
-          <input placeholder="https://tiktok.com/@yourhandle" value={bizTiktok} onChange={e => setBizTiktok(e.target.value)} style={inputStyle} />
+          <input
+            placeholder="https://tiktok.com/@yourhandle"
+            value={bizTiktok}
+            onChange={e => setBizTiktok(e.target.value)}
+            style={inputStyle}
+          />
         </div>
 
         {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
@@ -176,6 +298,7 @@ export default function OnboardingPage() {
         }}>
           {saving ? 'Saving...' : 'Save and Continue'}
         </button>
+
       </div>
     </div>
   )
