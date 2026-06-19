@@ -25,62 +25,26 @@ export default async function BusinessesPage() {
   const businesses = await getDirectoryData()
 
   const categories = [
-    'Food & Groceries',
-    'Fashion & Clothing',
-    'Electronics & Gadgets',
-    'Furniture & Interior',
-    'Building Materials',
-    'Supermarket & Store',
-    'Wholesale & Distribution',
-    'Salon & Hair',
-    'Barber Shop',
-    'Spa & Massage',
-    'Cosmetics & Skincare',
-    'Gym & Fitness',
-    'Restaurant & Eatery',
-    'Fast Food & Snacks',
-    'Catering Services',
-    'Bakery & Pastry',
-    'Bar & Drinks',
-    'Logistics & Delivery',
-    'Printing & Graphics',
-    'Photography & Video',
-    'Event Planning',
-    'Cleaning Services',
-    'Security Services',
-    'Laundry & Dry Cleaning',
-    'Tailoring & Fashion Design',
-    'Shoe Making & Repair',
-    'Pharmacy & Chemist',
-    'Hospital & Clinic',
-    'Optical Services',
-    'Dental Care',
-    'Herbal & Natural Health',
-    'Real Estate & Property',
-    'Architecture & Design',
-    'Plumbing & Electrical',
-    'Building & Construction',
-    'Paint & Finishing',
-    'School & Tutorial',
-    'Church & Ministry',
-    'Mosque & Islamic Center',
-    'Skills & Training',
-    'Tech & IT Services',
-    'Phone Repair',
-    'Computer Services',
-    'Digital Marketing',
-    'Farming & Agriculture',
-    'Livestock & Poultry',
-    'Fish Farming',
-    'Crop Production',
-    'Car Sales',
-    'Auto Repair & Mechanic',
-    'Spare Parts',
-    'Car Wash & Detailing',
-    'Financial Services',
-    'Insurance',
-    'POS & Mobile Money',
-    'Other',
+    'Food & Groceries', 'Fashion & Clothing', 'Electronics & Gadgets', 'Furniture & Interior',
+    'Building Materials', 'Supermarket & Store', 'Wholesale & Distribution', 'Salon & Hair',
+    'Barber Shop', 'Spa & Massage', 'Cosmetics & Skincare', 'Gym & Fitness',
+    'Restaurant & Eatery', 'Fast Food & Snacks', 'Catering Services', 'Bakery & Pastry',
+    'Bar & Drinks', 'Logistics & Delivery', 'Printing & Graphics', 'Photography & Video',
+    'Event Planning', 'Cleaning Services', 'Security Services', 'Laundry & Dry Cleaning',
+    'Tailoring & Fashion Design', 'Shoe Making & Repair', 'Pharmacy & Chemist', 'Hospital & Clinic',
+    'Optical Services', 'Dental Care', 'Herbal & Natural Health', 'Real Estate & Property',
+    'Architecture & Design', 'Plumbing & Electrical', 'Building & Construction', 'Paint & Finishing',
+    'School & Tutorial', 'Church & Ministry', 'Mosque & Islamic Center', 'Skills & Training',
+    'Tech & IT Services', 'Phone Repair', 'Computer Services', 'Digital Marketing',
+    'Farming & Agriculture', 'Livestock & Poultry', 'Fish Farming', 'Crop Production',
+    'Car Sales', 'Auto Repair & Mechanic', 'Spare Parts', 'Car Wash & Detailing',
+    'Financial Services', 'Insurance', 'POS & Mobile Money', 'Other',
+  ]
+
+  const cities = [
+    'Lagos', 'Abuja', 'Port Harcourt', 'Kano', 'Ibadan', 'Benin City',
+    'Enugu', 'Owerri', 'Warri', 'Kaduna', 'Makurdi', 'Jos',
+    'Calabar', 'Uyo', 'Asaba', 'Ilorin', 'Abeokuta', 'Akure', 'Awka', 'Umuahia',
   ]
 
   const schema = {
@@ -93,6 +57,10 @@ export default async function BusinessesPage() {
 
   function slugifyCategory(cat: string) {
     return cat.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
+  }
+
+  function slugifyCity(city: string) {
+    return city.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
   }
 
   return (
@@ -114,6 +82,19 @@ export default async function BusinessesPage() {
       </section>
 
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '24px 16px' }}>
+
+        <h2 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px' }}>Browse by City</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px', marginBottom: '32px' }}>
+          {cities.map(city => (
+            <Link key={city} href={'/businesses/city/' + slugifyCity(city)} style={{
+              background: '#fff3eb', border: '1px solid #ffd5b8',
+              borderRadius: '8px', padding: '10px 12px',
+              textDecoration: 'none', color: '#FF6B35',
+              fontSize: '12px', fontWeight: 600, textAlign: 'center'
+            }}>📍 {city}</Link>
+          ))}
+        </div>
+
         <h2 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px' }}>Browse by Category</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '8px', marginBottom: '32px' }}>
           {categories.map(cat => (
@@ -152,8 +133,4 @@ export default async function BusinessesPage() {
       <footer style={{ background: '#f9f5ff', padding: '24px', textAlign: 'center', borderTop: '1px solid #e5d5ff', marginTop: '20px' }}>
         <div style={{ fontSize: '13px', color: '#6B21A8', marginBottom: '8px' }}>📦 Is your business listed here?</div>
         <p style={{ fontSize: '12px', color: '#888', marginBottom: '12px' }}>Join thousands of businesses getting found on Google with Cloutinet.</p>
-        <Link href="/auth" style={{ background: '#6B21A8', color: '#fff', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>List Your Business Free →</Link>
-      </footer>
-    </div>
-  )
-}
+        <Link href="/auth" style={{ background: '#6B21A8', color: '#fff', padding: '10px 24px', borderR
