@@ -59,6 +59,41 @@ export default function Dashboard() {
     load()
   }
 
+  function calculateVisibilityScore() {
+    if (!profile) return 0
+    let score = 0
+    if (profile.business_name) score += 20
+    if (profile.location) score += 15
+    if (profile.phone) score += 15
+    if (profile.business_category) score += 10
+    if (profile.tagline) score += 10
+    if (profile.business_hours) score += 5
+    if (profile.services) score += 5
+    if (products.length > 0) score += 10
+    if (products.length >= 5) score += 5
+    if (profile.facebook_url || profile.instagram_url) score += 5
+    return Math.min(100, score)
+  }
+
+  function getScoreColor(score: number) {
+    if (score >= 80) return '#00e676'
+    if (score >= 50) return '#FF6B35'
+    return '#ff4444'
+  }
+
+  function getMissingItems() {
+    const missing: string[] = []
+    if (!profile) return missing
+    if (!profile.location) missing.push('Add your location')
+    if (!profile.tagline) missing.push('Add a business tagline')
+    if (!profile.business_hours) missing.push('Add business hours')
+    if (!profile.services) missing.push('List your services')
+    if (products.length === 0) missing.push('Add at least one product')
+    if (products.length < 5) missing.push('Add 5+ products for max visibility')
+    if (!profile.facebook_url && !profile.instagram_url) missing.push('Add a social media link')
+    return missing
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#07070f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -68,6 +103,12 @@ export default function Dashboard() {
   }
 
   const hasProfile = profile && profile.business_name
+  const score = calculateVisibilityScore()
+  const missingItems = getMissingItems()
+  const daysSinceCreated = profile?.created_at
+    ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    : 0
+  const isIndexingPeriod = daysSinceCreated < 7
 
   return (
     <div style={{ minHeight: '100vh', background: '#07070f', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
@@ -88,7 +129,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            <div style={{ background: '#0f0f1a', border: '1px solid #252535', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+            <div style={{ background: '#0f0f1a', border: '1px solid #252535', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                 <div>
                   {profile.business_id && (
@@ -103,6 +144,60 @@ export default function Dashboard() {
               </div>
               {profile.business_slug && (
                 <a href={'/store/' + profile.business_slug} style={{ color: '#06B6D4', fontSize: '12px', textDecoration: 'none' }}>View your live store page →</a>
+              )}
+            </div>
+
+            {/* VISIBILITY SCORE WIDGET */}
+            <div style={{ background: '#0f0f1a', border: '1px solid #252535', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 style={{ color: '#f0f0ff', fontSize: '14px' }}>🔍 Your Visibility Score</h3>
+                <div style={{ fontSize: '28px', fontWeight: 900, color: getScoreColor(score) }}>{score}<span style={{ fontSize: '14px', color: '#8888aa' }}>/100</span></div>
+              </div>
+
+              <div style={{ background: '#161625', borderRadius: '10px', height: '8px', overflow: 'hidden', marginBottom: '14px' }}>
+                <div style={{ background: getScoreColor(score), height: '100%', width: score + '%', borderRadius: '10px', transition: 'width 0.3s' }}></div>
+              </div>
+
+              {missingItems.length > 0 ? (
+                <div>
+                  <div style={{ color: '#8888aa', fontSize: '11px', fontWeight: 700, marginBottom: '8px' }}>IMPROVE YOUR SCORE:</div>
+                  {missingItems.slice(0, 3).map(item => (
+                    <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0', fontSize: '12px', color: '#FF6B35' }}>
+                      <span>⚡</span> {item}
+                    </div>
+                  ))}
+                  <Link href={missingItems[0]?.includes('product') ? '/products/new' : '/onboarding'} style={{
+                    display: 'inline-block', marginTop: '8px', color: '#06B6D4', fontSize: '12px', textDecoration: 'none', fontWeight: 600
+                  }}>Fix this now →</Link>
+                </div>
+              ) : (
+                <div style={{ color: '#00e676', fontSize: '12px', fontWeight: 600 }}>✅ Your profile is fully optimized!</div>
+              )}
+            </div>
+
+            {/* GOOGLE INDEXING STATUS */}
+            <div style={{ background: '#0f0f1a', border: '1px solid #252535', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+              <h3 style={{ color: '#f0f0ff', fontSize: '14px', marginBottom: '10px' }}>📡 Google Indexing Status</h3>
+              {isIndexingPeriod ? (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#FFD600' }}></div>
+                    <span style={{ color: '#FFD600', fontSize: '13px', fontWeight: 700 }}>Pending Indexing</span>
+                  </div>
+                  <p style={{ color: '#8888aa', fontSize: '12px', lineHeight: 1.5 }}>
+                    Your page was created {daysSinceCreated} day{daysSinceCreated !== 1 ? 's' : ''} ago. Google typically indexes new pages within 7-14 days. Your page is already live and shareable right now.
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00e676' }}></div>
+                    <span style={{ color: '#00e676', fontSize: '13px', fontWeight: 700 }}>Likely Indexed</span>
+                  </div>
+                  <p style={{ color: '#8888aa', fontSize: '12px', lineHeight: 1.5 }}>
+                    Your page has been live for {daysSinceCreated} days. Search "{profile.business_name}" on Google to check if it appears.
+                  </p>
+                </div>
               )}
             </div>
 
