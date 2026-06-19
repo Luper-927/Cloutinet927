@@ -119,4 +119,142 @@ export default function CheckerPage() {
             style={{
               width: '100%', padding: '14px 16px', borderRadius: '10px',
               border: 'none', fontSize: '15px', marginBottom: '12px',
-              outline: 'none', color: '#1a
+              outline: 'none', color: '#1a1a2e'
+            }}
+          />
+          <button
+            onClick={checkVisibility}
+            disabled={loading || !businessName.trim()}
+            style={{
+              width: '100%', padding: '14px',
+              background: loading ? 'rgba(255,255,255,0.5)' : '#fff',
+              color: '#6B21A8', border: 'none', borderRadius: '10px',
+              fontSize: '15px', fontWeight: 800, cursor: 'pointer'
+            }}
+          >
+            {loading ? 'Checking...' : '🔍 Check My Cloutinet Score'}
+          </button>
+        </div>
+      </section>
+
+      {result && (
+        <section style={{ maxWidth: '500px', margin: '0 auto', padding: '32px 20px' }}>
+
+          {result.found ? (
+            <div>
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ fontSize: '72px', fontWeight: 900, color: getScoreColor(result.score) }}>
+                  {result.score}
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: getScoreColor(result.score) }}>
+                  {getScoreLabel(result.score)}
+                </div>
+                <div style={{ fontSize: '13px', color: '#888', marginTop: '4px' }}>out of 100</div>
+              </div>
+
+              <div style={{ background: '#f9f5ff', border: '1px solid #e5d5ff', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+                <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '12px' }}>✅ {result.profile.business_name} is on Cloutinet</div>
+                {[
+                  { label: 'Business Name', done: !!result.profile.business_name },
+                  { label: 'Location', done: !!result.profile.location },
+                  { label: 'Phone / WhatsApp', done: !!result.profile.phone },
+                  { label: 'Business Category', done: !!result.profile.business_category },
+                  { label: 'Tagline', done: !!result.profile.tagline },
+                  { label: 'Business Hours', done: !!result.profile.business_hours },
+                  { label: 'Services Listed', done: !!result.profile.services },
+                  { label: 'Products Added', done: result.productCount > 0 },
+                  { label: '5+ Products', done: result.productCount >= 5 },
+                  { label: 'Social Media Links', done: !!(result.profile.facebook_url || result.profile.instagram_url) },
+                ].map(item => (
+                  <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #e5d5ff', fontSize: '13px' }}>
+                    <span style={{ color: '#444' }}>{item.label}</span>
+                    <span>{item.done ? '✅' : '❌'}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                <div style={{ background: '#f9f5ff', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 800, color: '#6B21A8' }}>{result.viewCount}</div>
+                  <div style={{ fontSize: '11px', color: '#888' }}>Page Views</div>
+                </div>
+                <div style={{ background: '#f9f5ff', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 800, color: '#6B21A8' }}>{result.productCount}</div>
+                  <div style={{ fontSize: '11px', color: '#888' }}>Products Listed</div>
+                </div>
+              </div>
+
+              <a href={'/store/' + result.slug} style={{
+                display: 'block', textAlign: 'center', background: '#6B21A8',
+                color: '#fff', padding: '14px', borderRadius: '10px',
+                textDecoration: 'none', fontSize: '14px', fontWeight: 700, marginBottom: '10px'
+              }}>View Your Store Page →</a>
+
+              <Link href="/auth" style={{
+                display: 'block', textAlign: 'center', background: '#f9f5ff',
+                color: '#6B21A8', padding: '14px', borderRadius: '10px',
+                textDecoration: 'none', fontSize: '14px', fontWeight: 700,
+                border: '1px solid #e5d5ff'
+              }}>Improve Your Score →</Link>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '72px', fontWeight: 900, color: '#ff4444' }}>0</div>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#ff4444', marginBottom: '8px' }}>Not Found on Cloutinet</div>
+              <div style={{ fontSize: '13px', color: '#888', marginBottom: '24px' }}>
+                We couldn't find <strong>{result.businessName}</strong> registered on Cloutinet yet{result.city ? ` in ${result.city}` : ''}.
+              </div>
+
+              <div style={{ background: '#fff3f3', border: '1px solid #ffcccc', borderRadius: '12px', padding: '16px', marginBottom: '20px', textAlign: 'left' }}>
+                <div style={{ fontWeight: 700, marginBottom: '8px', color: '#ff4444' }}>⚠️ What this means:</div>
+                <div style={{ fontSize: '13px', color: '#666', padding: '4px 0' }}>• Your business doesn't have a free Cloutinet page yet</div>
+                <div style={{ fontSize: '13px', color: '#666', padding: '4px 0' }}>• You're missing out on a free, Google-optimized business page</div>
+                <div style={{ fontSize: '13px', color: '#666', padding: '4px 0' }}>• Creating one takes less than 5 minutes</div>
+              </div>
+
+              <Link href="/auth" style={{
+                display: 'block', textAlign: 'center',
+                background: 'linear-gradient(135deg, #FF6B35, #E91E8C)',
+                color: '#fff', padding: '14px', borderRadius: '10px',
+                textDecoration: 'none', fontSize: '15px', fontWeight: 800, marginBottom: '10px'
+              }}>🚀 Create Your Free Google Page Now</Link>
+
+              <p style={{ fontSize: '12px', color: '#888' }}>Free forever. No credit card. Setup in 5 minutes.</p>
+            </div>
+          )}
+        </section>
+      )}
+
+      {!result && (
+        <section style={{ maxWidth: '500px', margin: '0 auto', padding: '32px 20px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '16px', textAlign: 'center' }}>What is this Score?</h2>
+          <p style={{ fontSize: '13px', color: '#888', textAlign: 'center', marginBottom: '20px' }}>
+            This checks if your business has a Cloutinet page and scores its completeness — not your overall Google presence.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {[
+              { score: '80-100', label: 'Excellent', desc: 'Your Cloutinet page is fully optimized', color: '#00e676' },
+              { score: '50-79', label: 'Good', desc: 'On Cloutinet but missing some details', color: '#FF6B35' },
+              { score: '1-49', label: 'Poor', desc: 'On Cloutinet but profile is incomplete', color: '#ff8c00' },
+              { score: '0', label: 'Not Found', desc: 'Not registered on Cloutinet yet', color: '#ff4444' },
+            ].map(item => (
+              <div key={item.score} style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '12px', background: '#fafafa', borderRadius: '10px' }}>
+                <div style={{ width: '50px', height: '50px', borderRadius: '10px', background: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px', fontWeight: 700, textAlign: 'center', flexShrink: 0 }}>{item.score}</div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '13px' }}>{item.label}</div>
+                  <div style={{ fontSize: '12px', color: '#888' }}>{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <footer style={{ background: '#f9f5ff', padding: '24px', textAlign: 'center', borderTop: '1px solid #e5d5ff', marginTop: '20px' }}>
+        <div style={{ fontSize: '13px', fontWeight: 700, color: '#6B21A8', marginBottom: '6px' }}>⚡ Cloutinet</div>
+        <p style={{ fontSize: '12px', color: '#888' }}>Nigeria's free business visibility platform — cloutinet.online</p>
+      </footer>
+
+    </div>
+  )
+}
