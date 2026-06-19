@@ -55,11 +55,11 @@ export default async function BusinessesPage() {
     url: 'https://cloutinet.online/businesses',
   }
 
-  function slugifyCategory(cat: string) {
+  function slugifyCategory(cat) {
     return cat.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
   }
 
-  function slugifyCity(city: string) {
+  function slugifyCity(city) {
     return city.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
   }
 
@@ -85,26 +85,30 @@ export default async function BusinessesPage() {
 
         <h2 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px' }}>Browse by City</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px', marginBottom: '32px' }}>
-          {cities.map(city => (
-            <Link key={city} href={'/businesses/city/' + slugifyCity(city)} style={{
-              background: '#fff3eb', border: '1px solid #ffd5b8',
-              borderRadius: '8px', padding: '10px 12px',
-              textDecoration: 'none', color: '#FF6B35',
-              fontSize: '12px', fontWeight: 600, textAlign: 'center'
-            }}>📍 {city}</Link>
-          ))}
+          {cities.map(function(city) {
+            return (
+              <Link key={city} href={'/businesses/city/' + slugifyCity(city)} style={{
+                background: '#fff3eb', border: '1px solid #ffd5b8',
+                borderRadius: '8px', padding: '10px 12px',
+                textDecoration: 'none', color: '#FF6B35',
+                fontSize: '12px', fontWeight: 600, textAlign: 'center'
+              }}>📍 {city}</Link>
+            )
+          })}
         </div>
 
         <h2 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px' }}>Browse by Category</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '8px', marginBottom: '32px' }}>
-          {categories.map(cat => (
-            <Link key={cat} href={'/businesses/' + slugifyCategory(cat)} style={{
-              background: '#f9f5ff', border: '1px solid #e5d5ff',
-              borderRadius: '8px', padding: '10px 12px',
-              textDecoration: 'none', color: '#6B21A8',
-              fontSize: '12px', fontWeight: 600, textAlign: 'center'
-            }}>{cat}</Link>
-          ))}
+          {categories.map(function(cat) {
+            return (
+              <Link key={cat} href={'/businesses/' + slugifyCategory(cat)} style={{
+                background: '#f9f5ff', border: '1px solid #e5d5ff',
+                borderRadius: '8px', padding: '10px 12px',
+                textDecoration: 'none', color: '#6B21A8',
+                fontSize: '12px', fontWeight: 600, textAlign: 'center'
+              }}>{cat}</Link>
+            )
+          })}
         </div>
 
         <h2 style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px' }}>Recently Added Businesses</h2>
@@ -112,20 +116,22 @@ export default async function BusinessesPage() {
           <p style={{ color: '#888', fontSize: '13px', textAlign: 'center', padding: '20px' }}>No businesses listed yet.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {businesses.slice(0, 20).map((b: any) => (
-              <Link key={b.business_slug} href={'/store/' + b.business_slug} style={{
-                textDecoration: 'none', color: '#1a1a2e',
-                border: '1px solid #eee', borderRadius: '12px', padding: '14px',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-              }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>{b.business_name}</div>
-                  {b.business_category && <div style={{ fontSize: '11px', color: '#6B21A8', marginBottom: '2px' }}>{b.business_category}</div>}
-                  {b.location && <div style={{ fontSize: '11px', color: '#888' }}>📍 {b.location}</div>}
-                </div>
-                <div style={{ color: '#6B21A8', fontSize: '18px' }}>→</div>
-              </Link>
-            ))}
+            {businesses.slice(0, 20).map(function(b) {
+              return (
+                <Link key={b.business_slug} href={'/store/' + b.business_slug} style={{
+                  textDecoration: 'none', color: '#1a1a2e',
+                  border: '1px solid #eee', borderRadius: '12px', padding: '14px',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>{b.business_name}</div>
+                    {b.business_category ? <div style={{ fontSize: '11px', color: '#6B21A8', marginBottom: '2px' }}>{b.business_category}</div> : null}
+                    {b.location ? <div style={{ fontSize: '11px', color: '#888' }}>📍 {b.location}</div> : null}
+                  </div>
+                  <div style={{ color: '#6B21A8', fontSize: '18px' }}>→</div>
+                </Link>
+              )
+            })}
           </div>
         )}
       </section>
@@ -133,4 +139,8 @@ export default async function BusinessesPage() {
       <footer style={{ background: '#f9f5ff', padding: '24px', textAlign: 'center', borderTop: '1px solid #e5d5ff', marginTop: '20px' }}>
         <div style={{ fontSize: '13px', color: '#6B21A8', marginBottom: '8px' }}>📦 Is your business listed here?</div>
         <p style={{ fontSize: '12px', color: '#888', marginBottom: '12px' }}>Join thousands of businesses getting found on Google with Cloutinet.</p>
-        <Link href="/auth" style={{ background: '#6B21A8', color: '#fff', padding: '10px 24px', borderR
+        <Link href="/auth" style={{ background: '#6B21A8', color: '#fff', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>List Your Business Free →</Link>
+      </footer>
+    </div>
+  )
+}
