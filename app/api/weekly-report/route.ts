@@ -18,6 +18,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: true, sent: 0 })
     }
 
+    const { count: totalBusinesses } = await supabaseAdmin
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .not('business_name', 'is', null)
+
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     let sentCount = 0
 
@@ -54,51 +59,75 @@ export async function GET(req: NextRequest) {
       if ((productCount || 0) >= 5) score += 5
       if (profile.facebook_url || profile.instagram_url) score += 5
 
-      const tip = !profile.location ? 'Add your business location to improve visibility' :
-                  !profile.tagline ? 'Add a tagline to make your page more appealing' :
-                  (productCount || 0) === 0 ? 'Add your first product to start getting found' :
-                  (productCount || 0) < 5 ? 'Add more products — businesses with 5+ products get more views' :
-                  'Share your store link on WhatsApp Status to get more visitors'
+      const previousScore = profile.last_visibility_score || 0
+      const scoreChange = score - previousScore
+      const scoreChangeText = scoreChange > 0 ? `+${scoreChange}` : scoreChange < 0 ? `${scoreChange}` : 'no change'
+      const scoreChangeColor = scoreChange > 0 ? '#00aa55' : scoreChange < 0 ? '#ff4444' : '#888'
+
+      const oneAction = !profile.location ? { task: 'Add your business location', link: '/onboarding' } :
+                         !profile.tagline ? { task: 'Add a business tagline', link: '/onboarding' } :
+                         !profile.business_hours ? { task: 'Add your business hours', link: '/onboarding' } :
+                         !profile.services ? { task: 'List your services or products offered', link: '/onboarding' } :
+                         (productCount || 0) === 0 ? { task: 'Add your first product', link: '/products/new' } :
+                         (productCount || 0) < 5 ? { task: 'Add one more product to reach 5+', link: '/products/new' } :
+                         !(profile.facebook_url || profile.instagram_url) ? { task: 'Add a social media link', link: '/onboarding' } :
+                         { task: 'Share your store link on WhatsApp Status', link: '/dashboard' }
+
+      const leadsText = (leadCount || 0) > 0
+        ? `${leadCount} customer inquir${leadCount === 1 ? 'y' : 'ies'} this week`
+        : 'Tracking active — none yet this week'
 
       const emailHtml = `
         <html>
           <body style="font-family: Segoe UI, system-ui, sans-serif; background: #f5f5f5; padding: 20px;">
             <div style="max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-              <div style="background: linear-gradient(135deg, #6B21A8, #9333EA); padding: 28px 24px; text-align: center;">
-                <div style="font-size: 24px; font-weight: 900; color: #fff;">⚡ Cloutinet</div>
-                <div style="color: rgba(255,255,255,0.8); font-size: 12px; margin-top: 4px;">Your Weekly Report</div>
+              <div style="background: #0F172A; padding: 28px 24px; text-align: center;">
+                <div style="font-size: 22px; font-weight: 800; color: #fff;">Cloutinet</div>
+                <div style="color: #94A3B8; font-size: 12px; margin-top: 4px;">Your Weekly Progress Report</div>
               </div>
               <div style="padding: 28px 24px;">
-                <h2 style="font-size: 18px; font-weight: 800; color: #1a1a2e; margin-bottom: 4px;">Hi ${profile.business_name},</h2>
-                <p style="color: #888; font-size: 13px; margin-bottom: 20px;">Here's how your business performed this week on Cloutinet.</p>
+                <h2 style="font-size: 18px; font-weight: 700; color: #0F172A; margin-bottom: 4px;">Hi ${profile.business_name},</h2>
+                <p style="color: #64748B; font-size: 13px; margin-bottom: 20px;">Here's what's happening with your business on Cloutinet this week.</p>
 
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                  <div style="flex: 1; background: #f9f5ff; border-radius: 10px; padding: 14px; text-align: center;">
-                    <div style="font-size: 24px; font-weight: 900; color: #6B21A8;">${viewCount || 0}</div>
-                    <div style="font-size: 11px; color: #888;">Page Views</div>
-                  </div>
-                  <div style="flex: 1; background: #f0fff4; border-radius: 10px; padding: 14px; text-align: center;">
-                    <div style="font-size: 24px; font-weight: 900; color: #00aa55;">${leadCount || 0}</div>
-                    <div style="font-size: 11px; color: #888;">WhatsApp Leads</div>
+                <div style="background: #F8FAFC; border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+                  <div style="font-size: 11px; color: #94A3B8; margin-bottom: 4px; text-transform: uppercase; font-weight: 700;">Visibility Score</div>
+                  <div style="display: flex; align-items: baseline; gap: 10px;">
+                    <div style="font-size: 32px; font-weight: 800; color: #0F172A;">${score}/100</div>
+                    <div style="font-size: 13px; font-weight: 700; color: ${scoreChangeColor};">${scoreChangeText}</div>
                   </div>
                 </div>
 
-                <div style="background: #fff3eb; border-radius: 10px; padding: 14px; margin-bottom: 20px;">
-                  <div style="font-size: 12px; color: #888; margin-bottom: 4px;">Your Visibility Score</div>
-                  <div style="font-size: 28px; font-weight: 900; color: ${score >= 80 ? '#00aa55' : score >= 50 ? '#FF6B35' : '#ff4444'};">${score}/100</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                  <div style="flex: 1; background: #F8FAFC; border-radius: 10px; padding: 14px; text-align: center;">
+                    <div style="font-size: 22px; font-weight: 800; color: #0F172A;">${viewCount || 0}</div>
+                    <div style="font-size: 11px; color: #64748B;">Page Views</div>
+                  </div>
+                  <div style="flex: 1; background: #F8FAFC; border-radius: 10px; padding: 14px; text-align: center;">
+                    <div style="font-size: 22px; font-weight: 800; color: #0F172A;">${productCount || 0}</div>
+                    <div style="font-size: 11px; color: #64748B;">Products Live</div>
+                  </div>
                 </div>
 
-                <div style="background: #f9f5ff; border-radius: 10px; padding: 14px; margin-bottom: 20px;">
-                  <div style="font-size: 12px; font-weight: 700; color: #6B21A8; margin-bottom: 4px;">💡 This Week's Tip</div>
-                  <div style="font-size: 13px; color: #444;">${tip}</div>
+                <div style="background: #F0FDF4; border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+                  <div style="font-size: 12px; font-weight: 700; color: #166534; margin-bottom: 2px;">Customer Inquiries</div>
+                  <div style="font-size: 13px; color: #166534;">${leadsText}</div>
                 </div>
 
-                <a href="https://cloutinet.online/dashboard" style="display: block; text-align: center; background: #6B21A8; color: #fff; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 700;">
-                  View Full Dashboard
+                <div style="background: #FFF7ED; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+                  <div style="font-size: 11px; font-weight: 700; color: #9A3412; margin-bottom: 6px; text-transform: uppercase;">This Week's Action</div>
+                  <div style="font-size: 14px; color: #1a1a2e; font-weight: 600;">${oneAction.task}</div>
+                </div>
+
+                <div style="font-size: 12px; color: #94A3B8; text-align: center; margin-bottom: 20px;">
+                  Cloutinet now has ${totalBusinesses || 1} businesses growing together
+                </div>
+
+                <a href="https://cloutinet.online${oneAction.link}" style="display: block; text-align: center; background: #0F172A; color: #fff; padding: 13px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 700;">
+                  Complete This Week's Action
                 </a>
               </div>
-              <div style="background: #f9f5ff; padding: 18px 24px; text-align: center; border-top: 1px solid #e5d5ff;">
-                <div style="font-size: 12px; font-weight: 700; color: #6B21A8;">cloutinet.online</div>
+              <div style="background: #F8FAFC; padding: 18px 24px; text-align: center; border-top: 1px solid #E2E8F0;">
+                <div style="font-size: 12px; font-weight: 700; color: #0F172A;">cloutinet.online</div>
               </div>
             </div>
           </body>
@@ -114,10 +143,15 @@ export async function GET(req: NextRequest) {
         body: JSON.stringify({
           from: 'Cloutinet <noreply@cloutinet.online>',
           to: [profile.email],
-          subject: `📊 Your Weekly Cloutinet Report — ${viewCount || 0} views this week`,
+          subject: `Your Cloutinet Score: ${score}/100 (${scoreChangeText}) this week`,
           html: emailHtml,
         }),
       })
+
+      await supabaseAdmin
+        .from('profiles')
+        .update({ last_visibility_score: score, last_score_check: new Date().toISOString() })
+        .eq('id', profile.id)
 
       sentCount++
     }
