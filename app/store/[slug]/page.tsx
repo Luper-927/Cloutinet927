@@ -35,29 +35,17 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!data) return { title: 'Business Not Found | Cloutinet' }
 
   const { profile, products } = data
-
   const title = profile.business_name + (profile.business_category ? ' - ' + profile.business_category : '') + (profile.location ? ' in ' + profile.location : '') + ' | Cloutinet'
   const description = profile.tagline
     ? profile.tagline + (profile.location ? ' Located in ' + profile.location + '.' : '') + ' Contact us on WhatsApp.'
-    : 'Find ' + profile.business_name + (profile.business_category ? ', a ' + profile.business_category.toLowerCase() : ' business') + (profile.location ? ' in ' + profile.location : '') + '. Browse products and contact us on WhatsApp.'
-
+    : 'Find ' + profile.business_name + (profile.location ? ' in ' + profile.location : '') + '. Browse products and contact us on WhatsApp.'
   const image = products && products[0] && products[0].image_url ? products[0].image_url : null
 
   return {
-    title: title,
-    description: description,
-    openGraph: {
-      title: title,
-      description: description,
-      type: 'website',
-      images: image ? [{ url: image }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image' as const,
-      title: title,
-      description: description,
-      images: image ? [image] : [],
-    },
+    title,
+    description,
+    openGraph: { title, description, type: 'website', images: image ? [{ url: image }] : [] },
+    twitter: { card: 'summary_large_image' as const, title, description, images: image ? [image] : [] },
   }
 }
 
@@ -88,8 +76,8 @@ export default async function StorePage({ params }: { params: { slug: string } }
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://cloutinet927.vercel.app' },
-      { '@type': 'ListItem', position: 2, name: profile.business_name, item: 'https://cloutinet927.vercel.app/store/' + params.slug },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://cloutinet.online' },
+      { '@type': 'ListItem', position: 2, name: profile.business_name, item: 'https://cloutinet.online/store/' + params.slug },
     ]
   }
 
@@ -102,86 +90,68 @@ export default async function StorePage({ params }: { params: { slug: string } }
     : []
 
   const socialLinks = [
-    { url: profile.facebook_url, label: 'Facebook', icon: '📘' },
-    { url: profile.instagram_url, label: 'Instagram', icon: '📷' },
-    { url: profile.youtube_url, label: 'YouTube', icon: '▶️' },
-    { url: profile.tiktok_url, label: 'TikTok', icon: '🎵' },
+    { url: profile.facebook_url, label: 'Facebook' },
+    { url: profile.instagram_url, label: 'Instagram' },
+    { url: profile.youtube_url, label: 'YouTube' },
+    { url: profile.tiktok_url, label: 'TikTok' },
   ].filter(s => s.url)
 
   return (
-    <div style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#fff', color: '#1a1a2e' }}>
+    <div style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#fff', color: '#0F172A' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
-      <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f0f0' }}>
+      <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0' }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <div style={{ width: '28px', height: '28px', background: '#6B21A8', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 900, fontSize: '14px' }}>C</div>
-          <span style={{ fontSize: '16px', fontWeight: 900, color: '#6B21A8' }}>Cloutinet</span>
+          <div style={{ width: '28px', height: '28px', background: '#0F172A', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>C</div>
+          <span style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>Cloutinet</span>
         </Link>
       </nav>
 
-      <section style={{ background: 'linear-gradient(135deg, #6B21A8, #9333EA)', padding: '40px 20px', textAlign: 'center', color: '#fff' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 900, marginBottom: '6px' }}>{profile.business_name}</h1>
-        {profile.business_category && <div style={{ fontSize: '12px', opacity: 0.8, marginBottom: '6px' }}>{profile.business_category}</div>}
-        {profile.tagline && <p style={{ fontSize: '13px', opacity: 0.9 }}>{profile.tagline}</p>}
-        {profile.location && <p style={{ fontSize: '12px', opacity: 0.7, marginTop: '6px' }}>📍 {profile.location}</p>}
+      <section style={{ background: '#0F172A', padding: '40px 20px', textAlign: 'center', color: '#fff' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '6px' }}>{profile.business_name}</h1>
+        {profile.business_category && <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '6px' }}>{profile.business_category}</div>}
+        {profile.tagline && <p style={{ fontSize: '13px', color: '#CBD5E1' }}>{profile.tagline}</p>}
+        {profile.location && <p style={{ fontSize: '12px', color: '#64748B', marginTop: '6px' }}>{profile.location}</p>}
       </section>
 
       {whatsappLink && (
         <div style={{ textAlign: 'center', padding: '20px' }}>
           <a href={whatsappLink} style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: '#25D366', color: '#fff', padding: '12px 28px',
-            borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 700
-          }}>💬 Contact on WhatsApp</a>
+            background: '#16A34A', color: '#fff', padding: '12px 28px',
+            borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700
+          }}>Contact on WhatsApp</a>
         </div>
       )}
 
       {(profile.business_hours || servicesList.length > 0 || socialLinks.length > 0) && (
         <section style={{ maxWidth: '700px', margin: '0 auto 24px', padding: '0 16px' }}>
-          <div style={{ background: '#f9f5ff', border: '1px solid #e5d5ff', borderRadius: '12px', padding: '16px' }}>
-            <h2 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '10px', color: '#6B21A8' }}>Business Info</h2>
-
+          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px' }}>
+            <h2 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '10px', color: '#0F172A' }}>Business Info</h2>
             {profile.business_hours && (
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', fontSize: '13px' }}>
-                <span>🕒</span>
-                <span style={{ color: '#444' }}>{profile.business_hours}</span>
-              </div>
+              <div style={{ fontSize: '13px', color: '#475569', marginBottom: '6px' }}>Hours: {profile.business_hours}</div>
             )}
-
             {profile.location && (
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', fontSize: '13px' }}>
-                <span>📍</span>
-                <span style={{ color: '#444' }}>{profile.location}</span>
-              </div>
+              <div style={{ fontSize: '13px', color: '#475569', marginBottom: '6px' }}>Location: {profile.location}</div>
             )}
-
             {profile.phone && (
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', fontSize: '13px' }}>
-                <span>📞</span>
-                <span style={{ color: '#444' }}>{profile.phone}</span>
-              </div>
+              <div style={{ fontSize: '13px', color: '#475569', marginBottom: '6px' }}>Phone: {profile.phone}</div>
             )}
-
             {servicesList.length > 0 && (
               <div style={{ marginTop: '10px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#6B21A8', marginBottom: '6px' }}>Services & Products</div>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>Services & Products</div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {servicesList.map((s: string, i: number) => (
-                    <span key={i} style={{ background: '#fff', border: '1px solid #e5d5ff', borderRadius: '6px', padding: '4px 10px', fontSize: '12px', color: '#6B21A8' }}>{s}</span>
+                    <span key={i} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '3px 10px', fontSize: '12px', color: '#475569' }}>{s}</span>
                   ))}
                 </div>
               </div>
             )}
-
             {socialLinks.length > 0 && (
-              <div style={{ marginTop: '12px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {socialLinks.map(s => (
-                  <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" style={{
-                    display: 'flex', alignItems: 'center', gap: '4px',
-                    fontSize: '12px', color: '#6B21A8', textDecoration: 'none',
-                    background: '#fff', border: '1px solid #e5d5ff', borderRadius: '6px', padding: '4px 10px'
-                  }}>{s.icon} {s.label}</a>
+                  <a key={s.label} href={s.url!} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#0F172A', textDecoration: 'none', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '3px 10px' }}>{s.label}</a>
                 ))}
               </div>
             )}
@@ -190,17 +160,17 @@ export default async function StorePage({ params }: { params: { slug: string } }
       )}
 
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 16px 40px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '16px', textAlign: 'center' }}>Products & Services</h2>
+        <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: '#0F172A' }}>Products & Services</h2>
         {products.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#888', fontSize: '13px' }}>No products listed yet.</p>
+          <p style={{ textAlign: 'center', color: '#94A3B8', fontSize: '13px' }}>No products listed yet.</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
             {products.map((p: any) => (
-              <Link key={p.id} href={'/store/' + params.slug + '/' + p.slug} style={{ textDecoration: 'none', color: '#1a1a2e', border: '1px solid #eee', borderRadius: '12px', overflow: 'hidden' }}>
+              <Link key={p.id} href={'/store/' + params.slug + '/' + p.slug} style={{ textDecoration: 'none', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
                 {p.image_url && <img src={p.image_url} style={{ width: '100%', height: '110px', objectFit: 'cover' }} />}
                 <div style={{ padding: '10px' }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{p.name}</div>
-                  {p.price && <div style={{ fontSize: '12px', color: '#6B21A8', fontWeight: 700 }}>{p.currency} {Number(p.price).toLocaleString()}</div>}
+                  {p.price && <div style={{ fontSize: '12px', color: '#475569', fontWeight: 600 }}>{p.currency} {Number(p.price).toLocaleString()}</div>}
                 </div>
               </Link>
             ))}
@@ -208,10 +178,10 @@ export default async function StorePage({ params }: { params: { slug: string } }
         )}
       </section>
 
-      <footer style={{ background: '#f9f5ff', padding: '24px', textAlign: 'center', borderTop: '1px solid #e5d5ff' }}>
-        <div style={{ fontSize: '13px', color: '#6B21A8', marginBottom: '8px' }}>📦 Is your business visible on Google?</div>
-        <p style={{ fontSize: '12px', color: '#888', marginBottom: '12px' }}>This page was automatically generated by Cloutinet.</p>
-        <Link href="/auth" style={{ background: '#6B21A8', color: '#fff', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Create Your Own Free Page →</Link>
+      <footer style={{ background: '#F8FAFC', padding: '24px', textAlign: 'center', borderTop: '1px solid #E2E8F0' }}>
+        <div style={{ fontSize: '13px', color: '#0F172A', fontWeight: 700, marginBottom: '8px' }}>Is your business visible on Google?</div>
+        <p style={{ fontSize: '12px', color: '#64748B', marginBottom: '12px' }}>This page was automatically generated by Cloutinet.</p>
+        <Link href="/auth" style={{ background: '#0F172A', color: '#fff', padding: '10px 24px', borderRadius: '6px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Create Your Own Free Page →</Link>
       </footer>
     </div>
   )
