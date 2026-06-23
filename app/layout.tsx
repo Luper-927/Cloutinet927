@@ -48,7 +48,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <script
-          type="application/ld+json"
+          type="application/ld+json""logo": {
+  "@type": "ImageObject",
+  "url": "https://cloutinet.online/logo.png"
+}
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
         <script
