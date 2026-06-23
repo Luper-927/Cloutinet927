@@ -65,7 +65,7 @@ export default function RootLayout({
             `,
           }}
         />
-      </head>
+      <link rel="icon" href="/favicon.ico" />
       <body>{children}</body>
     </html>
   )
