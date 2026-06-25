@@ -1,159 +1,65 @@
-'use client'
+import { NextRequest, NextResponse } from 'next/server'
 
-import { useState } from 'react'
-import { supabase } from '../../lib/supabase'
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const businessName = searchParams.get('name')
+  const city = searchParams.get('city') || 'Nigeria'
 
-export default function AuthPage() {
-  const [mode, setMode] = useState<'login' | 'signup'>('signup')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  async function handleLogin() {
-    setLoading(true)
-    setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-    } else {
-      window.location.href = '/dashboard'
-    }
+  if (!businessName) {
+    return NextResponse.json({ error: 'Business name required' }, { status: 400 })
   }
 
-  async function handleSignup() {
-    setLoading(true)
-    setError('')
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
-    }
-    if (data.user) {
-      await supabase.from('profiles').insert({ id: data.user.id, email: email })
+  try {
+    const query = encodeURIComponent(businessName + ' ' + city)
+    const apiKey = process.env.SERPAPI_KEY
 
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: email,
-          subject: 'Welcome to Cloutinet',
-          html: `
-            <html>
-              <body style="font-family: Segoe UI, system-ui, sans-serif; background: #f5f5f5; padding: 20px;">
-                <div style="max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-                  <div style="background: #0F172A; padding: 32px 24px; text-align: center;">
-                    <div style="font-size: 24px; font-weight: 800; color: #fff;">Cloutinet</div>
-                    <div style="color: #94A3B8; font-size: 13px; margin-top: 4px;">Create. Share. Grow.</div>
-                  </div>
-                  <div style="padding: 32px 24px;">
-                    <h2 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-bottom: 12px;">Welcome to Cloutinet</h2>
-                    <p style="color: #64748B; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
-                      Your account has been created. Here's what to do next:
-                    </p>
-                    <div style="background: #F8FAFC; border-radius: 10px; padding: 16px; margin-bottom: 24px;">
-                      <div style="font-size: 13px; color: #444; margin-bottom: 8px;">1. Set up your business profile</div>
-                      <div style="font-size: 13px; color: #444; margin-bottom: 8px;">2. Add your products with photos and prices</div>
-                      <div style="font-size: 13px; color: #444; margin-bottom: 8px;">3. Share your store link on WhatsApp Status</div>
-                      <div style="font-size: 13px; color: #444;">4. Watch customers find you on Google</div>
-                    </div>
-                    <a href="https://cloutinet.online/dashboard" style="display: block; text-align: center; background: #0F172A; color: #fff; padding: 14px 24px; border-radius: 10px; text-decoration: none; font-size: 15px; font-weight: 700;">
-                      Go to My Dashboard
-                    </a>
-                  </div>
-                </div>
-              </body>
-            </html>
-          `
-        })
-      })
+    const response = await fetch(
+      `https://serpapi.com/search.json?engine=google_maps&q=${query}&api_key=${apiKey}`
+    )
 
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: 'cloutinet.hello@gmail.com',
-          subject: 'New Cloutinet Signup',
-          html: `<p>New user signed up: <strong>${email}</strong></p>`
-        })
+    const data = await response.json()
+
+    if (!data.local_results || data.local_results.length === 0) {
+      return NextResponse.json({
+        found: false,
+        googleScore: 0,
+        business: null,
       })
     }
 
-    window.location.href = '/dashboard'
+    const place = data.local_results[0]
+
+    let googleScore = 0
+    const breakdown: any = {}
+
+    if (place.title) { googleScore += 15; breakdown.name = true } else { breakdown.name = false }
+    if (place.address) { googleScore += 15; breakdown.address = true } else { breakdown.address = false }
+    if (place.phone) { googleScore += 15; breakdown.phone = true } else { breakdown.phone = false }
+    if (place.hours) { googleScore += 10; breakdown.hours = true } else { breakdown.hours = false }
+    if (place.website) { googleScore += 10; breakdown.website = true } else { breakdown.website = false }
+    if (place.rating) { googleScore += 10; breakdown.rating = true } else { breakdown.rating = false }
+    if (place.reviews) { googleScore += 10; breakdown.reviews = true } else { breakdown.reviews = false }
+    if (place.thumbnail) { googleScore += 10; breakdown.photos = true } else { breakdown.photos = false }
+    if (place.type) { googleScore += 5; breakdown.verified = true } else { breakdown.verified = false }
+
+    return NextResponse.json({
+      found: true,
+      googleScore,
+      breakdown,
+      business: {
+        name: place.title,
+        address: place.address,
+        phone: place.phone || null,
+        rating: place.rating || null,
+        reviewCount: place.reviews || null,
+        website: place.website || null,
+        hours: place.hours || null,
+        hasPhotos: !!place.thumbnail,
+        type: place.type || null,
+      }
+    })
+
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 })
   }
-
-  return (
-    <div style={{
-      minHeight: '100vh', background: '#fff',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '16px', fontFamily: 'Segoe UI, system-ui, sans-serif'
-    }}>
-      <div style={{
-        background: '#fff', border: '1px solid #E2E8F0',
-        borderRadius: '12px', padding: '32px',
-        width: '100%', maxWidth: '380px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.06)'
-      }}>
-        <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-          Cloutinet
-        </div>
-        <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '24px' }}>
-          {mode === 'login' ? 'Welcome back' : 'Create your free account'}
-        </p>
-
-        <div style={{ display: 'flex', background: '#F8FAFC', borderRadius: '8px', padding: '4px', marginBottom: '20px' }}>
-          {(['signup', 'login'] as const).map(m => (
-            <button key={m} onClick={() => { setMode(m); setError('') }} style={{
-              flex: 1, padding: '8px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-              fontSize: '13px', fontWeight: 600,
-              background: mode === m ? '#0F172A' : 'transparent',
-              color: mode === m ? '#fff' : '#64748B'
-            }}>
-              {m === 'signup' ? 'Sign Up' : 'Log In'}
-            </button>
-          ))}
-        </div>
-
-        <input
-          placeholder="Email address"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          placeholder="Password (min 6 characters)"
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          style={inputStyle}
-        />
-
-        {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
-
-        <button
-          onClick={mode === 'login' ? handleLogin : handleSignup}
-          disabled={loading}
-          style={{
-            width: '100%', padding: '12px',
-            background: '#0F172A',
-            border: 'none', borderRadius: '8px', color: '#fff',
-            fontSize: '14px', fontWeight: 700,
-            cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1
-          }}
-        >
-          {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Create Account'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
-  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
-  fontSize: '14px', marginBottom: '12px', outline: 'none', fontFamily: 'inherit'
 }
