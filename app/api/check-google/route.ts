@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     breakdown.hours = !!(place.hours || place.opening_hours)
     breakdown.website = !!place.website
     breakdown.rating = !!place.rating
-    breakdown.reviews = !!(place.reviews || place.review_count)
+    breakdown.reviews = typeof place.reviews === 'number' || typeof place.review_count === 'number'
     breakdown.photos = !!(place.image || place.thumbnail)
     breakdown.category = !!(place.type || place.category)
 
@@ -57,6 +57,12 @@ export async function GET(req: NextRequest) {
     if (breakdown.photos) score += 10
     if (breakdown.category) score += 5
 
+    const reviewCount = typeof place.reviews === 'number'
+      ? place.reviews
+      : typeof place.review_count === 'number'
+      ? place.review_count
+      : null
+
     return NextResponse.json({
       found: true,
       googleScore: score,
@@ -66,7 +72,7 @@ export async function GET(req: NextRequest) {
         address: place.address || null,
         phone: place.phone || null,
         rating: place.rating || null,
-        reviewCount: place.reviews || place.review_count || null,
+        reviewCount,
         website: place.website || null,
         hours: place.hours || place.opening_hours || null,
         hasPhotos: breakdown.photos,
