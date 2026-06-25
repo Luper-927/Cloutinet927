@@ -11,16 +11,14 @@ export async function GET(req: NextRequest) {
 
   try {
     const query = encodeURIComponent(businessName + ' ' + city)
-    const apiKey = process.env.SERPAPI_KEY
+    const apiKey = 'e033b817802fc471ded34fb7679d0dac67d0bdc3df705a4b21eab8ceadfaec08
 
-    // Try Google Search first instead of Maps
     const response = await fetch(
       `https://serpapi.com/search.json?engine=google&q=${query}&api_key=${apiKey}&gl=ng&hl=en`
     )
 
     const data = await response.json()
 
-    // Check for knowledge graph (business panel)
     const kg = data.knowledge_graph
     const localResults = data.local_results
 
@@ -29,7 +27,6 @@ export async function GET(req: NextRequest) {
         found: false,
         googleScore: 0,
         business: null,
-        raw: data
       })
     }
 
