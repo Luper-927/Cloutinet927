@@ -13,55 +13,64 @@ export async function GET(req: NextRequest) {
     const query = encodeURIComponent(businessName + ' ' + city)
     const apiKey = process.env.SERPAPI_KEY
 
-    // Try Google Search first instead of Maps
-    const response = await fetch(
-      `https://serpapi.com/search.json?engine=google&q=${query}&api_key=${apiKey}&gl=ng&hl=en`
-    )
-
-    const data = await response.json()
-
-    // Check for knowledge graph (business panel)
-    const kg = data.knowledge_graph
-    const localResults = data.local_results
-
-    if (!kg && (!localResults || localResults.length === 0)) {
-      return NextResponse.json({
-        found: false,
-        googleScore: 0,
-        business: null,
-        raw: data
-      })
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
-    const place = kg || (localResults && localResults[0])
+    const url = 'https://serpapi.com/search.json?engine=google&q=' + query + '&api_key=' + apiKey + '&gl=ng&hl=en'
 
-    let googleScore = 0
-    const breakdown: any = {}
+    const response = await fetch(url)
+    const data = await response.json()
 
-    if (place.title || place.name) { googleScore += 15; breakdown.name = true } else { breakdown.name = false }
-    if (place.address) { googleScore += 15; breakdown.address = true } else { breakdown.address = false }
-    if (place.phone) { googleScore += 15; breakdown.phone = true } else { breakdown.phone = false }
-    if (place.hours || place.opening_hours) { googleScore += 10; breakdown.hours = true } else { breakdown.hours = false }
-    if (place.website) { googleScore += 10; breakdown.website = true } else { breakdown.website = false }
-    if (place.rating) { googleScore += 10; breakdown.rating = true } else { breakdown.rating = false }
-    if (place.reviews || place.user_ratings_total) { googleScore += 10; breakdown.reviews = true } else { breakdown.reviews = false }
-    if (place.image || place.thumbnail || place.images) { googleScore += 10; breakdown.photos = true } else { breakdown.photos = false }
-    if (place.type || place.types || place.category) { googleScore += 5; breakdown.verified = true } else { breakdown.verified = false }
+    if (data.error) {
+      return NextResponse.json({ found: false, googleScore: 0, business: null })
+    }
+
+    const kg = data.knowledge_graph
+    const local = data.local_results && data.local_results[0]
+    const place = kg || local
+
+    if (!place) {
+      return NextResponse.json({ found: false, googleScore: 0, business: null })
+    }
+
+    let score = 0
+    const breakdown: Record<string, boolean> = {}
+
+    breakdown.name = !!(place.title || place.name)
+    breakdown.address = !!place.address
+    breakdown.phone = !!place.phone
+    breakdown.hours = !!(place.hours || place.opening_hours)
+    breakdown.website = !!place.website
+    breakdown.rating = !!place.rating
+    breakdown.reviews = !!(place.reviews || place.review_count)
+    breakdown.photos = !!(place.image || place.thumbnail)
+    breakdown.category = !!(place.type || place.category)
+
+    if (breakdown.name) score += 15
+    if (breakdown.address) score += 15
+    if (breakdown.phone) score += 15
+    if (breakdown.hours) score += 10
+    if (breakdown.website) score += 10
+    if (breakdown.rating) score += 10
+    if (breakdown.reviews) score += 10
+    if (breakdown.photos) score += 10
+    if (breakdown.category) score += 5
 
     return NextResponse.json({
       found: true,
-      googleScore,
+      googleScore: score,
       breakdown,
       business: {
-        name: place.title || place.name,
-        address: place.address,
-        phone: place.phone,
-        rating: place.rating,
-        reviewCount: place.reviews || place.user_ratings_total,
-        website: place.website,
-        hours: place.hours || place.opening_hours,
-        hasPhotos: !!(place.image || place.thumbnail),
-        type: place.type || place.category,
+        name: place.title || place.name || null,
+        address: place.address || null,
+        phone: place.phone || null,
+        rating: place.rating || null,
+        reviewCount: place.reviews || place.review_count || null,
+        website: place.website || null,
+        hours: place.hours || place.opening_hours || null,
+        hasPhotos: breakdown.photos,
+        type: place.type || place.category || null,
       }
     })
 
