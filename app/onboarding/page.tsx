@@ -1,316 +1,241 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
+const categories = [
+  'Food & Groceries', 'Fashion & Clothing', 'Electronics & Gadgets', 'Furniture & Interior',
+  'Building Materials', 'Supermarket & Store', 'Wholesale & Distribution', 'Salon & Hair',
+  'Barber Shop', 'Spa & Massage', 'Cosmetics & Skincare', 'Gym & Fitness',
+  'Restaurant & Eatery', 'Fast Food & Snacks', 'Catering Services', 'Bakery & Pastry',
+  'Bar & Drinks', 'Logistics & Delivery', 'Printing & Graphics', 'Photography & Video',
+  'Event Planning', 'Cleaning Services', 'Security Services', 'Laundry & Dry Cleaning',
+  'Tailoring & Fashion Design', 'Shoe Making & Repair', 'Pharmacy & Chemist', 'Hospital & Clinic',
+  'Optical Services', 'Dental Care', 'Herbal & Natural Health', 'Real Estate & Property',
+  'Architecture & Design', 'Plumbing & Electrical', 'Building & Construction', 'Paint & Finishing',
+  'School & Tutorial', 'Church & Ministry', 'Mosque & Islamic Center', 'Skills & Training',
+  'Tech & IT Services', 'Phone Repair', 'Computer Services', 'Digital Marketing',
+  'Farming & Agriculture', 'Livestock & Poultry', 'Fish Farming', 'Crop Production',
+  'Car Sales', 'Auto Repair & Mechanic', 'Spare Parts', 'Car Wash & Detailing',
+  'Financial Services', 'Insurance', 'POS & Mobile Money', 'Welding & Fabrication', 'Other',
+]
+
 export default function OnboardingPage() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [businessName, setBusinessName] = useState('')
+  const [category, setCategory] = useState('')
+  const [phone, setPhone] = useState('')
+  const [location, setLocation] = useState('')
+  const [tagline, setTagline] = useState('')
+  const [hours, setHours] = useState('')
+  const [services, setServices] = useState('')
+  const [facebook, setFacebook] = useState('')
+  const [instagram, setInstagram] = useState('')
+  const [youtube, setYoutube] = useState('')
+  const [tiktok, setTiktok] = useState('')
   const [saving, setSaving] = useState(false)
+  const [generatingTagline, setGeneratingTagline] = useState(false)
+  const [generatingServices, setGeneratingServices] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
 
-  const [bizName, setBizName] = useState('')
-  const [bizCategory, setBizCategory] = useState('')
-  const [bizPhone, setBizPhone] = useState('')
-  const [bizLocation, setBizLocation] = useState('')
-  const [bizTagline, setBizTagline] = useState('')
-  const [bizHours, setBizHours] = useState('')
-  const [bizServices, setBizServices] = useState('')
-  const [bizFacebook, setBizFacebook] = useState('')
-  const [bizInstagram, setBizInstagram] = useState('')
-  const [bizYoutube, setBizYoutube] = useState('')
-  const [bizTiktok, setBizTiktok] = useState('')
-
-  const categories = [
-    'Food & Groceries',
-    'Fashion & Clothing',
-    'Electronics & Gadgets',
-    'Furniture & Interior',
-    'Building Materials',
-    'Supermarket & Store',
-    'Wholesale & Distribution',
-    'Salon & Hair',
-    'Barber Shop',
-    'Spa & Massage',
-    'Cosmetics & Skincare',
-    'Gym & Fitness',
-    'Restaurant & Eatery',
-    'Fast Food & Snacks',
-    'Catering Services',
-    'Bakery & Pastry',
-    'Bar & Drinks',
-    'Logistics & Delivery',
-    'Printing & Graphics',
-    'Photography & Video',
-    'Event Planning',
-    'Cleaning Services',
-    'Security Services',
-    'Laundry & Dry Cleaning',
-    'Tailoring & Fashion Design',
-    'Shoe Making & Repair',
-    'Pharmacy & Chemist',
-    'Hospital & Clinic',
-    'Optical Services',
-    'Dental Care',
-    'Herbal & Natural Health',
-    'Real Estate & Property',
-    'Architecture & Design',
-    'Plumbing & Electrical',
-    'Building & Construction',
-    'Paint & Finishing',
-    'School & Tutorial',
-    'Church & Ministry',
-    'Mosque & Islamic Center',
-    'Skills & Training',
-    'Tech & IT Services',
-    'Phone Repair',
-    'Computer Services',
-    'Digital Marketing',
-    'Farming & Agriculture',
-    'Livestock & Poultry',
-    'Fish Farming',
-    'Crop Production',
-    'Car Sales',
-    'Auto Repair & Mechanic',
-    'Spare Parts',
-    'Car Wash & Detailing',
-    'Financial Services',
-    'Insurance',
-    'POS & Mobile Money',
-    'Other',
-  ]
-
-  useEffect(() => {
-    load()
-  }, [])
-
-  function slugify(s: string) {
-    return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
-  }
-
-  async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    const currentUser = userData?.user
-    if (!currentUser) {
-      window.location.href = '/auth'
+  async function generateTagline() {
+    if (!businessName || !category) {
+      setError('Please enter your business name and category first')
       return
     }
-    setUser(currentUser)
-
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', currentUser.id)
-      .single()
-
-    if (profileData) {
-      setBizName(profileData.business_name || '')
-      setBizCategory(profileData.business_category || '')
-      setBizPhone(profileData.phone || '')
-      setBizLocation(profileData.location || '')
-      setBizTagline(profileData.tagline || '')
-      setBizHours(profileData.business_hours || '')
-      setBizServices(profileData.services || '')
-      setBizFacebook(profileData.facebook_url || '')
-      setBizInstagram(profileData.instagram_url || '')
-      setBizYoutube(profileData.youtube_url || '')
-      setBizTiktok(profileData.tiktok_url || '')
+    setGeneratingTagline(true)
+    setError('')
+    try {
+      const response = await fetch('/api/generate-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'tagline',
+          businessName,
+          category,
+          location,
+        })
+      })
+      const data = await response.json()
+      if (data.result) setTagline(data.result)
+    } catch (e) {
+      setError('Could not generate tagline. Please try again.')
     }
+    setGeneratingTagline(false)
+  }
 
-    setLoading(false)
+  async function generateServices() {
+    if (!businessName || !category) {
+      setError('Please enter your business name and category first')
+      return
+    }
+    setGeneratingServices(true)
+    setError('')
+    try {
+      const response = await fetch('/api/generate-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'services',
+          businessName,
+          category,
+          location,
+        })
+      })
+      const data = await response.json()
+      if (data.result) setServices(data.result)
+    } catch (e) {
+      setError('Could not generate services. Please try again.')
+    }
+    setGeneratingServices(false)
   }
 
   async function handleSave() {
-    if (!user) return
-    if (!bizName.trim()) {
-      setError('Business name is required')
+    if (!businessName.trim() || !category || !phone.trim()) {
+      setError('Business name, category and phone are required')
       return
     }
-    if (!bizPhone.trim()) {
-      setError('Phone / WhatsApp number is required')
-      return
-    }
-    if (!bizCategory) {
-      setError('Please select a business category')
-      return
-    }
-
     setSaving(true)
     setError('')
 
-    const slug = slugify(bizName)
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) { window.location.href = '/auth'; return }
 
-    const { error: dbError } = await supabase.from('profiles').upsert({
-      id: user.id,
-      email: user.email,
-      business_name: bizName,
+    const slug = businessName.toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+
+    const { error: saveError } = await supabase.from('profiles').upsert({
+      id: userData.user.id,
+      email: userData.user.email,
+      business_name: businessName,
       business_slug: slug,
-      business_category: bizCategory,
-      phone: bizPhone,
-      location: bizLocation,
-      tagline: bizTagline,
-      business_hours: bizHours,
-      services: bizServices,
-      facebook_url: bizFacebook,
-      instagram_url: bizInstagram,
-      youtube_url: bizYoutube,
-      tiktok_url: bizTiktok,
+      business_category: category,
+      phone,
+      location,
+      tagline,
+      business_hours: hours,
+      services,
+      facebook_url: facebook || null,
+      instagram_url: instagram || null,
+      youtube_url: youtube || null,
+      tiktok_url: tiktok || null,
     })
 
     setSaving(false)
-
-    if (dbError) {
-      setError(dbError.message)
-      return
-    }
-
+    if (saveError) { setError(saveError.message); return }
     window.location.href = '/dashboard'
   }
 
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#07070f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#FF6B35' }}>Loading...</div>
-      </div>
-    )
-  }
-
   return (
-    <div style={{ minHeight: '100vh', background: '#07070f', fontFamily: 'Segoe UI, system-ui, sans-serif', padding: '16px' }}>
-      <div style={{ maxWidth: '420px', margin: '0 auto', paddingTop: '20px', paddingBottom: '40px' }}>
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+      <div style={{ background: '#0F172A', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>Cloutinet</div>
+        <div style={{ fontSize: '12px', color: '#94A3B8' }}>Business Setup</div>
+      </div>
 
-        <div style={{
-          fontSize: '20px', fontWeight: 900,
-          background: 'linear-gradient(135deg, #FF6B35, #E91E8C)',
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          marginBottom: '6px'
-        }}>⚡ Cloutinet</div>
-
-        <h2 style={{ color: '#f0f0ff', fontSize: '18px', marginBottom: '6px' }}>Set Up Your Business</h2>
-        <p style={{ color: '#8888aa', fontSize: '13px', marginBottom: '24px' }}>
-          This information appears on your free Google-searchable page.
-        </p>
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>Set Up Your Business</h1>
+        <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px' }}>Fill in your details to create your free Google-searchable business page.</p>
 
         <label style={labelStyle}>Business Name *</label>
-        <input
-          placeholder="e.g. Mary's Foodstuff Store"
-          value={bizName}
-          onChange={e => setBizName(e.target.value)}
-          style={inputStyle}
-        />
+        <input placeholder="e.g. Lax Furniture" value={businessName} onChange={e => setBusinessName(e.target.value)} style={inputStyle} />
 
         <label style={labelStyle}>Business Category *</label>
-        <select
-          value={bizCategory}
-          onChange={e => setBizCategory(e.target.value)}
-          style={inputStyle}
-        >
-          <option value="">Select your business category</option>
-          {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
+        <select value={category} onChange={e => setCategory(e.target.value)} style={inputStyle}>
+          <option value="">Select your category</option>
+          {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
         </select>
 
         <label style={labelStyle}>Phone / WhatsApp Number *</label>
-        <input
-          placeholder="e.g. 08012345678 (include country code for intl)"
-          value={bizPhone}
-          onChange={e => setBizPhone(e.target.value)}
-          style={inputStyle}
-        />
+        <input placeholder="e.g. 08012345678" value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} />
 
-        <label style={labelStyle}>Location</label>
-        <input
-          placeholder="e.g. Port Harcourt, Rivers State"
-          value={bizLocation}
-          onChange={e => setBizLocation(e.target.value)}
-          style={inputStyle}
-        />
+        <label style={labelStyle}>Location (City, State)</label>
+        <input placeholder="e.g. Port Harcourt, Rivers State" value={location} onChange={e => setLocation(e.target.value)} style={inputStyle} />
 
-        <label style={labelStyle}>Short Tagline</label>
-        <input
-          placeholder="e.g. Quality foodstuffs at affordable prices"
-          value={bizTagline}
-          onChange={e => setBizTagline(e.target.value)}
-          style={inputStyle}
-        />
+        <label style={labelStyle}>Tagline</label>
+        <div style={{ position: 'relative', marginBottom: '16px' }}>
+          <input
+            placeholder="A short description of your business"
+            value={tagline}
+            onChange={e => setTagline(e.target.value)}
+            style={{ ...inputStyle, marginBottom: '0', paddingRight: '130px' }}
+          />
+          <button
+            onClick={generateTagline}
+            disabled={generatingTagline}
+            style={{
+              position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)',
+              background: '#0F172A', color: '#fff', border: 'none', borderRadius: '5px',
+              padding: '6px 10px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+              fontFamily: 'inherit', whiteSpace: 'nowrap' as const
+            }}
+          >
+            {generatingTagline ? 'Generating...' : '✨ Generate with AI'}
+          </button>
+        </div>
 
         <label style={labelStyle}>Business Hours</label>
-        <input
-          placeholder="e.g. Mon-Sat 8am-7pm"
-          value={bizHours}
-          onChange={e => setBizHours(e.target.value)}
-          style={inputStyle}
-        />
+        <input placeholder="e.g. Mon-Sat 8am-6pm" value={hours} onChange={e => setHours(e.target.value)} style={inputStyle} />
 
-        <label style={labelStyle}>Services / Products Offered</label>
-        <textarea
-          placeholder="e.g. Rice, Beans, Garri, Palm Oil (comma separated)"
-          value={bizServices}
-          onChange={e => setBizServices(e.target.value)}
-          style={{ ...inputStyle, minHeight: '70px', resize: 'vertical' }}
-        />
-
-        <div style={{ borderTop: '1px solid #252535', margin: '8px 0 16px', paddingTop: '16px' }}>
-          <div style={{ color: '#8888aa', fontSize: '12px', fontWeight: 700, marginBottom: '12px' }}>SOCIAL LINKS (optional)</div>
-
-          <label style={labelStyle}>Facebook</label>
-          <input
-            placeholder="https://facebook.com/yourpage"
-            value={bizFacebook}
-            onChange={e => setBizFacebook(e.target.value)}
-            style={inputStyle}
+        <label style={labelStyle}>Services & Products</label>
+        <div style={{ position: 'relative', marginBottom: '16px' }}>
+          <textarea
+            placeholder="e.g. Rice, Beans, Palm Oil, Garri"
+            value={services}
+            onChange={e => setServices(e.target.value)}
+            style={{ ...inputStyle, marginBottom: '0', minHeight: '80px', resize: 'vertical' as const }}
           />
+          <button
+            onClick={generateServices}
+            disabled={generatingServices}
+            style={{
+              display: 'block', width: '100%', marginTop: '6px',
+              background: '#F8FAFC', color: '#0F172A', border: '1px solid #E2E8F0',
+              borderRadius: '6px', padding: '8px', fontSize: '12px', fontWeight: 700,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }}
+          >
+            {generatingServices ? 'Generating...' : '✨ Generate Services with AI'}
+          </button>
+        </div>
 
-          <label style={labelStyle}>Instagram</label>
-          <input
-            placeholder="https://instagram.com/yourpage"
-            value={bizInstagram}
-            onChange={e => setBizInstagram(e.target.value)}
-            style={inputStyle}
-          />
-
-          <label style={labelStyle}>YouTube</label>
-          <input
-            placeholder="https://youtube.com/@yourchannel"
-            value={bizYoutube}
-            onChange={e => setBizYoutube(e.target.value)}
-            style={inputStyle}
-          />
-
-          <label style={labelStyle}>TikTok</label>
-          <input
-            placeholder="https://tiktok.com/@yourhandle"
-            value={bizTiktok}
-            onChange={e => setBizTiktok(e.target.value)}
-            style={inputStyle}
-          />
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginBottom: '20px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginBottom: '12px' }}>Social Media Links (Optional)</div>
+          <input placeholder="Facebook URL" value={facebook} onChange={e => setFacebook(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
+          <input placeholder="Instagram URL" value={instagram} onChange={e => setInstagram(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
+          <input placeholder="YouTube URL" value={youtube} onChange={e => setYoutube(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
+          <input placeholder="TikTok URL" value={tiktok} onChange={e => setTiktok(e.target.value)} style={{ ...inputStyle, marginBottom: '0' }} />
         </div>
 
         {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
 
-        <button onClick={handleSave} disabled={saving} style={{
-          width: '100%', marginTop: '8px',
-          background: 'linear-gradient(135deg, #FF6B35, #E91E8C)',
-          color: '#fff', border: 'none', borderRadius: '10px',
-          padding: '14px', cursor: 'pointer', fontSize: '14px', fontWeight: 700,
-          fontFamily: 'inherit', opacity: saving ? 0.7 : 1
-        }}>
-          {saving ? 'Saving...' : 'Save and Continue'}
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            width: '100%', background: '#0F172A', color: '#fff', border: 'none',
+            borderRadius: '8px', padding: '14px', cursor: 'pointer',
+            fontSize: '15px', fontWeight: 700, fontFamily: 'inherit',
+            opacity: saving ? 0.7 : 1
+          }}
+        >
+          {saving ? 'Saving...' : 'Save & View My Page'}
         </button>
-
       </div>
     </div>
   )
 }
 
 const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#8888aa', fontSize: '11px',
-  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px'
+  display: 'block', color: '#475569', fontSize: '12px',
+  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase'
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#161625', border: '1px solid #252535',
-  borderRadius: '10px', padding: '12px 14px', color: '#f0f0ff',
-  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit'
+  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
+  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
+  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
+  boxSizing: 'border-box'
 }
