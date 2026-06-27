@@ -36,7 +36,6 @@ export default function OnboardingPage() {
   const [generatingTagline, setGeneratingTagline] = useState(false)
   const [generatingServices, setGeneratingServices] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
 
   async function generateTagline() {
     if (!businessName || !category) {
@@ -58,6 +57,7 @@ export default function OnboardingPage() {
       })
       const data = await response.json()
       if (data.result) setTagline(data.result)
+      else setError('Could not generate tagline. Try again.')
     } catch (e) {
       setError('Could not generate tagline. Please try again.')
     }
@@ -84,6 +84,7 @@ export default function OnboardingPage() {
       })
       const data = await response.json()
       if (data.result) setServices(data.result)
+      else setError('Could not generate services. Try again.')
     } catch (e) {
       setError('Could not generate services. Please try again.')
     }
@@ -140,7 +141,12 @@ export default function OnboardingPage() {
         <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px' }}>Fill in your details to create your free Google-searchable business page.</p>
 
         <label style={labelStyle}>Business Name *</label>
-        <input placeholder="e.g. Lax Furniture" value={businessName} onChange={e => setBusinessName(e.target.value)} style={inputStyle} />
+        <input
+          placeholder="e.g. Lax Furniture"
+          value={businessName}
+          onChange={e => setBusinessName(e.target.value)}
+          style={inputStyle}
+        />
 
         <label style={labelStyle}>Business Category *</label>
         <select value={category} onChange={e => setCategory(e.target.value)} style={inputStyle}>
@@ -149,59 +155,60 @@ export default function OnboardingPage() {
         </select>
 
         <label style={labelStyle}>Phone / WhatsApp Number *</label>
-        <input placeholder="e.g. 08012345678" value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} />
+        <input
+          placeholder="e.g. 08012345678"
+          value={phone}
+          onChange={e => setPhone(e.target.value)}
+          style={inputStyle}
+        />
 
         <label style={labelStyle}>Location (City, State)</label>
-        <input placeholder="e.g. Port Harcourt, Rivers State" value={location} onChange={e => setLocation(e.target.value)} style={inputStyle} />
+        <input
+          placeholder="e.g. Port Harcourt, Rivers State"
+          value={location}
+          onChange={e => setLocation(e.target.value)}
+          style={inputStyle}
+        />
 
         <label style={labelStyle}>Tagline</label>
-        <div style={{ position: 'relative', marginBottom: '16px' }}>
-          <input
-            placeholder="A short description of your business"
-            value={tagline}
-            onChange={e => setTagline(e.target.value)}
-            style={{ ...inputStyle, marginBottom: '0', paddingRight: '130px' }}
-          />
-          <button
-            onClick={generateTagline}
-            disabled={generatingTagline}
-            style={{
-              position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)',
-              background: '#0F172A', color: '#fff', border: 'none', borderRadius: '5px',
-              padding: '6px 10px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-              fontFamily: 'inherit', whiteSpace: 'nowrap' as const
-            }}
-          >
-            {generatingTagline ? 'Generating...' : '✨ Generate with AI'}
-          </button>
-        </div>
+        <input
+          placeholder="A short description of your business"
+          value={tagline}
+          onChange={e => setTagline(e.target.value)}
+          style={inputStyle}
+        />
+        <button
+          onClick={generateTagline}
+          disabled={generatingTagline}
+          style={aiButtonStyle}
+        >
+          {generatingTagline ? '⏳ Generating...' : '✨ Generate SEO Tagline with AI'}
+        </button>
 
-        <label style={labelStyle}>Business Hours</label>
-        <input placeholder="e.g. Mon-Sat 8am-6pm" value={hours} onChange={e => setHours(e.target.value)} style={inputStyle} />
+        <label style={{ ...labelStyle, marginTop: '16px' }}>Business Hours</label>
+        <input
+          placeholder="e.g. Mon-Sat 8am-6pm"
+          value={hours}
+          onChange={e => setHours(e.target.value)}
+          style={inputStyle}
+        />
 
         <label style={labelStyle}>Services & Products</label>
-        <div style={{ position: 'relative', marginBottom: '16px' }}>
-          <textarea
-            placeholder="e.g. Rice, Beans, Palm Oil, Garri"
-            value={services}
-            onChange={e => setServices(e.target.value)}
-            style={{ ...inputStyle, marginBottom: '0', minHeight: '80px', resize: 'vertical' as const }}
-          />
-          <button
-            onClick={generateServices}
-            disabled={generatingServices}
-            style={{
-              display: 'block', width: '100%', marginTop: '6px',
-              background: '#F8FAFC', color: '#0F172A', border: '1px solid #E2E8F0',
-              borderRadius: '6px', padding: '8px', fontSize: '12px', fontWeight: 700,
-              cursor: 'pointer', fontFamily: 'inherit'
-            }}
-          >
-            {generatingServices ? 'Generating...' : '✨ Generate Services with AI'}
-          </button>
-        </div>
+        <textarea
+          placeholder="e.g. Rice, Beans, Palm Oil, Garri"
+          value={services}
+          onChange={e => setServices(e.target.value)}
+          style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' as const }}
+        />
+        <button
+          onClick={generateServices}
+          disabled={generatingServices}
+          style={aiButtonStyle}
+        >
+          {generatingServices ? '⏳ Generating...' : '✨ Generate Services with AI'}
+        </button>
 
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginBottom: '20px' }}>
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginTop: '20px', marginBottom: '20px' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginBottom: '12px' }}>Social Media Links (Optional)</div>
           <input placeholder="Facebook URL" value={facebook} onChange={e => setFacebook(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
           <input placeholder="Instagram URL" value={instagram} onChange={e => setInstagram(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
@@ -238,4 +245,11 @@ const inputStyle: React.CSSProperties = {
   borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
   fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
   boxSizing: 'border-box'
+}
+
+const aiButtonStyle: React.CSSProperties = {
+  width: '100%', background: '#F0FDF4', color: '#166534',
+  border: '1px solid #BBF7D0', borderRadius: '8px', padding: '11px',
+  fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+  fontFamily: 'inherit', marginBottom: '16px'
 }
