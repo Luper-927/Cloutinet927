@@ -1,190 +1,190 @@
-
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useRef } from 'react'
 import { supabase } from '../../../lib/supabase'
 import Link from 'next/link'
 
+const currencies = ['NGN', 'USD', 'GBP', 'EUR', 'GHS']
+
 export default function NewProductPage() {
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [name, setName] = useState('')
+  const [currency, setCurrency] = useState('NGN')
+  const [price, setPrice] = useState('')
+  const [description, setDescription] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState('')
   const [saving, setSaving] = useState(false)
+  const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
 
-  const [pName, setPName] = useState('')
-  const [pPrice, setPPrice] = useState('')
-  const [pCurrency, setPCurrency] = useState('NGN')
-  const [pDesc, setPDesc] = useState('')
-  const [pImageFile, setPImageFile] = useState<File | null>(null)
-  const [pImagePreview, setPImagePreview] = useState<string | null>(null)
-
-  useEffect(() => {
-    load()
-  }, [])
-
-  function slugify(s: string) {
-    return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-')
-  }
-
-  async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    const currentUser = userData?.user
-    if (!currentUser) {
-      window.location.href = '/auth'
-      return
-    }
-    setUser(currentUser)
-
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', currentUser.id)
-      .single()
-
-    if (!profileData || !profileData.business_name) {
-      window.location.href = '/onboarding'
-      return
-    }
-
-    setProfile(profileData)
-    setLoading(false)
-  }
-
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files && e.target.files[0]
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
     if (!file) return
-    setPImageFile(file)
-    const reader = new FileReader()
-    reader.onload = function (ev) {
-      setPImagePreview(ev.target?.result as string)
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  async function generateDescription() {
+    if (!name.trim()) {
+      setError('Please enter product name first')
+      return
     }
-    reader.readAsDataURL(file)
+    setGenerating(true)
+    setError('')
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('business_name, business_category, location')
+        .eq('id', userData.user?.id)
+        .single()
+
+      const response = await fetch('/api/generate-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'product_description',
+          productName: name,
+          businessName: profile?.business_name,
+          category: profile?.business_category,
+          location: profile?.location,
+          price,
+          currency,
+        })
+      })
+      const data = await response.json()
+      if (data.result) setDescription(data.result)
+    } catch (e) {
+      setError('Could not generate description. Please try again.')
+    }
+    setGenerating(false)
   }
 
   async function handleSave() {
-    if (!user || !profile) return
-    if (!pName.trim()) {
-      setError('Product name is required')
-      return
-    }
-
+    if (!name.trim()) { setError('Product name is required'); return }
     setSaving(true)
     setError('')
 
-    let imageUrl: string | null = null
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) { window.location.href = '/auth'; return }
 
-    if (pImageFile) {
-      const fileExt = pImageFile.name.split('.').pop()
-      const fileName = user.id + '/' + Date.now() + '.' + fileExt
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('business_name, location, business_slug')
+      .eq('id', userData.user.id)
+      .single()
 
+    let imageUrl = ''
+    if (imageFile) {
+      const fileName = userData.user.id + '/' + Date.now() + '.' + imageFile.name.split('.').pop()
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(fileName, pImageFile)
-
-      if (uploadError) {
-        setError('Image upload failed: ' + uploadError.message)
-        setSaving(false)
-        return
+        .upload(fileName, imageFile, { upsert: true })
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(fileName)
+        imageUrl = urlData.publicUrl
       }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName)
-
-      imageUrl = publicUrlData.publicUrl
     }
 
-    const slug = slugify(pName) + '-' + Date.now().toString().slice(-5)
-    const location = profile.location || ''
-    const seoTitle = pName + ' in ' + (location || 'Nigeria') + ' | ' + profile.business_name
-    const seoDescription = (pDesc || ('Get ' + pName + ' from ' + profile.business_name)) + (location ? ' in ' + location : '') + '. Contact us on WhatsApp to order now.'
+    const slug = name.toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-') + '-' + Date.now().toString().slice(-5)
 
-    const { error: dbError } = await supabase.from('products').insert({
-      user_id: user.id,
-      name: pName,
-      slug: slug,
-      description: pDesc,
-      price: pPrice ? parseFloat(pPrice) : null,
-      currency: pCurrency,
-      image_url: imageUrl,
+    const seoTitle = name + (profile?.location ? ' in ' + profile.location : '') + (profile?.business_name ? ' | ' + profile.business_name : '')
+    const seoDescription = description || ('Buy ' + name + (profile?.location ? ' in ' + profile.location : '') + '. Contact us on WhatsApp for orders and inquiries.')
+
+    const { error: saveError } = await supabase.from('products').insert({
+      user_id: userData.user.id,
+      name,
+      slug,
+      description,
+      price: price ? parseFloat(price) : null,
+      currency,
+      image_url: imageUrl || null,
       is_published: true,
       seo_title: seoTitle,
       seo_description: seoDescription,
     })
 
     setSaving(false)
-
-    if (dbError) {
-      setError(dbError.message)
-      return
-    }
-
+    if (saveError) { setError(saveError.message); return }
     window.location.href = '/dashboard'
   }
 
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#07070f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#FF6B35' }}>Loading...</div>
-      </div>
-    )
-  }
-
   return (
-    <div style={{ minHeight: '100vh', background: '#07070f', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0f0f1a', borderBottom: '1px solid #252535' }}>
-        <Link href="/dashboard" style={{ color: '#8888aa', textDecoration: 'none', fontSize: '13px' }}>← Dashboard</Link>
-        <div style={{ color: '#f0f0ff', fontWeight: 700, fontSize: '14px' }}>Add Product</div>
-        <div style={{ width: '60px' }}></div>
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Add Product</div>
+        <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Cancel</Link>
       </div>
 
-      <div style={{ maxWidth: '420px', margin: '0 auto', padding: '16px' }}>
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
 
-        <label style={{ display: 'block', marginBottom: '14px' }}>
-          <div style={{
-            border: '1px dashed #252535', borderRadius: '12px',
-            height: pImagePreview ? 'auto' : '120px',
+        <div
+          onClick={() => fileRef.current?.click()}
+          style={{
+            width: '100%', height: '180px', background: '#F8FAFC',
+            border: '2px dashed #E2E8F0', borderRadius: '10px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', overflow: 'hidden', background: '#161625'
-          }}>
-            {pImagePreview ? (
-              <img src={pImagePreview} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ color: '#8888aa', fontSize: '13px' }}>📷 Tap to add photo</span>
-            )}
-          </div>
-          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
-        </label>
+            cursor: 'pointer', marginBottom: '16px', overflow: 'hidden'
+          }}
+        >
+          {imagePreview ? (
+            <img src={imagePreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '28px', marginBottom: '8px' }}>📷</div>
+              <div style={{ fontSize: '13px', color: '#64748B', fontWeight: 600 }}>Tap to add product photo</div>
+            </div>
+          )}
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleImageSelect} style={{ display: 'none' }} />
 
         <label style={labelStyle}>Product / Service Name *</label>
-        <input placeholder="e.g. Rice 50kg bag" value={pName} onChange={e => setPName(e.target.value)} style={inputStyle} />
+        <input placeholder="e.g. Rice 50kg Bag" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
 
         <label style={labelStyle}>Price</label>
         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-          <select value={pCurrency} onChange={e => setPCurrency(e.target.value)} style={{ ...inputStyle, marginBottom: 0, width: '90px' }}>
-            <option value="NGN">NGN ₦</option>
-            <option value="USD">USD $</option>
-            <option value="GBP">GBP £</option>
-            <option value="EUR">EUR €</option>
-            <option value="GHS">GHS ₵</option>
+          <select value={currency} onChange={e => setCurrency(e.target.value)} style={{ ...inputStyle, marginBottom: '0', width: '100px', flexShrink: 0 }}>
+            {currencies.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <input placeholder="Price" value={pPrice} onChange={e => setPPrice(e.target.value)} style={{ ...inputStyle, marginBottom: 0, flex: 1 }} type="number" />
+          <input placeholder="0.00" value={price} onChange={e => setPrice(e.target.value)} type="number" style={{ ...inputStyle, marginBottom: '0', flex: 1 }} />
         </div>
 
         <label style={labelStyle}>Description</label>
-        <textarea placeholder="Short description — this helps customers find you on Google" value={pDesc} onChange={e => setPDesc(e.target.value)} style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} />
+        <textarea
+          placeholder="Describe your product or service..."
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' as const }}
+        />
+        <button
+          onClick={generateDescription}
+          disabled={generating}
+          style={{
+            width: '100%', background: '#F8FAFC', color: '#0F172A',
+            border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px',
+            fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+            fontFamily: 'inherit', marginBottom: '20px', marginTop: '-10px'
+          }}
+        >
+          {generating ? 'Generating...' : '✨ Generate SEO Description with AI'}
+        </button>
 
         {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
 
-        <button onClick={handleSave} disabled={saving} style={{
-          width: '100%', background: 'linear-gradient(135deg, #FF6B35, #E91E8C)',
-          color: '#fff', border: 'none', borderRadius: '10px',
-          padding: '14px', cursor: 'pointer', fontSize: '14px', fontWeight: 700,
-          fontFamily: 'inherit', opacity: saving ? 0.7 : 1
-        }}>
-          {saving ? 'Publishing...' : '🚀 Publish to Google'}
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            width: '100%', background: '#0F172A', color: '#fff', border: 'none',
+            borderRadius: '8px', padding: '14px', cursor: 'pointer',
+            fontSize: '15px', fontWeight: 700, fontFamily: 'inherit',
+            opacity: saving ? 0.7 : 1
+          }}
+        >
+          {saving ? 'Saving...' : 'Save Product'}
         </button>
       </div>
     </div>
@@ -192,12 +192,13 @@ export default function NewProductPage() {
 }
 
 const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#8888aa', fontSize: '11px',
-  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px'
+  display: 'block', color: '#475569', fontSize: '12px',
+  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase'
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#161625', border: '1px solid #252535',
-  borderRadius: '10px', padding: '12px 14px', color: '#f0f0ff',
-  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit'
+  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
+  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
+  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
+  boxSizing: 'border-box'
 }
