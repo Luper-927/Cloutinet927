@@ -57,7 +57,7 @@ export default function OnboardingPage() {
       })
       const data = await response.json()
       if (data.result) setTagline(data.result)
-      else setError('Could not generate tagline. Try again.')
+      else setError(data.error || 'Could not generate tagline. Try again.')
     } catch (e) {
       setError('Could not generate tagline. Please try again.')
     }
@@ -84,7 +84,7 @@ export default function OnboardingPage() {
       })
       const data = await response.json()
       if (data.result) setServices(data.result)
-      else setError('Could not generate services. Try again.')
+      else setError(data.error || 'Could not generate services. Try again.')
     } catch (e) {
       setError('Could not generate services. Please try again.')
     }
@@ -208,7 +208,7 @@ export default function OnboardingPage() {
           {generatingServices ? '⏳ Generating...' : '✨ Generate Services with AI'}
         </button>
 
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginTop: '20px', marginBottom: '20px' }}>
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginTop: '16px', marginBottom: '20px' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginBottom: '12px' }}>Social Media Links (Optional)</div>
           <input placeholder="Facebook URL" value={facebook} onChange={e => setFacebook(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
           <input placeholder="Instagram URL" value={instagram} onChange={e => setInstagram(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
@@ -216,7 +216,11 @@ export default function OnboardingPage() {
           <input placeholder="TikTok URL" value={tiktok} onChange={e => setTiktok(e.target.value)} style={{ ...inputStyle, marginBottom: '0' }} />
         </div>
 
-        {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
+        {error && (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
+            <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
+          </div>
+        )}
 
         <button
           onClick={handleSave}
