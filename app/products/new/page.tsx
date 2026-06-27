@@ -55,6 +55,7 @@ export default function NewProductPage() {
       })
       const data = await response.json()
       if (data.result) setDescription(data.result)
+      else setError(data.error || 'Could not generate description. Try again.')
     } catch (e) {
       setError('Could not generate description. Please try again.')
     }
@@ -142,14 +143,25 @@ export default function NewProductPage() {
         <input ref={fileRef} type="file" accept="image/*" onChange={handleImageSelect} style={{ display: 'none' }} />
 
         <label style={labelStyle}>Product / Service Name *</label>
-        <input placeholder="e.g. Rice 50kg Bag" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+        <input
+          placeholder="e.g. Rice 50kg Bag"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          style={inputStyle}
+        />
 
         <label style={labelStyle}>Price</label>
         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
           <select value={currency} onChange={e => setCurrency(e.target.value)} style={{ ...inputStyle, marginBottom: '0', width: '100px', flexShrink: 0 }}>
             {currencies.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <input placeholder="0.00" value={price} onChange={e => setPrice(e.target.value)} type="number" style={{ ...inputStyle, marginBottom: '0', flex: 1 }} />
+          <input
+            placeholder="0.00"
+            value={price}
+            onChange={e => setPrice(e.target.value)}
+            type="number"
+            style={{ ...inputStyle, marginBottom: '0', flex: 1 }}
+          />
         </div>
 
         <label style={labelStyle}>Description</label>
@@ -162,17 +174,16 @@ export default function NewProductPage() {
         <button
           onClick={generateDescription}
           disabled={generating}
-          style={{
-            width: '100%', background: '#F8FAFC', color: '#0F172A',
-            border: '1px solid #E2E8F0', borderRadius: '8px', padding: '10px',
-            fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-            fontFamily: 'inherit', marginBottom: '20px', marginTop: '-10px'
-          }}
+          style={aiButtonStyle}
         >
-          {generating ? 'Generating...' : '✨ Generate SEO Description with AI'}
+          {generating ? '⏳ Generating...' : '✨ Generate SEO Description with AI'}
         </button>
 
-        {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
+        {error && (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
+            <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
+          </div>
+        )}
 
         <button
           onClick={handleSave}
@@ -201,4 +212,11 @@ const inputStyle: React.CSSProperties = {
   borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
   fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
   boxSizing: 'border-box'
+}
+
+const aiButtonStyle: React.CSSProperties = {
+  width: '100%', background: '#F0FDF4', color: '#166534',
+  border: '1px solid #BBF7D0', borderRadius: '8px', padding: '11px',
+  fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+  fontFamily: 'inherit', marginBottom: '16px'
 }
