@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       prompt = `Write a 2-sentence SEO product description for "${productName}" sold by "${businessName || 'a Nigerian business'}" in ${location || 'Nigeria'}. Price: ${price ? currency + ' ' + price : 'contact for price'}. End with WhatsApp contact CTA. Return only the description.`
     }
 
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey
 
     const response = await fetch(url, {
       method: 'POST',
@@ -39,17 +39,17 @@ export async function POST(req: NextRequest) {
     const data = await response.json()
 
     if (data.error) {
-      return NextResponse.json({ error: data.error.message, details: data.error }, { status: 500 })
+      return NextResponse.json({ error: data.error.message }, { status: 500 })
     }
 
     if (!data.candidates || data.candidates.length === 0) {
-      return NextResponse.json({ error: 'No candidates returned', raw: data }, { status: 500 })
+      return NextResponse.json({ error: 'No result generated' }, { status: 500 })
     }
 
     const result = data.candidates[0]?.content?.parts[0]?.text?.trim()
 
     if (!result) {
-      return NextResponse.json({ error: 'Empty result', raw: data }, { status: 500 })
+      return NextResponse.json({ error: 'Empty result' }, { status: 500 })
     }
 
     return NextResponse.json({ result })
