@@ -36,7 +36,7 @@ export default function NewProductPage() {
       const { data: userData } = await supabase.auth.getUser()
       const { data: profile } = await supabase
         .from('profiles')
-        .select('business_name, business_category, location')
+        .select('business_name, business_category, location, phone')
         .eq('id', userData.user?.id)
         .single()
 
@@ -49,6 +49,7 @@ export default function NewProductPage() {
           businessName: profile?.business_name,
           category: profile?.business_category,
           location: profile?.location,
+          phone: profile?.phone,
           price,
           currency,
         })
