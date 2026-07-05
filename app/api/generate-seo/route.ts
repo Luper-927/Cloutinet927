@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     let prompt = ''
 
     if (type === 'tagline') {
-      prompt = `Write a short SEO tagline for a Nigerian ${category} business called "${businessName}" in ${location || 'Nigeria'}. Maximum 15 words. Return only the tagline, nothing else.`
+      prompt = `Write a short SEO tagline for a Nigerian ${category} business called "${businessName}" in ${location || 'Nigeria'}. Maximum 15 words. Do not include any phone number. Return only the tagline, nothing else.`
     }
 
     if (type === 'services') {
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (type === 'product_description') {
-      prompt = `Write a 2-sentence SEO product description for "${productName}" sold by "${businessName || 'a Nigerian business'}" in ${location || 'Nigeria'}. Price: ${price ? currency + ' ' + price : 'contact for price'}. End with a WhatsApp contact call to action. Return only the description, nothing else.`
+      prompt = `Write a 2-sentence SEO product description for "${productName}" sold by "${businessName || 'a Nigerian business'}" in ${location || 'Nigeria'}. Price: ${price ? currency + ' ' + price : 'contact for price'}. Tell customers to contact the business on WhatsApp to order. Do not include any phone number. Return only the description, nothing else.`
     }
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -32,12 +32,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          }
-        ],
+        messages: [{ role: 'user', content: prompt }],
         max_tokens: 200,
         temperature: 0.7,
       })
