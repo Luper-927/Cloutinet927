@@ -82,72 +82,133 @@ export default function AuthPage() {
 
   return (
     <div style={{
-      minHeight: '100vh', background: '#fff',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '16px', fontFamily: 'Segoe UI, system-ui, sans-serif'
+      minHeight: '100vh',
+      background: '#F8FAFC',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      fontFamily: 'Segoe UI, system-ui, sans-serif'
     }}>
-      <div style={{
-        background: '#fff', border: '1px solid #E2E8F0',
-        borderRadius: '12px', padding: '32px',
-        width: '100%', maxWidth: '380px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.06)'
-      }}>
-        <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>Cloutinet</div>
-        <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '24px' }}>
-          {mode === 'login' ? 'Welcome back' : 'Create your free account'}
+      <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+        <div style={{ fontSize: '32px', fontWeight: 900, color: '#0F172A' }}>Cloutinet</div>
+        <p style={{ color: '#64748B', fontSize: '15px', marginTop: '6px' }}>
+          {mode === 'login' ? 'Welcome back — log in to your account' : 'Create your free business page today'}
         </p>
+      </div>
 
-        <div style={{ display: 'flex', background: '#F8FAFC', borderRadius: '8px', padding: '4px', marginBottom: '20px' }}>
+      <div style={{
+        background: '#fff',
+        border: '1px solid #E2E8F0',
+        borderRadius: '16px',
+        padding: '32px 24px',
+        width: '100%',
+        maxWidth: '420px',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.06)'
+      }}>
+
+        <div style={{ display: 'flex', background: '#F8FAFC', borderRadius: '10px', padding: '4px', marginBottom: '28px' }}>
           {(['signup', 'login'] as const).map(m => (
             <button key={m} onClick={() => { setMode(m); setError('') }} style={{
-              flex: 1, padding: '8px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-              fontSize: '13px', fontWeight: 600,
+              flex: 1, padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              fontSize: '15px', fontWeight: 700,
               background: mode === m ? '#0F172A' : 'transparent',
-              color: mode === m ? '#fff' : '#64748B'
+              color: mode === m ? '#fff' : '#64748B',
+              transition: 'all 0.2s'
             }}>
               {m === 'signup' ? 'Sign Up' : 'Log In'}
             </button>
           ))}
         </div>
 
+        {mode === 'signup' && (
+          <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', padding: '12px', marginBottom: '20px' }}>
+            <p style={{ color: '#166534', fontSize: '13px', margin: 0, fontWeight: 600 }}>
+              ✓ Free forever — No credit card required
+            </p>
+          </div>
+        )}
+
+        <label style={labelStyle}>Email Address</label>
         <input
-          placeholder="Email address"
+          placeholder="Enter your email address"
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           style={inputStyle}
         />
+
+        <label style={labelStyle}>Password</label>
         <input
-          placeholder="Password (min 6 characters)"
+          placeholder="Create a password (min 6 characters)"
           type="password"
           value={password}
           onChange={e => setPassword(e.target.value)}
           style={inputStyle}
         />
 
-        {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
+        {mode === 'signup' && (
+          <p style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '16px', marginTop: '-8px' }}>
+            Don't have an email? Use any email — even a Gmail you created just for this.
+          </p>
+        )}
+
+        {error && (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
+            <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{error}</p>
+          </div>
+        )}
 
         <button
           onClick={mode === 'login' ? handleLogin : handleSignup}
           disabled={loading}
           style={{
-            width: '100%', padding: '12px',
+            width: '100%', padding: '16px',
             background: '#0F172A',
-            border: 'none', borderRadius: '8px', color: '#fff',
-            fontSize: '14px', fontWeight: 700,
+            border: 'none', borderRadius: '10px', color: '#fff',
+            fontSize: '16px', fontWeight: 700,
             cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1
+            opacity: loading ? 0.7 : 1,
+            marginBottom: '16px'
           }}
         >
-          {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Create Account'}
+          {loading ? 'Please wait...' : mode === 'login' ? 'Log In to My Account' : 'Create My Free Account'}
         </button>
+
+        <p style={{ textAlign: 'center', fontSize: '13px', color: '#64748B' }}>
+          {mode === 'signup' ? 'Already have an account? ' : "Don't have an account? "}
+          <span
+            onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}
+            style={{ color: '#0F172A', fontWeight: 700, cursor: 'pointer' }}
+          >
+            {mode === 'signup' ? 'Log In' : 'Sign Up Free'}
+          </span>
+        </p>
+
       </div>
+
+      <div style={{ marginTop: '24px', textAlign: 'center' }}>
+        <p style={{ fontSize: '12px', color: '#94A3B8' }}>
+          By signing up you agree to our{' '}
+          <a href="/terms" style={{ color: '#0F172A', textDecoration: 'none', fontWeight: 600 }}>Terms</a>
+          {' '}and{' '}
+          <a href="/privacy" style={{ color: '#0F172A', textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</a>
+        </p>
+      </div>
+
     </div>
   )
 }
 
+const labelStyle: React.CSSProperties = {
+  display: 'block', color: '#0F172A', fontSize: '14px',
+  fontWeight: 700, marginBottom: '8px'
+}
+
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
-  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
-  fontSize: '14px', marginBottom: '12px', outline: 'none', fontFamily: 'inherit'
+  width: '100%', background: '#F8FAFC', border: '2px solid #E2E8F0',
+  borderRadius: '10px', padding: '14px 16px', color: '#0F172A',
+  fontSize: '15px', marginBottom: '16px', outline: 'none',
+  fontFamily: 'inherit', boxSizing: 'border-box'
 }
