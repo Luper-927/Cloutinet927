@@ -1,6 +1,20 @@
 import Link from 'next/link'
+import { supabase } from '../lib/supabase'
 
-export default function HomePage() {
+async function getFeaturedBusinesses() {
+  const { data } = await supabase
+    .from('profiles')
+    .select('business_name, business_slug, business_category, location, tagline')
+    .not('business_name', 'is', null)
+    .not('business_slug', 'is', null)
+    .limit(6)
+    .order('created_at', { ascending: false })
+  return data || []
+}
+
+export default async function HomePage() {
+  const featuredBusinesses = await getFeaturedBusinesses()
+
   return (
     <div style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#fff', color: '#0F172A' }}>
 
@@ -19,29 +33,20 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* HERO — no external image, pure CSS, loads instantly */}
+      {/* HERO */}
       <section style={{ background: '#0F172A', padding: '60px 20px', textAlign: 'center', color: '#fff' }}>
         <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', padding: '6px 14px', fontSize: '12px', color: '#fff', fontWeight: 600, marginBottom: '20px' }}>
           Built for Nigerian Businesses
         </div>
-        <h1 style={{ fontSize: '32px', fontWeight: 800, lineHeight: 1.2, marginBottom: '16px', color: '#fff', letterSpacing: '-0.5px' }}>
+        <h1 style={{ fontSize: '32px', fontWeight: 800, lineHeight: 1.2, marginBottom: '16px', color: '#fff' }}>
           Get Found on Google.<br />Get More Customers.
         </h1>
         <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.75)', marginBottom: '28px', maxWidth: '440px', margin: '0 auto 28px', lineHeight: 1.6 }}>
           List your products and services for free. Cloutinet creates a Google-searchable page for your business so customers can find and contact you on WhatsApp.
         </p>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
-          <Link href="/auth" style={{
-            display: 'inline-block', background: '#fff', color: '#0F172A',
-            padding: '14px 28px', borderRadius: '6px',
-            textDecoration: 'none', fontSize: '15px', fontWeight: 700
-          }}>Create Your Free Page</Link>
-          <Link href="/checker" style={{
-            display: 'inline-block', background: 'transparent', color: '#fff',
-            padding: '14px 28px', borderRadius: '6px',
-            textDecoration: 'none', fontSize: '15px', fontWeight: 600,
-            border: '1px solid rgba(255,255,255,0.4)'
-          }}>Check Your Score</Link>
+          <Link href="/auth" style={{ display: 'inline-block', background: '#fff', color: '#0F172A', padding: '14px 28px', borderRadius: '6px', textDecoration: 'none', fontSize: '15px', fontWeight: 700 }}>Create Your Free Page</Link>
+          <Link href="/checker" style={{ display: 'inline-block', background: 'transparent', color: '#fff', padding: '14px 28px', borderRadius: '6px', textDecoration: 'none', fontSize: '15px', fontWeight: 600, border: '1px solid rgba(255,255,255,0.4)' }}>Check Your Score</Link>
         </div>
         <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Free forever — No credit card required — Setup in 5 minutes</p>
       </section>
@@ -50,11 +55,7 @@ export default function HomePage() {
       <section style={{ background: '#1E293B', padding: '32px 20px', textAlign: 'center' }}>
         <h2 style={{ color: '#fff', fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Is Your Business Visible on Google?</h2>
         <p style={{ color: '#94A3B8', fontSize: '13px', marginBottom: '16px' }}>Check your free visibility score in seconds — no signup needed</p>
-        <Link href="/checker" style={{
-          display: 'inline-block', background: '#fff',
-          color: '#0F172A', padding: '12px 28px', borderRadius: '6px',
-          textDecoration: 'none', fontSize: '14px', fontWeight: 700
-        }}>Check My Business Score</Link>
+        <Link href="/checker" style={{ display: 'inline-block', background: '#fff', color: '#0F172A', padding: '12px 28px', borderRadius: '6px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>Check My Business Score</Link>
       </section>
 
       {/* HOW IT WORKS */}
@@ -101,19 +102,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* FEATURED BUSINESSES */}
+      {featuredBusinesses.length > 0 && (
+        <section style={{ background: '#F8FAFC', padding: '50px 20px' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px', textAlign: 'center', color: '#0F172A' }}>Businesses Already Growing With Cloutinet</h2>
+          <p style={{ color: '#64748B', fontSize: '13px', textAlign: 'center', marginBottom: '28px' }}>Real Nigerian businesses getting found on Google every day</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '500px', margin: '0 auto' }}>
+            {featuredBusinesses.map((b: any) => (
+              <Link key={b.business_slug} href={'/store/' + b.business_slug} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px',
+                padding: '14px 16px', textDecoration: 'none', color: '#0F172A'
+              }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>{b.business_name}</div>
+                  {b.business_category && <div style={{ fontSize: '11px', color: '#475569', marginBottom: '2px' }}>{b.business_category}</div>}
+                  {b.location && <div style={{ fontSize: '11px', color: '#94A3B8' }}>{b.location}</div>}
+                </div>
+                <div style={{ color: '#0F172A', fontSize: '16px', fontWeight: 700 }}>→</div>
+              </Link>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <Link href="/businesses" style={{ color: '#0F172A', fontSize: '13px', textDecoration: 'none', fontWeight: 700 }}>Browse All Businesses →</Link>
+          </div>
+        </section>
+      )}
+
       {/* CATEGORIES */}
-      <section style={{ background: '#F8FAFC', padding: '50px 20px', textAlign: 'center' }}>
+      <section style={{ padding: '50px 20px', textAlign: 'center' }}>
         <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '20px', color: '#0F172A' }}>Perfect for Every Type of Business</h3>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', maxWidth: '480px', margin: '0 auto' }}>
           {['Shops', 'Restaurants', 'Salons', 'Churches', 'Real Estate', 'Fashion', 'Pharmacy', 'Automotive'].map(cat => (
-            <div key={cat} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', color: '#475569', fontWeight: 600 }}>{cat}</div>
+            <div key={cat} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', color: '#475569', fontWeight: 600 }}>{cat}</div>
           ))}
         </div>
         <Link href="/businesses" style={{ display: 'inline-block', marginTop: '20px', color: '#0F172A', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>Browse All Businesses →</Link>
       </section>
 
       {/* PRICING */}
-      <section style={{ padding: '50px 20px' }}>
+      <section style={{ background: '#F8FAFC', padding: '50px 20px' }}>
         <h2 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '8px', textAlign: 'center', color: '#0F172A' }}>Simple Pricing</h2>
         <p style={{ color: '#64748B', marginBottom: '28px', textAlign: 'center', fontSize: '13px' }}>Start free. Upgrade for more visibility.</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '340px', margin: '0 auto' }}>
@@ -159,17 +187,8 @@ export default function HomePage() {
         <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>Start Growing Your Business Today</h2>
         <p style={{ color: '#94A3B8', fontSize: '13px', marginBottom: '20px' }}>Join business owners already getting found on Google with Cloutinet.</p>
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/auth" style={{
-            display: 'inline-block', background: '#fff', color: '#0F172A',
-            padding: '12px 28px', borderRadius: '6px',
-            textDecoration: 'none', fontSize: '14px', fontWeight: 700
-          }}>Get Started Free</Link>
-          <Link href="/checker" style={{
-            display: 'inline-block', background: 'transparent', color: '#fff',
-            padding: '12px 28px', borderRadius: '6px',
-            textDecoration: 'none', fontSize: '14px', fontWeight: 600,
-            border: '1px solid #475569'
-          }}>Check My Score</Link>
+          <Link href="/auth" style={{ display: 'inline-block', background: '#fff', color: '#0F172A', padding: '12px 28px', borderRadius: '6px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>Get Started Free</Link>
+          <Link href="/checker" style={{ display: 'inline-block', background: 'transparent', color: '#fff', padding: '12px 28px', borderRadius: '6px', textDecoration: 'none', fontSize: '14px', fontWeight: 600, border: '1px solid #475569' }}>Check My Score</Link>
         </div>
       </section>
 
