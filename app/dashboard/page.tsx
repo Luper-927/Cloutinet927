@@ -10,7 +10,6 @@ export default function Dashboard() {
   const [products, setProducts] = useState<any[]>([])
   const [leadCount, setLeadCount] = useState(0)
   const [viewCount, setViewCount] = useState(0)
-  const [totalBusinesses, setTotalBusinesses] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => { load() }, [])
@@ -29,12 +28,6 @@ export default function Dashboard() {
       .from('products').select('*').eq('user_id', currentUser.id)
       .order('created_at', { ascending: false })
     setProducts(productsData || [])
-
-    const { count: bizCount } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .not('business_name', 'is', null)
-    setTotalBusinesses(bizCount || 0)
 
     if (profileData && profileData.business_slug) {
       const { count: leadC } = await supabase
@@ -103,7 +96,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#0F172A' }}>Loading...</div>
+        <div style={{ color: '#0F172A', fontSize: '14px' }}>Loading...</div>
       </div>
     )
   }
@@ -121,9 +114,9 @@ export default function Dashboard() {
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A', borderBottom: '1px solid #1E293B' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A' }}>
         <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>Cloutinet</div>
-        <button onClick={handleSignOut} style={{ background: 'rgba(255,255,255,0.1)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px' }}>Sign Out</button>
+        <button onClick={handleSignOut} style={{ background: 'rgba(255,255,255,0.1)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontFamily: 'inherit' }}>Sign Out</button>
       </div>
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px' }}>
@@ -154,9 +147,9 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* VISIBILITY SCORE WITH CHANGE */}
+            {/* VISIBILITY SCORE */}
             <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>Visibility Score</div>
+              <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>Visibility Score</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
                 <div style={{ fontSize: '32px', fontWeight: 800, color: getScoreColor(score) }}>{score}<span style={{ fontSize: '16px', color: '#94A3B8' }}>/100</span></div>
                 {scoreChange !== 0 && previousScore > 0 && (
@@ -170,16 +163,11 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* ONE ACTION THIS WEEK */}
+            {/* ONE ACTION */}
             <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '11px', color: '#9A3412', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>This Week's Action</div>
-              <div style={{ fontSize: '14px', color: '#1a1a2e', fontWeight: 600, marginBottom: '10px' }}>{oneAction.task}</div>
+              <div style={{ fontSize: '11px', color: '#9A3412', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>This Week's Action</div>
+              <div style={{ fontSize: '14px', color: '#0F172A', fontWeight: 600, marginBottom: '10px' }}>{oneAction.task}</div>
               <Link href={oneAction.link} style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>Do This Now →</Link>
-            </div>
-
-            {/* PLATFORM-WIDE STATUS */}
-            <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', padding: '14px', marginBottom: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '13px', color: '#166534', fontWeight: 600 }}>Cloutinet now has {totalBusinesses} businesses growing together</div>
             </div>
 
             {/* GOOGLE INDEXING STATUS */}
@@ -192,64 +180,9 @@ export default function Dashboard() {
                     <span style={{ color: '#92400E', fontSize: '13px', fontWeight: 700 }}>Pending Indexing</span>
                   </div>
                   <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
-                    Your page was created {daysSinceCreated} day{daysSinceCreated !== 1 ? 's' : ''} ago. Google typically indexes new pages within 7-14 days. Your page is already live and shareable right now.
+                    Your page was created {daysSinceCreated} day{daysSinceCreated !== 1 ? 's' : ''} ago. Google typically indexes new pages within 7-14 days.
                   </p>
                 </div>
               ) : (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00aa55' }}></div>
-                    <span style={{ color: '#166534', fontSize: '13px', fontWeight: 700 }}>Likely Indexed</span>
-                  </div>
-                  <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
-                    Your page has been live for {daysSinceCreated} days. Search "{profile.business_name}" on Google to check if it appears.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{leadCount}</div>
-                <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>WhatsApp Leads</div>
-              </div>
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{viewCount}</div>
-                <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>Page Views</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h3 style={{ color: '#0F172A', fontSize: '15px' }}>Your Products ({products.length})</h3>
-              <Link href="/products/new" style={{ background: '#0F172A', color: '#fff', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>+ Add Product</Link>
-            </div>
-
-            {products.length === 0 ? (
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
-                <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '12px' }}>No products yet</p>
-                <Link href="/products/new" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Add Your First Product</Link>
-              </div>
-            ) : (
-              products.map(p => (
-                <div key={p.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px', marginBottom: '10px', display: 'flex', gap: '12px' }}>
-                  {p.image_url && <img src={p.image_url} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: '#0F172A', fontWeight: 600, fontSize: '13px' }}>{p.name}</div>
-                    {p.price && <div style={{ color: '#475569', fontSize: '12px' }}>{p.currency} {p.price}</div>}
-                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: p.is_published ? '#F0FDF4' : '#F8FAFC', color: p.is_published ? '#166534' : '#94A3B8', border: '1px solid ' + (p.is_published ? '#BBF7D0' : '#E2E8F0') }}>{p.is_published ? 'Live' : 'Hidden'}</span>
-                      <Link href={'/products/edit/' + p.id} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', textDecoration: 'none' }}>Edit</Link>
-                      <button onClick={() => togglePublish(p.id, p.is_published)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#64748B', border: '1px solid #E2E8F0', cursor: 'pointer', fontFamily: 'inherit' }}>{p.is_published ? 'Hide' : 'Publish'}</button>
-                      <button onClick={() => deleteProduct(p.id, p.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: 'transparent', color: '#ff4444', border: '1px solid #ff4444', cursor: 'pointer', fontFamily: 'inherit' }}>Delete</button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </>
-        )}
-
-      </div>
-    </div>
-  )
-}
