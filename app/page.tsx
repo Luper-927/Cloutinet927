@@ -137,7 +137,7 @@ const TESTIMONIALS = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen w-full overflow-x-hidden bg-white">
       <Navbar />
       <Hero />
       <Features />
@@ -156,12 +156,12 @@ export default function Home() {
 function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0A0E27]">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
         <a href="#" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-            <span className="text-sm font-bold text-white">C</span>
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 sm:h-8 sm:w-8">
+            <span className="text-xs font-bold text-white sm:text-sm">C</span>
           </span>
-          <span className="text-lg font-semibold tracking-tight text-white">
+          <span className="text-base font-semibold tracking-tight text-white sm:text-lg">
             Cloutinet
           </span>
         </a>
@@ -178,21 +178,21 @@ function Navbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <a
             href="#check-score"
-            className="hidden rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:inline-block"
+            className="hidden rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:inline-block sm:px-4 sm:py-2 sm:text-sm"
           >
             Check Score
           </a>
           <a
             href="#get-started"
-            className="hidden rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:inline-block"
+            className="hidden rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-500 sm:inline-block sm:px-4 sm:py-2 sm:text-sm"
           >
             Get Started
           </a>
-          <button className="text-white" aria-label="Open menu" type="button">
-            <Menu className="h-6 w-6" />
+          <button className="text-white lg:hidden" aria-label="Open menu" type="button">
+            <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
         </div>
       </div>
@@ -206,7 +206,7 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#0A0E27] pb-20 pt-14 lg:pb-28 lg:pt-20">
+    <section className="relative overflow-hidden bg-[#0A0E27] pb-14 pt-10 sm:pb-20 sm:pt-14 lg:pb-28 lg:pt-20">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 left-[10%] h-[500px] w-[700px] rounded-full bg-blue-700/30 blur-[130px]"
@@ -220,43 +220,43 @@ function Hero() {
         className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 [background-image:radial-gradient(rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_70%_70%_at_70%_40%,black_30%,transparent_75%)] lg:block"
       />
 
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 lg:grid-cols-2 lg:gap-8 lg:px-8">
-        <div>
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-medium text-emerald-400">
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:gap-14 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8">
+        <div className="text-center lg:text-left">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-medium text-emerald-400 sm:mb-6 sm:px-4 sm:text-xs">
             <span aria-hidden>🇳🇬</span>
             Proudly built for Nigerian Businesses
           </div>
 
-          <h1 className="text-4xl font-bold leading-[1.12] tracking-tight text-white sm:text-5xl lg:text-[3.4rem]">
+          <h1 className="text-[2rem] font-bold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-[3.4rem]">
             Get Found on Google.
             <br />
             Get More <span className="text-emerald-400">Customers.</span>
           </h1>
 
-          <p className="mt-6 max-w-lg text-base leading-relaxed text-slate-400 sm:text-lg">
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
             List your products and services for free. Cloutinet creates a
             Google-searchable page for your business so customers can find
             and contact you on WhatsApp.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
             <a
               href="#get-started"
-              className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+              className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
             >
               Create Your Free Page
               <ArrowRight className="h-4 w-4" />
             </a>
             <a
               href="#how-it-works"
-              className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
+              className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
             >
               <PlayCircle className="h-4 w-4" />
               See How It Works
             </a>
           </div>
 
-          <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-400">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
             <span className="flex items-center gap-1.5">
               <Gift className="h-4 w-4 text-emerald-400" />
               100% Free to Start
@@ -272,7 +272,7 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative mx-auto flex justify-center pt-4 lg:justify-end lg:pr-6">
+        <div className="relative mx-auto flex w-full max-w-[280px] justify-center pt-2 sm:max-w-xs sm:pt-4 lg:max-w-none lg:justify-end lg:pr-6">
           <PhoneMockup />
           <ScoreCard />
         </div>
@@ -283,10 +283,10 @@ function Hero() {
 
 function PhoneMockup() {
   return (
-    <div className="w-[300px] rounded-[2rem] border-4 border-slate-800 bg-white p-2 shadow-2xl sm:w-[320px]">
-      <div className="overflow-hidden rounded-[1.5rem]">
-        <div className="px-4 pb-3 pt-4">
-          <p className="text-center text-xl font-medium">
+    <div className="w-full max-w-[240px] rounded-[1.75rem] border-4 border-slate-800 bg-white p-2 shadow-2xl sm:max-w-[280px] sm:rounded-[2rem] lg:max-w-[320px]">
+      <div className="overflow-hidden rounded-[1.25rem] sm:rounded-[1.5rem]">
+        <div className="px-3 pb-2.5 pt-3 sm:px-4 sm:pb-3 sm:pt-4">
+          <p className="text-center text-lg font-medium sm:text-xl">
             <span className="text-blue-500">G</span>
             <span className="text-red-500">o</span>
             <span className="text-amber-500">o</span>
@@ -294,13 +294,13 @@ function PhoneMockup() {
             <span className="text-emerald-500">l</span>
             <span className="text-red-500">e</span>
           </p>
-          <div className="mt-3 flex items-center justify-between rounded-full border border-slate-200 px-3 py-2">
-            <span className="text-[12px] text-slate-600">
+          <div className="mt-2.5 flex items-center justify-between rounded-full border border-slate-200 px-3 py-1.5 sm:mt-3 sm:py-2">
+            <span className="text-[10px] text-slate-600 sm:text-[12px]">
               Best cakes in Lagos
             </span>
-            <Search className="h-3.5 w-3.5 text-blue-500" />
+            <Search className="h-3 w-3 text-blue-500 sm:h-3.5 sm:w-3.5" />
           </div>
-          <div className="mt-2 flex gap-4 border-b border-slate-100 pb-2 text-[10px] font-medium text-slate-500">
+          <div className="mt-2 flex gap-3 border-b border-slate-100 pb-2 text-[9px] font-medium text-slate-500 sm:gap-4 sm:text-[10px]">
             <span className="border-b-2 border-blue-500 pb-1.5 text-blue-600">
               All
             </span>
@@ -311,30 +311,30 @@ function PhoneMockup() {
           </div>
         </div>
 
-        <div className="px-4 pb-4 pt-1">
-          <p className="text-[13px] font-semibold text-slate-900">
+        <div className="px-3 pb-3 pt-1 sm:px-4 sm:pb-4">
+          <p className="text-[12px] font-semibold text-slate-900 sm:text-[13px]">
             Sweet Cravings Cakes
           </p>
           <div className="mt-1 flex items-center gap-1">
-            <span className="text-[11px] font-medium text-slate-600">4.8</span>
+            <span className="text-[10px] font-medium text-slate-600 sm:text-[11px]">4.8</span>
             <div className="flex text-amber-400">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="h-2.5 w-2.5 fill-current" />
+                <Star key={i} className="h-2 w-2 fill-current sm:h-2.5 sm:w-2.5" />
               ))}
             </div>
-            <span className="text-[11px] text-slate-400">(128)</span>
+            <span className="text-[10px] text-slate-400 sm:text-[11px]">(128)</span>
           </div>
-          <p className="mt-0.5 text-[11px] text-slate-500">
+          <p className="mt-0.5 text-[10px] text-slate-500 sm:text-[11px]">
             Cake Shop in Lagos · <span className="text-emerald-600">Open</span>
           </p>
 
-          <div className="mt-2.5 grid grid-cols-3 gap-1.5">
-            <div className="h-14 rounded-md bg-gradient-to-br from-pink-200 to-rose-300" />
-            <div className="h-14 rounded-md bg-gradient-to-br from-amber-700 to-amber-900" />
-            <div className="h-14 rounded-md bg-gradient-to-br from-pink-100 to-fuchsia-200" />
+          <div className="mt-2 grid grid-cols-3 gap-1.5 sm:mt-2.5">
+            <div className="h-11 rounded-md bg-gradient-to-br from-pink-200 to-rose-300 sm:h-14" />
+            <div className="h-11 rounded-md bg-gradient-to-br from-amber-700 to-amber-900 sm:h-14" />
+            <div className="h-11 rounded-md bg-gradient-to-br from-pink-100 to-fuchsia-200 sm:h-14" />
           </div>
 
-          <div className="mt-3 grid grid-cols-4 gap-1 text-center">
+          <div className="mt-2.5 grid grid-cols-4 gap-1 text-center sm:mt-3">
             {[
               { icon: Phone, label: "Call", color: "text-blue-600 bg-blue-50" },
               { icon: MessageCircle, label: "WhatsApp", color: "text-emerald-600 bg-emerald-50" },
@@ -342,20 +342,20 @@ function PhoneMockup() {
               { icon: Globe, label: "Website", color: "text-blue-600 bg-blue-50" },
             ].map(({ icon: Icon, label, color }) => (
               <div key={label} className="flex flex-col items-center gap-1">
-                <span className={`flex h-8 w-8 items-center justify-center rounded-full ${color}`}>
-                  <Icon className="h-3.5 w-3.5" />
+                <span className={`flex h-7 w-7 items-center justify-center rounded-full sm:h-8 sm:w-8 ${color}`}>
+                  <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 </span>
-                <span className="text-[9px] text-slate-500">{label}</span>
+                <span className="text-[8px] text-slate-500 sm:text-[9px]">{label}</span>
               </div>
             ))}
           </div>
 
-          <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+          <p className="mt-2.5 text-[10px] leading-relaxed text-slate-500 sm:mt-3 sm:text-[11px]">
             Delicious cakes for all occasions. Custom cakes, pastries and
             more. Lagos, Nigeria
           </p>
 
-          <div className="mt-2.5 flex h-16 items-center justify-center rounded-lg bg-slate-100">
+          <div className="mt-2 flex h-12 items-center justify-center rounded-lg bg-slate-100 sm:mt-2.5 sm:h-16">
             <MapPin className="h-4 w-4 text-rose-500" />
           </div>
         </div>
@@ -366,12 +366,12 @@ function PhoneMockup() {
 
 function ScoreCard() {
   return (
-    <div className="absolute -right-2 top-6 w-40 rounded-2xl border border-slate-100 bg-white p-4 shadow-2xl sm:-right-6 sm:top-10">
-      <p className="text-[11px] font-medium leading-snug text-slate-500">
+    <div className="absolute -right-1 top-3 w-28 rounded-xl border border-slate-100 bg-white p-2.5 shadow-2xl sm:-right-4 sm:top-8 sm:w-36 sm:rounded-2xl sm:p-4 lg:-right-6 lg:top-10 lg:w-40">
+      <p className="text-[9px] font-medium leading-snug text-slate-500 sm:text-[11px]">
         Your Business Visibility Score
       </p>
-      <div className="relative mt-3 flex items-center justify-center">
-        <svg className="h-20 w-20 -rotate-90" viewBox="0 0 80 80">
+      <div className="relative mt-2 flex items-center justify-center sm:mt-3">
+        <svg className="h-14 w-14 -rotate-90 sm:h-20 sm:w-20" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="34" fill="none" stroke="#E2E8F0" strokeWidth="6" />
           <circle
             cx="40"
@@ -386,13 +386,13 @@ function ScoreCard() {
           />
         </svg>
         <div className="absolute flex flex-col items-center">
-          <span className="text-xl font-bold text-emerald-500">85%</span>
+          <span className="text-sm font-bold text-emerald-500 sm:text-xl">85%</span>
         </div>
       </div>
-      <p className="mt-1 text-center text-[11px] font-medium text-emerald-500">
+      <p className="mt-1 text-center text-[9px] font-medium text-emerald-500 sm:text-[11px]">
         Great Job!
       </p>
-      <svg viewBox="0 0 100 30" className="mt-2 h-6 w-full text-emerald-500">
+      <svg viewBox="0 0 100 30" className="mt-1.5 h-4 w-full text-emerald-500 sm:mt-2 sm:h-6">
         <polyline
           points="0,25 20,20 40,22 60,10 80,12 100,2"
           fill="none"
@@ -412,35 +412,35 @@ function ScoreCard() {
 
 function Features() {
   return (
-    <section id="features" className="bg-[#F5F7FB] py-24 lg:py-28">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 items-end gap-8 lg:grid-cols-2">
+    <section id="features" className="bg-[#F5F7FB] py-16 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-end gap-6 sm:gap-8 lg:grid-cols-2">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
               <Star className="h-3 w-3 fill-current" />
               POWERFUL FEATURES
             </span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
               Everything You Need to Get{" "}
               <span className="text-blue-600">Discovered &amp; Grow</span>
             </h2>
           </div>
-          <p className="text-base leading-relaxed text-slate-500 lg:text-right">
+          <p className="text-sm leading-relaxed text-slate-500 sm:text-base lg:text-right">
             Cloutinet gives your business the visibility it deserves with
             tools that help you attract, engage and convert more customers.
           </p>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {FEATURES.map((feature) => (
             <div
               key={feature.title}
-              className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6"
             >
-              <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-full ${feature.iconBg}`}>
+              <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-full sm:mb-4 sm:h-11 sm:w-11 ${feature.iconBg}`}>
                 <feature.icon className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-sm font-semibold text-slate-900 sm:text-base">
                 {feature.title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-500">
@@ -460,33 +460,33 @@ function Features() {
 
 function Testimonials() {
   return (
-    <section id="success-stories" className="bg-white py-24 lg:py-28">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="rounded-3xl bg-[#0A0E27] px-6 py-14 sm:px-12 lg:py-16">
+    <section id="success-stories" className="bg-white py-16 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
           <div className="mx-auto max-w-xl text-center">
-            <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
+            <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-slate-300 sm:text-xs">
               TRUSTED BY 2,000+ BUSINESSES
             </span>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:mt-4 sm:text-3xl lg:text-4xl">
               Loved by Nigerian Businesses
             </h2>
             <div className="mt-3 flex items-center justify-center gap-2">
               <div className="flex text-amber-400">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-current" />
+                  <Star key={i} className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" />
                 ))}
               </div>
-              <span className="text-sm text-slate-400">
+              <span className="text-xs text-slate-400 sm:text-sm">
                 4.9/5 from 500+ reviews
               </span>
             </div>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:gap-5 md:grid-cols-3">
             {TESTIMONIALS.map((t) => (
               <div
                 key={t.name}
-                className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-6"
+                className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6"
               >
                 <Quote className="h-5 w-5 text-blue-400" />
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
@@ -505,7 +505,7 @@ function Testimonials() {
             ))}
           </div>
 
-          <div className="mt-9 flex items-center justify-center gap-2">
+          <div className="mt-7 flex items-center justify-center gap-2 sm:mt-9">
             {[0, 1, 2, 3].map((i) => (
               <span
                 key={i}
@@ -527,18 +527,18 @@ function Testimonials() {
 
 function Steps() {
   return (
-    <section id="how-it-works" className="bg-white pb-24 lg:pb-28">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <section id="how-it-works" className="bg-white pb-16 sm:pb-20 lg:pb-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
             EASY 3-STEP PROCESS
           </span>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
             Get Started <span className="text-blue-600">in 3</span> Simple Steps
           </h2>
         </div>
 
-        <div className="relative mt-16 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-6">
+        <div className="relative mt-10 grid grid-cols-1 gap-8 sm:mt-16 sm:gap-10 md:grid-cols-3 md:gap-6">
           <div
             aria-hidden
             className="absolute left-0 right-0 top-4 hidden border-t-2 border-dashed border-slate-200 md:block"
@@ -550,10 +550,10 @@ function Steps() {
                   {step.number}
                 </span>
               </div>
-              <div className={`mt-5 flex h-11 w-11 items-center justify-center rounded-xl ${step.iconBg}`}>
+              <div className={`mt-4 flex h-10 w-10 items-center justify-center rounded-xl sm:mt-5 sm:h-11 sm:w-11 ${step.iconBg}`}>
                 <step.icon className="h-5 w-5" />
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-slate-900">
+              <h3 className="mt-3 text-base font-semibold text-slate-900 sm:mt-4 sm:text-lg">
                 {step.title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-500">
@@ -573,37 +573,37 @@ function Steps() {
 
 function FinalCta() {
   return (
-    <section id="get-started" className="bg-white pb-24 lg:pb-28">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl bg-[#0A0E27] px-6 py-14 sm:px-12 lg:py-16">
+    <section id="get-started" className="bg-white pb-16 sm:pb-20 lg:pb-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
           <div
             aria-hidden
             className="pointer-events-none absolute -left-20 -top-20 h-[400px] w-[400px] rounded-full bg-blue-700/25 blur-[110px]"
           />
-          <div className="relative grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <div className="relative grid grid-cols-1 items-center gap-8 sm:gap-12 lg:grid-cols-2">
+            <div className="text-center lg:text-left">
+              <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
                 Ready to Get More Customers?
               </h2>
-              <p className="mt-4 max-w-md text-base leading-relaxed text-slate-400">
+              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 sm:mt-4 sm:text-base lg:mx-0">
                 Join thousands of Nigerian businesses already growing with Cloutinet.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
                 <a
                   href="#"
-                  className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
                 >
                   Create Your Free Page
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
                   href="#check-score"
-                  className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
+                  className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
                 >
                   Check Your Score Free
                 </a>
               </div>
-              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-400">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                   No Credit Card
@@ -675,9 +675,9 @@ function Footer() {
   ];
 
   return (
-    <footer className="border-t border-white/5 bg-[#0A0E27] pt-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-10 pb-12 sm:grid-cols-3 lg:grid-cols-6">
+    <footer className="border-t border-white/5 bg-[#0A0E27] pt-12 sm:pt-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-8 pb-10 sm:grid-cols-3 sm:gap-10 sm:pb-12 lg:grid-cols-6">
           <div className="col-span-2 sm:col-span-3 lg:col-span-2">
             <a href="#" className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
@@ -706,7 +706,7 @@ function Footer() {
           ))}
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/5 py-6 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/5 py-6 sm:flex-row sm:gap-4">
           <p className="text-xs text-slate-500">
             © {new Date().getFullYear()} Cloutinet. All rights reserved.
           </p>
