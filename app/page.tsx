@@ -1,208 +1,718 @@
-import Link from 'next/link'
+import type { Metadata } from "next";
+import {
+  Search,
+  Star,
+  Phone,
+  MessageCircle,
+  Navigation,
+  Globe,
+  MapPin,
+  Store,
+  Package,
+  BarChart3,
+  TrendingUp,
+  ArrowRight,
+  PlayCircle,
+  Gift,
+  CreditCard,
+  Clock,
+  CheckCircle2,
+  Menu,
+  Quote,
+  ClipboardList,
+  Rocket,
+  Users,
+} from "lucide-react";
 
-export default function HomePage() {
+export const metadata: Metadata = {
+  title: "Cloutinet — Get Found on Google. Get More Customers.",
+  description:
+    "Cloutinet creates a Google-searchable page for your business so customers can find and contact you on WhatsApp.",
+};
+
+// ---------------------------------------------------------------------------
+// Data
+// ---------------------------------------------------------------------------
+
+const NAV_LINKS = [
+  { label: "How it Works", href: "#how-it-works" },
+  { label: "Features", href: "#features" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "Success Stories", href: "#success-stories" },
+];
+
+const FEATURES = [
+  {
+    icon: Store,
+    iconBg: "bg-emerald-100 text-emerald-600",
+    title: "Google-Searchable Page",
+    description:
+      "We create an SEO-optimized page for your business that shows up on Google.",
+  },
+  {
+    icon: MessageCircle,
+    iconBg: "bg-blue-100 text-blue-600",
+    title: "WhatsApp Integration",
+    description: "Customers can chat with you instantly on WhatsApp with one tap.",
+  },
+  {
+    icon: Package,
+    iconBg: "bg-violet-100 text-violet-600",
+    title: "Products & Services",
+    description:
+      "Showcase your products and services with photos, prices and details.",
+  },
+  {
+    icon: Star,
+    iconBg: "bg-amber-100 text-amber-600",
+    title: "Customer Reviews",
+    description: "Build trust with reviews from happy customers.",
+  },
+  {
+    icon: BarChart3,
+    iconBg: "bg-rose-100 text-rose-600",
+    title: "Visibility Score",
+    description:
+      "Get a score and actionable tips to improve your visibility on Google.",
+  },
+  {
+    icon: TrendingUp,
+    iconBg: "bg-teal-100 text-teal-600",
+    title: "Analytics Dashboard",
+    description: "Track views, clicks and WhatsApp messages in real-time.",
+  },
+];
+
+const STEPS = [
+  {
+    number: "1",
+    icon: ClipboardList,
+    iconBg: "bg-blue-50 text-blue-600",
+    title: "Create Your Page",
+    description:
+      "Tell us about your business and add your products, services and photos.",
+  },
+  {
+    number: "2",
+    icon: Rocket,
+    iconBg: "bg-blue-50 text-blue-600",
+    title: "Get Discovered",
+    description:
+      "We create your Google-searchable page and optimize it for visibility.",
+  },
+  {
+    number: "3",
+    icon: Users,
+    iconBg: "bg-blue-50 text-blue-600",
+    title: "Get More Customers",
+    description:
+      "Customers find you on Google and contact you on WhatsApp. You grow your business!",
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    quote:
+      "Cloutinet helped my business show up on Google in days. I now get more customers on WhatsApp daily!",
+    name: "Chioma E.",
+    role: "Fashion Designer, Lagos",
+  },
+  {
+    quote:
+      "The best decision I made this year. Setup was super easy and it's helping my business grow consistently.",
+    name: "Ahmed R.",
+    role: "Phone Accessories, Abuja",
+  },
+  {
+    quote:
+      "I love the visibility score feature. It shows me exactly what to fix and how to get more customers.",
+    name: "Blessing O.",
+    role: "Cakes & Pastries, Port Harcourt",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
+export default function Home() {
   return (
-    <div style={{ fontFamily: 'Plus Jakarta Sans, Segoe UI, system-ui, sans-serif', background: '#fff', color: '#1E293B' }}>
+    <main className="min-h-screen bg-white">
+      <Navbar />
+      <Hero />
+      <Features />
+      <Testimonials />
+      <Steps />
+      <FinalCta />
+      <Footer />
+    </main>
+  );
+}
 
-      {/* NAV */}
-      <nav style={{ background: '#0A0F1E', padding: '0 5%', height: '68px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          Cloutinet <span style={{ width: '8px', height: '8px', background: '#00E676', borderRadius: '50%', display: 'inline-block' }}></span>
-        </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <Link href="/checker" style={{ padding: '9px 18px', border: '1px solid rgba(255,255,255,0.3)', background: 'transparent', color: '#fff', borderRadius: '8px', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>Check Score</Link>
-          <Link href="/auth" style={{ padding: '9px 18px', background: '#2563EB', color: '#fff', borderRadius: '8px', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>Get Started</Link>
-        </div>
-      </nav>
+// ---------------------------------------------------------------------------
+// Navbar
+// ---------------------------------------------------------------------------
 
-      {/* HERO */}
-      <section style={{ background: '#0A0F1E', padding: '80px 5% 100px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'center' }}>
+function Navbar() {
+  return (
+    <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0A0E27]">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+        <a href="#" className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+            <span className="text-sm font-bold text-white">C</span>
+          </span>
+          <span className="text-lg font-semibold tracking-tight text-white">
+            Cloutinet
+          </span>
+        </a>
+
+        <nav className="hidden items-center gap-8 lg:flex">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              className="text-sm font-medium text-slate-300 transition-colors hover:text-white"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <a
+            href="#check-score"
+            className="hidden rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:inline-block"
+          >
+            Check Score
+          </a>
+          <a
+            href="#get-started"
+            className="hidden rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:inline-block"
+          >
+            Get Started
+          </a>
+          <button className="text-white" aria-label="Open menu" type="button">
+            <Menu className="h-6 w-6" />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Hero
+// ---------------------------------------------------------------------------
+
+function Hero() {
+  return (
+    <section className="relative overflow-hidden bg-[#0A0E27] pb-20 pt-14 lg:pb-28 lg:pt-20">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 left-[10%] h-[500px] w-[700px] rounded-full bg-blue-700/30 blur-[130px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] rounded-full bg-blue-600/25 blur-[130px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 [background-image:radial-gradient(rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_70%_70%_at_70%_40%,black_30%,transparent_75%)] lg:block"
+      />
+
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 lg:grid-cols-2 lg:gap-8 lg:px-8">
         <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(0,230,118,0.1)', border: '1px solid rgba(0,230,118,0.3)', color: '#00E676', padding: '6px 14px', borderRadius: '100px', fontSize: '12px', fontWeight: 600, marginBottom: '24px' }}>
-            <span style={{ width: '6px', height: '6px', background: '#00E676', borderRadius: '50%', display: 'inline-block' }}></span>
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-medium text-emerald-400">
+            <span aria-hidden>🇳🇬</span>
             Proudly built for Nigerian Businesses
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: 800, color: '#fff', lineHeight: 1.15, letterSpacing: '-1px', marginBottom: '20px' }}>
-            Get Found on Google.<br />
-            <span style={{ color: '#00E676' }}>Get More Customers.</span>
+
+          <h1 className="text-4xl font-bold leading-[1.12] tracking-tight text-white sm:text-5xl lg:text-[3.4rem]">
+            Get Found on Google.
+            <br />
+            Get More <span className="text-emerald-400">Customers.</span>
           </h1>
-          <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.65)', marginBottom: '32px', maxWidth: '480px', lineHeight: 1.7 }}>
-            List your products and services for free. Cloutinet creates a Google-searchable page for your business so customers can find and contact you directly on WhatsApp.
+
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-slate-400 sm:text-lg">
+            List your products and services for free. Cloutinet creates a
+            Google-searchable page for your business so customers can find
+            and contact you on WhatsApp.
           </p>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '28px' }}>
-            <Link href="/auth" style={{ padding: '14px 28px', background: '#2563EB', color: '#fff', borderRadius: '10px', fontSize: '15px', fontWeight: 700, textDecoration: 'none' }}>Create Your Free Page →</Link>
-            <Link href="/checker" style={{ padding: '14px 24px', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', fontSize: '15px', fontWeight: 600, textDecoration: 'none' }}>Check Your Score</Link>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a
+              href="#get-started"
+              className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+            >
+              Create Your Free Page
+              <ArrowRight className="h-4 w-4" />
+            </a>
+            <a
+              href="#how-it-works"
+              className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
+            >
+              <PlayCircle className="h-4 w-4" />
+              See How It Works
+            </a>
           </div>
-          <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-            {['100% Free to Start', 'No Credit Card', 'Setup in 5 Minutes'].map(t => (
-              <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'rgba(255,255,255,0.55)', fontWeight: 500 }}>
-                <span style={{ color: '#00E676' }}>✓</span> {t}
+
+          <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <Gift className="h-4 w-4 text-emerald-400" />
+              100% Free to Start
+            </span>
+            <span className="flex items-center gap-1.5">
+              <CreditCard className="h-4 w-4 text-emerald-400" />
+              No Credit Card
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4 text-emerald-400" />
+              Setup in 5 Minutes
+            </span>
+          </div>
+        </div>
+
+        <div className="relative mx-auto flex justify-center pt-4 lg:justify-end lg:pr-6">
+          <PhoneMockup />
+          <ScoreCard />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PhoneMockup() {
+  return (
+    <div className="w-[300px] rounded-[2rem] border-4 border-slate-800 bg-white p-2 shadow-2xl sm:w-[320px]">
+      <div className="overflow-hidden rounded-[1.5rem]">
+        <div className="px-4 pb-3 pt-4">
+          <p className="text-center text-xl font-medium">
+            <span className="text-blue-500">G</span>
+            <span className="text-red-500">o</span>
+            <span className="text-amber-500">o</span>
+            <span className="text-blue-500">g</span>
+            <span className="text-emerald-500">l</span>
+            <span className="text-red-500">e</span>
+          </p>
+          <div className="mt-3 flex items-center justify-between rounded-full border border-slate-200 px-3 py-2">
+            <span className="text-[12px] text-slate-600">
+              Best cakes in Lagos
+            </span>
+            <Search className="h-3.5 w-3.5 text-blue-500" />
+          </div>
+          <div className="mt-2 flex gap-4 border-b border-slate-100 pb-2 text-[10px] font-medium text-slate-500">
+            <span className="border-b-2 border-blue-500 pb-1.5 text-blue-600">
+              All
+            </span>
+            <span>Images</span>
+            <span>Maps</span>
+            <span>Videos</span>
+            <span>News</span>
+          </div>
+        </div>
+
+        <div className="px-4 pb-4 pt-1">
+          <p className="text-[13px] font-semibold text-slate-900">
+            Sweet Cravings Cakes
+          </p>
+          <div className="mt-1 flex items-center gap-1">
+            <span className="text-[11px] font-medium text-slate-600">4.8</span>
+            <div className="flex text-amber-400">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className="h-2.5 w-2.5 fill-current" />
+              ))}
+            </div>
+            <span className="text-[11px] text-slate-400">(128)</span>
+          </div>
+          <p className="mt-0.5 text-[11px] text-slate-500">
+            Cake Shop in Lagos · <span className="text-emerald-600">Open</span>
+          </p>
+
+          <div className="mt-2.5 grid grid-cols-3 gap-1.5">
+            <div className="h-14 rounded-md bg-gradient-to-br from-pink-200 to-rose-300" />
+            <div className="h-14 rounded-md bg-gradient-to-br from-amber-700 to-amber-900" />
+            <div className="h-14 rounded-md bg-gradient-to-br from-pink-100 to-fuchsia-200" />
+          </div>
+
+          <div className="mt-3 grid grid-cols-4 gap-1 text-center">
+            {[
+              { icon: Phone, label: "Call", color: "text-blue-600 bg-blue-50" },
+              { icon: MessageCircle, label: "WhatsApp", color: "text-emerald-600 bg-emerald-50" },
+              { icon: Navigation, label: "Directions", color: "text-blue-600 bg-blue-50" },
+              { icon: Globe, label: "Website", color: "text-blue-600 bg-blue-50" },
+            ].map(({ icon: Icon, label, color }) => (
+              <div key={label} className="flex flex-col items-center gap-1">
+                <span className={`flex h-8 w-8 items-center justify-center rounded-full ${color}`}>
+                  <Icon className="h-3.5 w-3.5" />
+                </span>
+                <span className="text-[9px] text-slate-500">{label}</span>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* HERO VISUAL */}
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ width: '260px', background: '#1a1a2e', borderRadius: '36px', padding: '12px', border: '2px solid rgba(255,255,255,0.1)', boxShadow: '0 40px 80px rgba(0,0,0,0.5)', position: 'relative', zIndex: 2 }}>
-            <div style={{ background: '#fff', borderRadius: '26px', padding: '16px' }}>
-              <div style={{ fontSize: '10px', color: '#5F6368', background: '#F1F3F4', borderRadius: '20px', padding: '6px 12px', marginBottom: '12px' }}>cakes in Port Harcourt 🔍</div>
-              <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', padding: '10px', marginBottom: '8px' }}>
-                <div style={{ fontSize: '9px', color: '#34A853', marginBottom: '2px' }}>cloutinet.online/store/sweet-cravings</div>
-                <div style={{ fontSize: '11px', color: '#1A0DAB', fontWeight: 600, marginBottom: '3px' }}>Sweet Cravings Cakes — Port Harcourt</div>
-                <div style={{ fontSize: '9px', color: '#4D5156', lineHeight: 1.4, marginBottom: '4px' }}>Custom cakes for all occasions. Order on WhatsApp. Fast delivery in PH.</div>
-                <div style={{ fontSize: '9px', color: '#F5A623', marginBottom: '6px' }}>★★★★★ 4.9 (128 reviews)</div>
-                <div style={{ display: 'flex', gap: '4px' }}>
-                  {['📍 Directions', '📞 Call', '💬 WhatsApp'].map(b => (
-                    <span key={b} style={{ padding: '3px 8px', borderRadius: '12px', fontSize: '8px', fontWeight: 600, border: '1px solid #E2E8F0', background: b.includes('WhatsApp') ? '#25D366' : '#fff', color: b.includes('WhatsApp') ? '#fff' : '#1A73E8' }}>{b}</span>
-                  ))}
-                </div>
-              </div>
-              <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', padding: '10px', opacity: 0.5 }}>
-                <div style={{ fontSize: '9px', color: '#34A853' }}>cloutinet.online/store/ph-cakes</div>
-                <div style={{ fontSize: '11px', color: '#1A0DAB', fontWeight: 600 }}>PH Cakes & Pastries</div>
-              </div>
-            </div>
-          </div>
+          <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+            Delicious cakes for all occasions. Custom cakes, pastries and
+            more. Lagos, Nigeria
+          </p>
 
-          {/* SCORE CARD */}
-          <div style={{ position: 'absolute', top: '20px', right: '-20px', background: '#fff', borderRadius: '16px', padding: '16px 20px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', zIndex: 3, minWidth: '150px', textAlign: 'center' }}>
-            <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Visibility Score</div>
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'conic-gradient(#00E676 85%, #E2E8F0 0)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 8px' }}>
-              <div style={{ width: '48px', height: '48px', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#1E293B', lineHeight: 1 }}>85</div>
-                <div style={{ fontSize: '8px', color: '#64748B' }}>/ 100</div>
-              </div>
-            </div>
-            <div style={{ fontSize: '10px', color: '#00E676', fontWeight: 700 }}>● Excellent</div>
+          <div className="mt-2.5 flex h-16 items-center justify-center rounded-lg bg-slate-100">
+            <MapPin className="h-4 w-4 text-rose-500" />
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  );
+}
 
-      {/* FEATURES */}
-      <section style={{ padding: '80px 5%', background: '#fff' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center', marginBottom: '48px' }}>
-          <h2 style={{ fontSize: '36px', fontWeight: 800, color: '#1E293B', letterSpacing: '-0.5px', lineHeight: 1.2 }}>Everything You Need to Get Discovered & Grow</h2>
-          <p style={{ fontSize: '15px', color: '#64748B', lineHeight: 1.7 }}>Cloutinet gives Nigerian businesses a complete digital presence — from Google visibility to WhatsApp leads — all in one free platform built for how you actually do business.</p>
+function ScoreCard() {
+  return (
+    <div className="absolute -right-2 top-6 w-40 rounded-2xl border border-slate-100 bg-white p-4 shadow-2xl sm:-right-6 sm:top-10">
+      <p className="text-[11px] font-medium leading-snug text-slate-500">
+        Your Business Visibility Score
+      </p>
+      <div className="relative mt-3 flex items-center justify-center">
+        <svg className="h-20 w-20 -rotate-90" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="#E2E8F0" strokeWidth="6" />
+          <circle
+            cx="40"
+            cy="40"
+            r="34"
+            fill="none"
+            stroke="#22C55E"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={2 * Math.PI * 34}
+            strokeDashoffset={2 * Math.PI * 34 * (1 - 0.85)}
+          />
+        </svg>
+        <div className="absolute flex flex-col items-center">
+          <span className="text-xl font-bold text-emerald-500">85%</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-          {[
-            { icon: '🔍', bg: '#F0FDF4', title: 'Google-Searchable Page', desc: 'Your business gets a professionally designed page indexed by Google. When customers search, they find you.' },
-            { icon: '💬', bg: '#F0FDF4', title: 'WhatsApp Integration', desc: 'Every page includes a direct WhatsApp button. Customers tap once and land in your chat with a pre-filled message.' },
-            { icon: '📦', bg: '#F5F3FF', title: 'Products & Services', desc: 'List unlimited products with photos, prices, and AI-generated SEO descriptions that help you rank higher.' },
-            { icon: '⭐', bg: '#FFFBEB', title: 'Customer Reviews', desc: 'Build trust with genuine customer reviews displayed on your page, making new customers confident to reach out.' },
-            { icon: '📊', bg: '#FFF1F2', title: 'Visibility Score', desc: 'Know exactly how visible your business is with a 0-100 score and personalized tips to improve your ranking.' },
-            { icon: '📈', bg: '#EFF6FF', title: 'Analytics Dashboard', desc: 'Track page views, WhatsApp clicks, and weekly performance reports sent directly to your email every Monday.' },
-          ].map(f => (
-            <div key={f.title} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 16px rgba(0,0,0,0.04)' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: f.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', marginBottom: '16px' }}>{f.icon}</div>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1E293B', marginBottom: '8px' }}>{f.title}</h3>
-              <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.6 }}>{f.desc}</p>
+      </div>
+      <p className="mt-1 text-center text-[11px] font-medium text-emerald-500">
+        Great Job!
+      </p>
+      <svg viewBox="0 0 100 30" className="mt-2 h-6 w-full text-emerald-500">
+        <polyline
+          points="0,25 20,20 40,22 60,10 80,12 100,2"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Features
+// ---------------------------------------------------------------------------
+
+function Features() {
+  return (
+    <section id="features" className="bg-[#F5F7FB] py-24 lg:py-28">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-end gap-8 lg:grid-cols-2">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+              <Star className="h-3 w-3 fill-current" />
+              POWERFUL FEATURES
+            </span>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+              Everything You Need to Get{" "}
+              <span className="text-blue-600">Discovered &amp; Grow</span>
+            </h2>
+          </div>
+          <p className="text-base leading-relaxed text-slate-500 lg:text-right">
+            Cloutinet gives your business the visibility it deserves with
+            tools that help you attract, engage and convert more customers.
+          </p>
+        </div>
+
+        <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((feature) => (
+            <div
+              key={feature.title}
+              className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+            >
+              <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-full ${feature.iconBg}`}>
+                <feature.icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-base font-semibold text-slate-900">
+                {feature.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* TESTIMONIALS */}
-      <section style={{ padding: '80px 5%', background: '#F8FAFC' }}>
-        <div style={{ background: '#0A0F1E', borderRadius: '24px', padding: '64px 5%' }}>
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <div style={{ display: 'inline-block', background: 'rgba(0,230,118,0.15)', color: '#00E676', padding: '6px 16px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '20px' }}>TRUSTED BY 2,000+ BUSINESSES</div>
-            <h2 style={{ fontSize: '36px', fontWeight: 800, color: '#fff', marginBottom: '8px', letterSpacing: '-0.5px' }}>Loved by Nigerian Businesses</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-              <span style={{ color: '#FBBF24', fontSize: '18px' }}>★★★★★</span>
-              <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>4.9/5 from 500+ reviews</span>
+// ---------------------------------------------------------------------------
+// Testimonials
+// ---------------------------------------------------------------------------
+
+function Testimonials() {
+  return (
+    <section id="success-stories" className="bg-white py-24 lg:py-28">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="rounded-3xl bg-[#0A0E27] px-6 py-14 sm:px-12 lg:py-16">
+          <div className="mx-auto max-w-xl text-center">
+            <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-slate-300">
+              TRUSTED BY 2,000+ BUSINESSES
+            </span>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              Loved by Nigerian Businesses
+            </h2>
+            <div className="mt-3 flex items-center justify-center gap-2">
+              <div className="flex text-amber-400">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-current" />
+                ))}
+              </div>
+              <span className="text-sm text-slate-400">
+                4.9/5 from 500+ reviews
+              </span>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '32px' }}>
-            {[
-              { review: 'Since joining Cloutinet, customers now find my fashion store on Google without me spending a kobo on ads. I got 3 orders last week from people I had never met before.', name: 'Amaka Okafor', role: 'Fashion Designer, Lagos', initial: 'A', color: 'linear-gradient(135deg, #6366F1, #8B5CF6)' },
-              { review: 'Setting up took me only 4 minutes. My phone accessories shop now appears when people search in Abuja. The visibility score showed me exactly what to fix. Highly recommended.', name: 'Kabiru Musa', role: 'Phone Accessories, Abuja', initial: 'K', color: 'linear-gradient(135deg, #F59E0B, #EF4444)' },
-              { review: 'The weekly reports keep me motivated. I can see my page views growing every week. My cake business now gets enquiries from customers who found me on Google.', name: 'Chioma Eze', role: 'Cakes & Pastries, Port Harcourt', initial: 'C', color: 'linear-gradient(135deg, #10B981, #059669)' },
-            ].map(t => (
-              <div key={t.name} style={{ background: '#fff', borderRadius: '16px', padding: '24px' }}>
-                <div style={{ fontSize: '32px', color: '#2563EB', lineHeight: 1, marginBottom: '12px', fontFamily: 'Georgia, serif' }}>"</div>
-                <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>{t.review}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: t.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 700, color: '#fff', flexShrink: 0 }}>{t.initial}</div>
+
+          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
+            {TESTIMONIALS.map((t) => (
+              <div
+                key={t.name}
+                className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-6"
+              >
+                <Quote className="h-5 w-5 text-blue-400" />
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
+                  {t.quote}
+                </p>
+                <div className="mt-6 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">
+                    {t.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#1E293B' }}>{t.name}</div>
-                    <div style={{ fontSize: '11px', color: '#64748B' }}>{t.role}</div>
+                    <p className="text-sm font-medium text-white">{t.name}</p>
+                    <p className="text-xs text-slate-500">{t.role}</p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-            <div style={{ width: '24px', height: '8px', borderRadius: '4px', background: '#00E676' }}></div>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }}></div>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }}></div>
+
+          <div className="mt-9 flex items-center justify-center gap-2">
+            {[0, 1, 2, 3].map((i) => (
+              <span
+                key={i}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === 0 ? "w-5 bg-blue-500" : "w-1.5 bg-white/20"
+                }`}
+              />
+            ))}
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* HOW IT WORKS */}
-      <section style={{ padding: '80px 5%', background: '#fff', textAlign: 'center' }}>
-        <div style={{ fontSize: '11px', fontWeight: 700, color: '#2563EB', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '12px' }}>EASY 3-STEP PROCESS</div>
-        <h2 style={{ fontSize: '36px', fontWeight: 800, color: '#1E293B', marginBottom: '48px', letterSpacing: '-0.5px' }}>Get Started in 3 Simple Steps</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px', maxWidth: '900px', margin: '0 auto' }}>
-          {[
-            { num: '1', icon: '📋', title: 'Create Your Page', desc: 'Sign up free and fill in your business details — name, location, WhatsApp number, and category. Takes under 5 minutes with no technical skills needed.' },
-            { num: '2', icon: '🌐', title: 'Get Discovered', desc: 'Add your products and services with photos and prices. Cloutinet automatically creates Google-indexed pages for each one so customers can find you in search.' },
-            { num: '3', icon: '🚀', title: 'Get More Customers', desc: 'When customers find your page, they tap your WhatsApp button and land directly in your chat. No middleman. No commission. Just direct leads to your phone.' },
-          ].map(s => (
-            <div key={s.num} style={{ padding: '32px 24px' }}>
-              <div style={{ width: '48px', height: '48px', background: '#0A0F1E', color: '#fff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 800, margin: '0 auto 20px' }}>{s.num}</div>
-              <div style={{ fontSize: '32px', marginBottom: '16px' }}>{s.icon}</div>
-              <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#1E293B', marginBottom: '10px' }}>{s.title}</h3>
-              <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.7 }}>{s.desc}</p>
+// ---------------------------------------------------------------------------
+// 3-step process
+// ---------------------------------------------------------------------------
+
+function Steps() {
+  return (
+    <section id="how-it-works" className="bg-white pb-24 lg:pb-28">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+            EASY 3-STEP PROCESS
+          </span>
+          <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            Get Started <span className="text-blue-600">in 3</span> Simple Steps
+          </h2>
+        </div>
+
+        <div className="relative mt-16 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-6">
+          <div
+            aria-hidden
+            className="absolute left-0 right-0 top-4 hidden border-t-2 border-dashed border-slate-200 md:block"
+          />
+          {STEPS.map((step) => (
+            <div key={step.number} className="relative text-left">
+              <div className="relative z-10 flex items-center gap-3 bg-white pr-4">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                  {step.number}
+                </span>
+              </div>
+              <div className={`mt-5 flex h-11 w-11 items-center justify-center rounded-xl ${step.iconBg}`}>
+                <step.icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold text-slate-900">
+                {step.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                {step.description}
+              </p>
             </div>
           ))}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* CTA */}
-      <section style={{ padding: '80px 5%', background: '#F8FAFC' }}>
-        <div style={{ background: '#0A0F1E', borderRadius: '24px', padding: '64px 5%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'center' }}>
-          <div>
-            <h2 style={{ fontSize: '40px', fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: '12px', lineHeight: 1.2 }}>Ready to Get More Customers?</h2>
-            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.6)', marginBottom: '28px', lineHeight: 1.7 }}>Join thousands of Nigerian businesses already getting found on Google and receiving WhatsApp leads through Cloutinet — completely free.</p>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
-              <Link href="/auth" style={{ padding: '14px 28px', background: '#2563EB', color: '#fff', borderRadius: '10px', fontSize: '15px', fontWeight: 700, textDecoration: 'none' }}>Create Your Free Page →</Link>
-              <Link href="/checker" style={{ padding: '14px 24px', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', fontSize: '15px', fontWeight: 600, textDecoration: 'none' }}>Check Your Score Free</Link>
-            </div>
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-              {['No Credit Card', 'Free Forever', 'Setup in 5 Minutes'].map(t => (
-                <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
-                  <span style={{ color: '#00E676' }}>✓</span> {t}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-            <div style={{ background: '#fff', borderRadius: '20px', padding: '24px 28px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', minWidth: '200px', textAlign: 'center' }}>
-              <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 600, marginBottom: '12px' }}>Your Visibility Score</div>
-              <div style={{ fontSize: '48px', fontWeight: 800, color: '#00E676', lineHeight: 1, marginBottom: '4px' }}>85%</div>
-              <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '16px' }}>Excellent — Keep growing!</div>
-              <div style={{ background: '#E2E8F0', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ background: '#00E676', height: '100%', width: '85%', borderRadius: '4px' }}></div>
+// ---------------------------------------------------------------------------
+// Final CTA
+// ---------------------------------------------------------------------------
+
+function FinalCta() {
+  return (
+    <section id="get-started" className="bg-white pb-24 lg:pb-28">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-3xl bg-[#0A0E27] px-6 py-14 sm:px-12 lg:py-16">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -left-20 -top-20 h-[400px] w-[400px] rounded-full bg-blue-700/25 blur-[110px]"
+          />
+          <div className="relative grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Ready to Get More Customers?
+              </h2>
+              <p className="mt-4 max-w-md text-base leading-relaxed text-slate-400">
+                Join thousands of Nigerian businesses already growing with Cloutinet.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <a
+                  href="#"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+                >
+                  Create Your Free Page
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href="#check-score"
+                  className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
+                >
+                  Check Your Score Free
+                </a>
+              </div>
+              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  No Credit Card
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  Free Forever
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  Setup in 5 Minutes
+                </span>
               </div>
             </div>
-            <div style={{ position: 'absolute', top: '-20px', right: '-10px', background: '#25D366', color: '#fff', borderRadius: '12px', padding: '10px 14px', fontSize: '11px', fontWeight: 700, boxShadow: '0 8px 24px rgba(37,211,102,0.4)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '8px', height: '8px', background: '#fff', borderRadius: '50%', display: 'inline-block' }}></span>
-              New WhatsApp Messages 💬
+
+            <div className="relative mx-auto hidden h-64 w-full max-w-sm lg:block">
+              <div className="absolute right-6 top-2 w-40 rounded-2xl bg-white p-4 shadow-2xl">
+                <p className="text-[10px] font-medium text-slate-500">
+                  Visibility Score
+                </p>
+                <p className="mt-1 text-2xl font-bold text-emerald-500">85%</p>
+                <p className="text-[10px] font-medium text-emerald-500">
+                  Great Job!
+                </p>
+                <svg viewBox="0 0 100 30" className="mt-2 h-6 w-full text-emerald-500">
+                  <polyline
+                    points="0,25 20,20 40,22 60,10 80,12 100,2"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <div className="absolute bottom-2 left-2 w-44 rounded-2xl bg-white p-4 shadow-2xl">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4 text-emerald-500" />
+                  <p className="text-[10px] font-medium text-slate-500">
+                    New WhatsApp Messages
+                  </p>
+                </div>
+                <p className="mt-1 text-2xl font-bold text-slate-900">23</p>
+                <p className="text-[10px] font-medium text-emerald-500">
+                  +12% this week
+                </p>
+              </div>
+              <span className="absolute bottom-0 right-8 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 shadow-xl">
+                <MessageCircle className="h-6 w-6 text-white" />
+              </span>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* FOOTER */}
-      <footer style={{ background: '#0A0F1E', padding: '40px 5%', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>Cloutinet <span style={{ color: '#00E676' }}>·</span></div>
-        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Nigeria's free business visibility platform — cloutinet.online</p>
-        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', marginTop: '8px' }}>© 2026 Cloutinet. Create. Share. Grow.</p>
-      </footer>
+// ---------------------------------------------------------------------------
+// Footer
+// ---------------------------------------------------------------------------
 
-    </div>
-  )
+function Footer() {
+  const columns = [
+    { title: "Product", links: ["How it Works", "Features", "Pricing", "Check Score"] },
+    { title: "Company", links: ["About", "Success Stories", "Careers", "Contact"] },
+    { title: "Resources", links: ["Blog", "Help Center", "Local SEO Guide"] },
+    { title: "Legal", links: ["Privacy Policy", "Terms of Service"] },
+  ];
+
+  return (
+    <footer className="border-t border-white/5 bg-[#0A0E27] pt-16">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-10 pb-12 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="col-span-2 sm:col-span-3 lg:col-span-2">
+            <a href="#" className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+                <span className="text-sm font-bold text-white">C</span>
+              </span>
+              <span className="text-lg font-semibold text-white">Cloutinet</span>
+            </a>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
+              Helping Nigerian businesses get found on Google and win more customers, every day.
+            </p>
+          </div>
+
+          {columns.map((col) => (
+            <div key={col.title}>
+              <p className="text-sm font-semibold text-white">{col.title}</p>
+              <ul className="mt-4 space-y-3">
+                {col.links.map((link) => (
+                  <li key={link}>
+                    <a href="#" className="text-sm text-slate-500 transition-colors hover:text-white">
+                      {link}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/5 py-6 sm:flex-row">
+          <p className="text-xs text-slate-500">
+            © {new Date().getFullYear()} Cloutinet. All rights reserved.
+          </p>
+          <p className="text-xs text-slate-500">Made for Nigerian businesses 🇳🇬</p>
+        </div>
+      </div>
+    </footer>
+  );
 }
