@@ -18,6 +18,7 @@ import {
   Clock,
   CheckCircle2,
   Menu,
+  X,
   Quote,
   ClipboardList,
   Rocket,
@@ -83,6 +84,55 @@ const FEATURES = [
   },
 ];
 
+const PLANS = [
+  {
+    name: "Free",
+    price: "₦0",
+    period: "forever",
+    description: "For businesses just getting started online.",
+    features: [
+      "1 Google-searchable page",
+      "Up to 5 products or services",
+      "WhatsApp contact button",
+      "Basic visibility score",
+    ],
+    cta: "Start Free",
+    href: "/signup?plan=free",
+    highlighted: false,
+  },
+  {
+    name: "Growth",
+    price: "₦5,000",
+    period: "/month",
+    description: "For businesses ready to rank and grow.",
+    features: [
+      "Everything in Free",
+      "Unlimited products or services",
+      "Full visibility score + tips",
+      "Review management tools",
+      "Priority support",
+    ],
+    cta: "Start Growth Plan",
+    href: "/signup?plan=growth",
+    highlighted: true,
+  },
+  {
+    name: "Business",
+    price: "₦15,000",
+    period: "/month",
+    description: "For teams managing multiple locations.",
+    features: [
+      "Everything in Growth",
+      "Up to 5 business locations",
+      "Analytics dashboard",
+      "Dedicated account manager",
+    ],
+    cta: "Talk to Sales",
+    href: "/contact?topic=business-plan",
+    highlighted: false,
+  },
+];
+
 const STEPS = [
   {
     number: "1",
@@ -131,6 +181,42 @@ const TESTIMONIALS = [
   },
 ];
 
+const FOOTER_COLUMNS = [
+  {
+    title: "Product",
+    links: [
+      { label: "How it Works", href: "#how-it-works" },
+      { label: "Features", href: "#features" },
+      { label: "Pricing", href: "#pricing" },
+      { label: "Check Score", href: "/check-score" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About", href: "/about" },
+      { label: "Success Stories", href: "#success-stories" },
+      { label: "Careers", href: "/careers" },
+      { label: "Contact", href: "/contact" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { label: "Blog", href: "/blog" },
+      { label: "Help Center", href: "/help" },
+      { label: "Local SEO Guide", href: "/blog/local-seo-guide" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+    ],
+  },
+];
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -141,6 +227,7 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Features />
+      <Pricing />
       <Testimonials />
       <Steps />
       <FinalCta />
@@ -150,12 +237,12 @@ export default function Home() {
 }
 
 // ---------------------------------------------------------------------------
-// Navbar
+// Navbar (with working mobile menu — pure CSS checkbox toggle)
 // ---------------------------------------------------------------------------
 
 function Navbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0A0E27]">
+    <header className="sticky top-0 z-50 relative border-b border-white/5 bg-[#0A0E27]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
         <a href="#" className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 sm:h-8 sm:w-8">
@@ -166,6 +253,7 @@ function Navbar() {
           </span>
         </a>
 
+        {/* Desktop nav */}
         <nav className="hidden items-center gap-8 lg:flex">
           {NAV_LINKS.map((link) => (
             <a
@@ -178,22 +266,57 @@ function Navbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="hidden items-center gap-3 lg:flex">
           <a
-            href="#check-score"
-            className="hidden rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:inline-block sm:px-4 sm:py-2 sm:text-sm"
+            href="/check-score"
+            className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:border-white/40 hover:bg-white/5"
           >
             Check Score
           </a>
           <a
-            href="#get-started"
-            className="hidden rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-500 sm:inline-block sm:px-4 sm:py-2 sm:text-sm"
+            href="/signup"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
           >
             Get Started
           </a>
-          <button className="text-white lg:hidden" aria-label="Open menu" type="button">
-            <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
-          </button>
+        </div>
+
+        {/* Mobile toggle */}
+        <input type="checkbox" id="nav-toggle" className="peer hidden" />
+        <label
+          htmlFor="nav-toggle"
+          className="z-50 flex h-9 w-9 cursor-pointer items-center justify-center text-white lg:hidden"
+          aria-label="Toggle menu"
+        >
+          <Menu className="h-6 w-6 peer-checked:hidden" />
+          <X className="hidden h-6 w-6 peer-checked:block" />
+        </label>
+
+        {/* Mobile dropdown panel */}
+        <div className="absolute inset-x-0 top-full z-40 hidden max-h-0 flex-col overflow-hidden border-b border-white/5 bg-[#0A0E27] px-4 opacity-0 transition-all duration-200 peer-checked:flex peer-checked:max-h-[480px] peer-checked:py-4 peer-checked:opacity-100 lg:hidden">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              className="border-b border-white/5 py-3 text-sm font-medium text-slate-300 hover:text-white"
+            >
+              {link.label}
+            </a>
+          ))}
+          <div className="mt-4 flex flex-col gap-3">
+            <a
+              href="/check-score"
+              className="rounded-full border border-white/20 px-4 py-2.5 text-center text-sm font-medium text-white"
+            >
+              Check Score
+            </a>
+            <a
+              href="/signup"
+              className="rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
+            >
+              Get Started
+            </a>
+          </div>
         </div>
       </div>
     </header>
@@ -227,7 +350,7 @@ function Hero() {
             Proudly built for Nigerian Businesses
           </div>
 
-          <h1 className="text-[2rem] font-bold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-[3.4rem]">
+          <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight text-white xs:text-3xl sm:text-4xl lg:text-5xl xl:text-[3.4rem]">
             Get Found on Google.
             <br />
             Get More <span className="text-emerald-400">Customers.</span>
@@ -241,7 +364,7 @@ function Hero() {
 
           <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
             <a
-              href="#get-started"
+              href="/signup"
               className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
             >
               Create Your Free Page
@@ -272,7 +395,7 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative mx-auto flex w-full max-w-[280px] justify-center pt-2 sm:max-w-xs sm:pt-4 lg:max-w-none lg:justify-end lg:pr-6">
+        <div className="relative mx-auto flex w-full max-w-[260px] flex-col items-center gap-5 pt-2 sm:max-w-xs sm:flex-row sm:items-start sm:justify-center sm:gap-0 sm:pt-4 lg:max-w-none lg:justify-end lg:pr-6">
           <PhoneMockup />
           <ScoreCard />
         </div>
@@ -283,7 +406,7 @@ function Hero() {
 
 function PhoneMockup() {
   return (
-    <div className="w-full max-w-[240px] rounded-[1.75rem] border-4 border-slate-800 bg-white p-2 shadow-2xl sm:max-w-[280px] sm:rounded-[2rem] lg:max-w-[320px]">
+    <div className="w-full max-w-[230px] rounded-[1.75rem] border-4 border-slate-800 bg-white p-2 shadow-2xl sm:max-w-[280px] sm:rounded-[2rem] lg:max-w-[320px]">
       <div className="overflow-hidden rounded-[1.25rem] sm:rounded-[1.5rem]">
         <div className="px-3 pb-2.5 pt-3 sm:px-4 sm:pb-3 sm:pt-4">
           <p className="text-center text-lg font-medium sm:text-xl">
@@ -366,12 +489,12 @@ function PhoneMockup() {
 
 function ScoreCard() {
   return (
-    <div className="absolute -right-1 top-3 w-28 rounded-xl border border-slate-100 bg-white p-2.5 shadow-2xl sm:-right-4 sm:top-8 sm:w-36 sm:rounded-2xl sm:p-4 lg:-right-6 lg:top-10 lg:w-40">
-      <p className="text-[9px] font-medium leading-snug text-slate-500 sm:text-[11px]">
+    <div className="static mx-auto w-32 rounded-xl border border-slate-100 bg-white p-3 shadow-xl sm:absolute sm:-right-4 sm:top-8 sm:mx-0 sm:w-36 sm:rounded-2xl sm:p-4 lg:-right-6 lg:top-10 lg:w-40">
+      <p className="text-[10px] font-medium leading-snug text-slate-500 sm:text-[11px]">
         Your Business Visibility Score
       </p>
       <div className="relative mt-2 flex items-center justify-center sm:mt-3">
-        <svg className="h-14 w-14 -rotate-90 sm:h-20 sm:w-20" viewBox="0 0 80 80">
+        <svg className="h-16 w-16 -rotate-90 sm:h-20 sm:w-20" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r="34" fill="none" stroke="#E2E8F0" strokeWidth="6" />
           <circle
             cx="40"
@@ -386,13 +509,13 @@ function ScoreCard() {
           />
         </svg>
         <div className="absolute flex flex-col items-center">
-          <span className="text-sm font-bold text-emerald-500 sm:text-xl">85%</span>
+          <span className="text-base font-bold text-emerald-500 sm:text-xl">85%</span>
         </div>
       </div>
-      <p className="mt-1 text-center text-[9px] font-medium text-emerald-500 sm:text-[11px]">
+      <p className="mt-1 text-center text-[10px] font-medium text-emerald-500 sm:text-[11px]">
         Great Job!
       </p>
-      <svg viewBox="0 0 100 30" className="mt-1.5 h-4 w-full text-emerald-500 sm:mt-2 sm:h-6">
+      <svg viewBox="0 0 100 30" className="mt-1.5 h-5 w-full text-emerald-500 sm:mt-2 sm:h-6">
         <polyline
           points="0,25 20,20 40,22 60,10 80,12 100,2"
           fill="none"
@@ -412,9 +535,9 @@ function ScoreCard() {
 
 function Features() {
   return (
-    <section id="features" className="bg-[#F5F7FB] py-16 sm:py-20 lg:py-28">
+    <section id="features" className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 items-end gap-6 sm:gap-8 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-end gap-5 sm:gap-8 lg:grid-cols-2">
           <div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
               <Star className="h-3 w-3 fill-current" />
@@ -431,7 +554,7 @@ function Features() {
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {FEATURES.map((feature) => (
             <div
               key={feature.title}
@@ -455,12 +578,100 @@ function Features() {
 }
 
 // ---------------------------------------------------------------------------
+// Pricing (new — the nav promised this, so it needs to exist)
+// ---------------------------------------------------------------------------
+
+function Pricing() {
+  return (
+    <section id="pricing" className="bg-white py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
+            SIMPLE PRICING
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
+            Plans for every stage of your business
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
+            Start free. Upgrade whenever you're ready for more customers.
+          </p>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:mt-14 md:grid-cols-3">
+          {PLANS.map((plan) => (
+            <div
+              key={plan.name}
+              className={`flex flex-col rounded-2xl border p-6 sm:p-7 ${
+                plan.highlighted
+                  ? "border-blue-600 bg-blue-600 text-white shadow-xl"
+                  : "border-slate-200 bg-white"
+              }`}
+            >
+              <p
+                className={`text-sm font-semibold ${
+                  plan.highlighted ? "text-blue-100" : "text-slate-500"
+                }`}
+              >
+                {plan.name}
+              </p>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-3xl font-bold">{plan.price}</span>
+                <span
+                  className={`text-sm ${
+                    plan.highlighted ? "text-blue-100" : "text-slate-400"
+                  }`}
+                >
+                  {plan.period}
+                </span>
+              </div>
+              <p
+                className={`mt-2 text-sm leading-relaxed ${
+                  plan.highlighted ? "text-blue-100" : "text-slate-500"
+                }`}
+              >
+                {plan.description}
+              </p>
+
+              <ul className="mt-6 flex-1 space-y-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm">
+                    <CheckCircle2
+                      className={`mt-0.5 h-4 w-4 shrink-0 ${
+                        plan.highlighted ? "text-emerald-300" : "text-emerald-500"
+                      }`}
+                    />
+                    <span className={plan.highlighted ? "text-white" : "text-slate-600"}>
+                      {feature}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href={plan.href}
+                className={`mt-7 flex items-center justify-center rounded-lg px-5 py-3 text-sm font-semibold transition-colors ${
+                  plan.highlighted
+                    ? "bg-white text-blue-600 hover:bg-blue-50"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
+              >
+                {plan.cta}
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Testimonials
 // ---------------------------------------------------------------------------
 
 function Testimonials() {
   return (
-    <section id="success-stories" className="bg-white py-16 sm:py-20 lg:py-28">
+    <section id="success-stories" className="bg-white py-14 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
           <div className="mx-auto max-w-xl text-center">
@@ -527,7 +738,7 @@ function Testimonials() {
 
 function Steps() {
   return (
-    <section id="how-it-works" className="bg-white pb-16 sm:pb-20 lg:pb-28">
+    <section id="how-it-works" className="bg-white pb-14 sm:pb-20 lg:pb-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
@@ -538,7 +749,7 @@ function Steps() {
           </h2>
         </div>
 
-        <div className="relative mt-10 grid grid-cols-1 gap-8 sm:mt-16 sm:gap-10 md:grid-cols-3 md:gap-6">
+        <div className="relative mt-8 grid grid-cols-1 gap-8 sm:mt-16 sm:gap-10 md:grid-cols-3 md:gap-6">
           <div
             aria-hidden
             className="absolute left-0 right-0 top-4 hidden border-t-2 border-dashed border-slate-200 md:block"
@@ -573,7 +784,7 @@ function Steps() {
 
 function FinalCta() {
   return (
-    <section id="get-started" className="bg-white pb-16 sm:pb-20 lg:pb-28">
+    <section id="get-started" className="bg-white pb-14 sm:pb-20 lg:pb-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
           <div
@@ -590,14 +801,14 @@ function FinalCta() {
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
                 <a
-                  href="#"
+                  href="/signup"
                   className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
                 >
                   Create Your Free Page
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
-                  href="#check-score"
+                  href="/check-score"
                   className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
                 >
                   Check Your Score Free
@@ -667,13 +878,6 @@ function FinalCta() {
 // ---------------------------------------------------------------------------
 
 function Footer() {
-  const columns = [
-    { title: "Product", links: ["How it Works", "Features", "Pricing", "Check Score"] },
-    { title: "Company", links: ["About", "Success Stories", "Careers", "Contact"] },
-    { title: "Resources", links: ["Blog", "Help Center", "Local SEO Guide"] },
-    { title: "Legal", links: ["Privacy Policy", "Terms of Service"] },
-  ];
-
   return (
     <footer className="border-t border-white/5 bg-[#0A0E27] pt-12 sm:pt-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -690,14 +894,17 @@ function Footer() {
             </p>
           </div>
 
-          {columns.map((col) => (
+          {FOOTER_COLUMNS.map((col) => (
             <div key={col.title}>
               <p className="text-sm font-semibold text-white">{col.title}</p>
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm text-slate-500 transition-colors hover:text-white">
-                      {link}
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      className="text-sm text-slate-500 transition-colors hover:text-white"
+                    >
+                      {link.label}
                     </a>
                   </li>
                 ))}
