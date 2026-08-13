@@ -197,16 +197,7 @@ const FOOTER_COLUMNS = [
     links: [
       { label: "About", href: "/about" },
       { label: "Success Stories", href: "#success-stories" },
-      { label: "Careers", href: "/careers" },
-      { label: "Contact", href: "/contact" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "Blog", href: "/blog" },
-      { label: "Help Center", href: "/help" },
-      { label: "Local SEO Guide", href: "/blog/local-seo-guide" },
+      { label: "Contact", href: "mailto:cloutinet.hello@gmail.com" },
     ],
   },
   {
