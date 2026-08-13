@@ -584,7 +584,7 @@ function Pricing() {
                 {plan.name}
               </p>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-3xl font-bold">{plan.price}</span>
+                <span className={`text-3xl font-bold ${plan.highlighted ? "text-white" : "text-slate-900"}`}>{plan.price}</span>
                 <span
                   className={`text-sm ${
                     plan.highlighted ? "text-blue-100" : "text-slate-400"
