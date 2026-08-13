@@ -1,423 +1,544 @@
-import type { Metadata, Viewport } from "next";
-import {
-  Search,
-  Star,
-  MessageCircle,
-  Store,
-  Package,
-  Image as ImageIcon,
-  Tag,
-  MapPin,
-  ArrowRight,
-  CheckCircle2,
-  TrendingUp,
-} from "lucide-react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloutinet — Create. Share. Grow.</title>
+<meta name="description" content="Cloutinet creates a Google-searchable page for your business so customers can find and contact you on WhatsApp.">
+<style>
 
-export const metadata: Metadata = {
-  title: "Cloutinet — Create. Share. Grow.",
-  description:
-    "Cloutinet creates a Google-searchable page for your business so customers can find and contact you on WhatsApp.",
-};
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #0f172a;
+    background: #ffffff;
+  }
 
-const CHECKLIST = [
-  { icon: Store, label: "Business Details" },
-  { icon: Package, label: "Products & Services" },
-  { icon: ImageIcon, label: "Photos & Videos" },
-  { icon: Tag, label: "Prices" },
-  { icon: MapPin, label: "Location" },
-  { icon: MessageCircle, label: "WhatsApp Contact" },
-];
+  a { text-decoration: none; color: inherit; }
+  ul { list-style: none; }
 
-const FLOW_STEPS = [
-  { icon: Search, label: "They Search", color: "text-blue-500 bg-white" },
-  { icon: Store, label: "They Find You", color: "text-white bg-purple-600" },
-  { icon: MessageCircle, label: "They Contact You", color: "text-white bg-emerald-500" },
-];
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
 
-const PLANS = [
-  {
-    name: "Free",
-    price: "₦0",
-    period: "forever",
-    description: "For businesses just getting started online.",
-    features: [
-      "1 Google-searchable page",
-      "Up to 5 products or services",
-      "WhatsApp contact button",
-      "Basic visibility score",
-    ],
-    cta: "Start Free",
-    href: "/signup?plan=free",
-    highlighted: false,
-  },
-  {
-    name: "Growth",
-    price: "₦5,000",
-    period: "/month",
-    description: "For businesses ready to rank and grow.",
-    features: [
-      "Everything in Free",
-      "Unlimited products or services",
-      "Full visibility score + tips",
-      "Review management tools",
-      "Priority support",
-    ],
-    cta: "Start Growth Plan",
-    href: "/signup?plan=growth",
-    highlighted: true,
-  },
-  {
-    name: "Business",
-    price: "₦15,000",
-    period: "/month",
-    description: "For teams managing multiple locations.",
-    features: [
-      "Everything in Growth",
-      "Up to 5 business locations",
-      "Analytics dashboard",
-      "Dedicated account manager",
-    ],
-    cta: "Talk to Sales",
-    href: "/contact?topic=business-plan",
-    highlighted: false,
-  },
-];
+  /* Buttons */
+  .btn-green {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #4ade4a;
+    color: #0f2a0f;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 32px;
+    border-radius: 999px;
+    box-shadow: 0 10px 20px rgba(20,80,20,0.25);
+  }
+  .btn-dark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 24px;
+    border-radius: 999px;
+  }
 
-const FOOTER_COLUMNS = [
-  {
-    title: "Product",
-    links: [
-      { label: "How it Works", href: "#how-it-works" },
-      { label: "Features", href: "#features" },
-      { label: "Pricing", href: "#pricing" },
-      { label: "Check Score", href: "/check-score" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "Contact", href: "/contact" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms of Service", href: "/terms" },
-    ],
-  },
-];
+  /* ---------------- HERO ---------------- */
+  .hero {
+    background: radial-gradient(60% 50% at 50% 85%, rgba(168,85,247,0.55) 0%, rgba(30,17,70,0) 70%),
+                linear-gradient(180deg, #2a1863 0%, #1e1146 60%);
+    padding: 80px 24px 60px;
+    text-align: center;
+    color: #ffffff;
+  }
 
-export default function Home() {
-  return (
-    <main className="min-h-screen w-full overflow-x-hidden bg-white">
-      <Navbar />
-      <Hero />
-      <Checklist />
-      <Flow />
-      <Pricing />
-      <FinalCta />
-      <Footer />
-    </main>
-  );
-}
+  .logo-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: #ffffff;
+    color: #5b21b6;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 18px;
+  }
+  .logo-text { font-size: 20px; font-weight: 700; }
 
-function Navbar() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-gradient-to-r from-[#3B0A6B] to-[#5B21B6]">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
-        <a href="#" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white">
-            <span className="text-sm font-bold text-purple-700">C</span>
+  .hero h1 {
+    font-size: 44px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+  .hero h1 .accent { color: #5ce65c; }
+
+  .hero p.sub {
+    margin-top: 18px;
+    color: #ddd6fe;
+    font-size: 17px;
+  }
+
+  .hero .btn-green { margin-top: 30px; }
+
+  .steps {
+    margin-top: 56px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .step .icon-box {
+    width: 40px; height: 40px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step span.label { font-size: 12px; font-weight: 500; color: #e9d5ff; }
+
+  /* ---------------- FEATURES LIST ---------------- */
+  .features {
+    padding: 80px 24px;
+    text-align: center;
+  }
+  .features h2 {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+  .features h2 .accent { color: #7c3aed; }
+
+  .feature-list {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+  }
+  .feature-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  .feature-row .icon-box {
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    background: #7c3aed;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #ffffff;
+  }
+  .feature-row span.label { font-weight: 600; color: #1e293b; }
+
+  /* ---------------- HOW IT WORKS ---------------- */
+  .how-it-works {
+    background: #f8fafc;
+    padding: 80px 24px;
+    text-align: center;
+  }
+  .how-it-works h2 {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+  .how-it-works h2 .accent { color: #16a34a; }
+
+  .flow {
+    margin-top: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  .flow-step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .flow-circle {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .flow-circle.purple {
+    border-radius: 20px;
+    background: #7c3aed;
+    box-shadow: 0 6px 16px rgba(124,58,237,0.35);
+  }
+  .flow-step span.label { font-size: 13px; font-weight: 500; color: #475569; }
+  .flow-arrow { font-size: 22px; color: #cbd5e1; }
+
+  .banner {
+    margin-top: 56px;
+    background: linear-gradient(115deg, #7c3aed 0%, #8b5cf6 45%, #7c3aed 100%);
+    border-radius: 32px;
+    padding: 40px 32px;
+    color: #ffffff;
+  }
+  .banner p {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  /* ---------------- PRICING ---------------- */
+  .pricing {
+    padding: 80px 24px;
+    text-align: center;
+  }
+  .pricing .eyebrow {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #7c3aed;
+  }
+  .pricing h2 {
+    margin-top: 8px;
+    font-size: 32px;
+    font-weight: 800;
+  }
+
+  .plans {
+    margin-top: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .plan-card {
+    text-align: left;
+    border-radius: 24px;
+    padding: 32px;
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+  }
+  .plan-card.highlight {
+    background: #1e1146;
+    color: #ffffff;
+    border-color: transparent;
+  }
+  .plan-card h3 { font-size: 18px; font-weight: 700; }
+  .plan-price {
+    margin-top: 12px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .plan-price .amount { font-size: 30px; font-weight: 800; }
+  .plan-price .cadence { color: #94a3b8; }
+  .plan-card.highlight .plan-price .cadence { color: #ddd6fe; }
+  .plan-blurb { margin-top: 8px; font-size: 14px; color: #64748b; }
+  .plan-card.highlight .plan-blurb { color: #ddd6fe; }
+
+  .plan-features { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+  .plan-features li { display: flex; align-items: flex-start; gap: 8px; }
+  .plan-features .check { color: #16a34a; }
+  .plan-card.highlight .plan-features .check { color: #5ce65c; }
+
+  .plan-card .btn-green,
+  .plan-card .btn-dark { margin-top: 28px; width: 100%; }
+
+  /* ---------------- FINAL CTA ---------------- */
+  .final-cta {
+    background: #1e1146;
+    padding: 80px 24px;
+    text-align: center;
+    color: #ffffff;
+  }
+  .final-cta h2 { font-size: 32px; font-weight: 800; }
+  .final-cta p { margin-top: 12px; color: #ddd6fe; }
+  .final-cta .btn-green { margin-top: 28px; }
+
+  /* ---------------- FOOTER ---------------- */
+  footer {
+    padding: 56px 24px;
+    font-size: 14px;
+    color: #64748b;
+  }
+  .footer-top {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  .footer-brand-row { display: flex; align-items: center; gap: 8px; }
+  .footer-logo-mark {
+    width: 28px; height: 28px;
+    background: #7c3aed;
+    color: #ffffff;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px;
+  }
+  .footer-brand-row span.name { font-weight: 700; color: #0f172a; }
+  footer p.tagline { margin-top: 12px; max-width: 280px; }
+  footer p.flag { margin-top: 16px; }
+
+  .footer-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .footer-cols .col p.head { font-weight: 600; color: #0f172a; }
+  .footer-cols .col ul { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+  footer .copyright {
+    margin-top: 48px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 24px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  /* ---------------- RESPONSIVE ---------------- */
+  @media (min-width: 640px) {
+    .hero h1 { font-size: 60px; }
+    .plans { flex-direction: row; }
+    .plan-card { flex: 1; }
+    .footer-top { flex-direction: row; justify-content: space-between; }
+    .footer-cols { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+</style>
+</head>
+<body>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="logo-row">
+        <span class="logo-mark">C</span>
+        <span class="logo-text">Cloutinet</span>
+      </div>
+
+      <h1>Create.<br>Share.<br><span class="accent">Grow.</span></h1>
+      <p class="sub">Your business deserves to be found.</p>
+
+      <a href="/signup" class="btn-green">cloutinet.online</a>
+
+      <div class="steps">
+        <div class="step">
+          <span class="icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75"><path d="M3 9l9-7 9 7v11a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
           </span>
-          <span className="text-base font-semibold tracking-tight text-white sm:text-lg">
-            Cloutinet
+          <span class="label">Create Your Page</span>
+        </div>
+        <div class="step">
+          <span class="icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </span>
-        </a>
-        <div className="flex items-center gap-2">
-          <a
-            href="/check-score"
-            className="rounded-full border border-white/30 px-3 py-1.5 text-xs font-medium text-white sm:px-4 sm:text-sm"
-          >
-            Check Score
-          </a>
-          <a
-            href="/signup"
-            className="rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white sm:px-4 sm:text-sm"
-          >
-            Get Started
-          </a>
+          <span class="label">Get Found</span>
         </div>
-      </div>
-    </header>
-  );
-}
-
-function Hero() {
-  return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#3B0A6B] via-[#5B21B6] to-[#7C3AED] px-4 pb-16 pt-10 text-center sm:px-6 sm:pb-24 sm:pt-16">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-4 top-4 grid grid-cols-4 gap-1.5 opacity-40 sm:right-10 sm:top-10"
-      >
-        {Array.from({ length: 16 }).map((_, i) => (
-          <span key={i} className="h-1 w-1 rounded-full bg-white sm:h-1.5 sm:w-1.5" />
-        ))}
-      </div>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white/10 to-transparent"
-      />
-
-      <div className="relative mx-auto flex max-w-xl flex-col items-center">
-        <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-xl sm:h-20 sm:w-20">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-purple-700 text-lg font-bold text-white sm:h-11 sm:w-11 sm:text-xl">
-            C
+        <div class="step">
+          <span class="icon-box">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
           </span>
-        </span>
-        <p className="mt-3 text-lg font-semibold text-white sm:text-xl">Cloutinet</p>
-
-        <h1 className="mt-6 text-3xl font-bold leading-tight text-white sm:text-5xl">
-          Create.
-          <br />
-          Share.
-          <br />
-          <span className="text-emerald-400">Grow.</span>
-        </h1>
-
-        <p className="mt-4 max-w-sm text-sm text-purple-100 sm:text-base">
-          Your business deserves to be found.
-        </p>
-
-        <a
-          href="/signup"
-          className="mt-6 flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-emerald-400 sm:px-8 sm:py-3.5 sm:text-base"
-        >
-          cloutinet.online
-        </a>
-
-        <div className="mt-10 grid grid-cols-3 gap-4 sm:mt-14 sm:gap-8">
-          {[
-            { icon: Store, label: "Create Your Page" },
-            { icon: Search, label: "Get Found" },
-            { icon: TrendingUp, label: "Grow Your Business" },
-          ].map(({ icon: Icon, label }) => (
-            <div key={label} className="flex flex-col items-center gap-2">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 sm:h-12 sm:w-12">
-                <Icon className="h-5 w-5 text-white sm:h-6 sm:w-6" />
-              </span>
-              <span className="text-[10px] font-medium text-purple-100 sm:text-xs">
-                {label}
-              </span>
-            </div>
-          ))}
+          <span class="label">Grow Your Business</span>
         </div>
       </div>
-    </section>
-  );
-}
+    </div>
+  </section>
 
-function Checklist() {
-  return (
-    <section id="features" className="relative overflow-hidden bg-[#FAF5FF] px-4 py-14 sm:px-6 sm:py-20">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-10 top-10 h-40 w-40 rounded-full bg-purple-200/50 blur-2xl sm:h-60 sm:w-60"
-      />
-      <div className="relative mx-auto max-w-xl">
-        <h2 className="text-2xl font-bold leading-snug text-slate-900 sm:text-3xl">
-          Add <span className="text-purple-600">everything</span>
-          <br />
-          your customers need to know.
-        </h2>
+  <!-- ================= FEATURE LIST ================= -->
+  <section class="features" id="features">
+    <div class="wrap">
+      <h2>Add <span class="accent">everything</span><br>your customers need to know.</h2>
 
-        <div className="mt-8 flex flex-col gap-3 sm:mt-10">
-          {CHECKLIST.map((item) => (
-            <div
-              key={item.label}
-              className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm sm:p-4"
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-600 sm:h-12 sm:w-12">
-                <item.icon className="h-5 w-5 text-white" />
-              </span>
-              <span className="text-sm font-medium text-slate-800 sm:text-base">
-                {item.label}
-              </span>
-            </div>
-          ))}
+      <div class="feature-list">
+        <div class="feature-row">
+          <span class="icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75"><path d="M3 9l9-7 9 7v11a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>
+          <span class="label">Business Details</span>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function Flow() {
-  return (
-    <section id="how-it-works" className="relative overflow-hidden bg-white px-4 py-14 sm:px-6 sm:py-20">
-      <div className="mx-auto max-w-xl text-center">
-        <h2 className="text-2xl font-bold leading-snug text-slate-900 sm:text-3xl">
-          Customers find you. They reach you.
-          <br />
-          <span className="text-emerald-500">You grow.</span>
-        </h2>
-
-        <div className="mt-10 flex items-center justify-center gap-3 sm:mt-14 sm:gap-6">
-          {FLOW_STEPS.map((step, i) => (
-            <div key={step.label} className="flex items-center gap-3 sm:gap-6">
-              <div className="flex flex-col items-center gap-2">
-                <span
-                  className={`flex h-14 w-14 items-center justify-center rounded-2xl shadow-md sm:h-16 sm:w-16 ${step.color}`}
-                >
-                  <step.icon className="h-6 w-6 sm:h-7 sm:w-7" />
-                </span>
-                <span className="text-[10px] font-medium text-slate-600 sm:text-xs">
-                  {step.label}
-                </span>
-              </div>
-              {i < FLOW_STEPS.length - 1 && (
-                <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 sm:h-5 sm:w-5" />
-              )}
-            </div>
-          ))}
+        <div class="feature-row">
+          <span class="icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><line x1="12" y1="13" x2="12" y2="21"/></svg></span>
+          <span class="label">Products &amp; Services</span>
         </div>
-
-        <div className="relative mt-12 overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 to-violet-700 px-6 py-8 sm:mt-16 sm:py-10">
-          <p className="text-lg font-bold text-white sm:text-xl">
-            More Visibility.
-            <br />
-            More Customers. More Sales.
-          </p>
+        <div class="feature-row">
+          <span class="icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>
+          <span class="label">Photos &amp; Videos</span>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function Pricing() {
-  return (
-    <section id="pricing" className="bg-[#FAF5FF] px-4 py-14 sm:px-6 sm:py-20">
-      <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-3 py-1 text-[11px] font-semibold text-purple-700 sm:text-xs">
-            SIMPLE PRICING
+        <div class="feature-row">
+          <span class="icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75"><path d="M20.59 13.41L11 3.83A2 2 0 0 0 9.59 3H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l5.59-5.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1"/></svg></span>
+          <span class="label">Prices</span>
+        </div>
+        <div class="feature-row">
+          <span class="icon-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <span class="label">Location</span>
+        </div>
+        <div class="feature-row">
+          <span class="icon-box">
+            <svg width="20" height="20" viewBox="0 0 32 32" fill="white"><path d="M16 3C9 3 3.3 8.7 3.3 15.7c0 2.6.7 5 2 7.1L3 29l6.4-2.2c2 1.1 4.3 1.7 6.6 1.7 7 0 12.7-5.7 12.7-12.7C28.7 8.7 23 3 16 3zm0 23.1c-2.1 0-4.1-.6-5.8-1.6l-.4-.2-3.8 1.3 1.3-3.7-.3-.4a10.3 10.3 0 0 1-1.7-5.8c0-5.8 4.7-10.4 10.5-10.4S26.5 9.9 26.5 15.7 21.8 26.1 16 26.1z"/></svg>
           </span>
-          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-            Plans for every stage of your business
-          </h2>
-        </div>
-
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:gap-5 md:grid-cols-3">
-          {PLANS.map((plan) => (
-            <div
-              key={plan.name}
-              className={`flex flex-col rounded-2xl border p-6 ${
-                plan.highlighted
-                  ? "border-purple-600 bg-gradient-to-br from-purple-600 to-violet-700 text-white shadow-xl"
-                  : "border-purple-100 bg-white"
-              }`}
-            >
-              <p className={`text-sm font-semibold ${plan.highlighted ? "text-purple-100" : "text-slate-500"}`}>
-                {plan.name}
-              </p>
-              <div className="mt-2 flex items-baseline gap-1">
-                <span className="text-3xl font-bold">{plan.price}</span>
-                <span className={`text-sm ${plan.highlighted ? "text-purple-100" : "text-slate-400"}`}>
-                  {plan.period}
-                </span>
-              </div>
-              <p className={`mt-2 text-sm ${plan.highlighted ? "text-purple-100" : "text-slate-500"}`}>
-                {plan.description}
-              </p>
-              <ul className="mt-6 flex-1 space-y-3">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2
-                      className={`mt-0.5 h-4 w-4 shrink-0 ${
-                        plan.highlighted ? "text-emerald-300" : "text-emerald-500"
-                      }`}
-                    />
-                    <span className={plan.highlighted ? "text-white" : "text-slate-600"}>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <a
-                href={plan.href}
-                className={`mt-7 flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold ${
-                  plan.highlighted ? "bg-white text-purple-700" : "bg-purple-600 text-white"
-                }`}
-              >
-                {plan.cta}
-              </a>
-            </div>
-          ))}
+          <span class="label">WhatsApp Contact</span>
         </div>
       </div>
-    </section>
-  );
-}
+    </div>
+  </section>
 
-function FinalCta() {
-  return (
-    <section className="px-4 py-14 sm:px-6 sm:py-20">
-      <div className="mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-br from-[#3B0A6B] to-[#7C3AED] px-6 py-12 text-center sm:px-12 sm:py-16">
-        <h2 className="text-2xl font-bold text-white sm:text-4xl">Ready to Get More Customers?</h2>
-        <p className="mx-auto mt-3 max-w-md text-sm text-purple-100 sm:text-base">
-          Join Nigerian businesses already growing with Cloutinet.
-        </p>
-        <a
-          href="/signup"
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white sm:px-8 sm:py-3.5 sm:text-base"
-        >
-          Create Your Free Page
-          <ArrowRight className="h-4 w-4" />
-        </a>
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="wrap">
+      <h2>Customers find you.<br>They reach you.<br><span class="accent">You grow.</span></h2>
+
+      <div class="flow">
+        <div class="flow-step">
+          <span class="flow-circle">
+            <svg width="30" height="30" viewBox="0 0 48 48">
+              <path fill="#FFC107" d="M43.6 20.5H42V20.5H24v7h11.3C33.7 31.9 29.3 35 24 35c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5-5C33.6 5.9 29.1 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+              <path fill="#FF3D00" d="M6.3 14.7l5.8 4.3C13.7 15.5 18.5 12 24 12c3.1 0 5.9 1.2 8 3.1l5-5C33.6 5.9 29.1 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"/>
+              <path fill="#4CAF50" d="M24 44c5.1 0 9.6-1.7 12.8-4.6l-5.9-5c-1.7 1.2-4 2-6.9 2-5.3 0-9.7-3.1-11.3-7.6l-5.9 4.5C9.5 39.6 16.2 44 24 44z"/>
+              <path fill="#1976D2" d="M43.6 20.5H42V20.5H24v7h11.3c-.8 2.3-2.3 4.2-4.3 5.5l5.9 5C40.7 34.7 44 29.8 44 24c0-1.2-.1-2.4-.4-3.5z"/>
+            </svg>
+          </span>
+          <span class="label">They Search</span>
+        </div>
+
+        <span class="flow-arrow">&rarr;</span>
+
+        <div class="flow-step">
+          <span class="flow-circle purple">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75"><path d="M3 9l9-7 9 7v11a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+          </span>
+          <span class="label">They Find You</span>
+        </div>
+
+        <span class="flow-arrow">&rarr;</span>
+
+        <div class="flow-step">
+          <span class="flow-circle">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="#25D366"><path d="M16 3C9 3 3.3 8.7 3.3 15.7c0 2.6.7 5 2 7.1L3 29l6.4-2.2c2 1.1 4.3 1.7 6.6 1.7 7 0 12.7-5.7 12.7-12.7C28.7 8.7 23 3 16 3zm0 23.1c-2.1 0-4.1-.6-5.8-1.6l-.4-.2-3.8 1.3 1.3-3.7-.3-.4a10.3 10.3 0 0 1-1.7-5.8c0-5.8 4.7-10.4 10.5-10.4S26.5 9.9 26.5 15.7 21.8 26.1 16 26.1z"/></svg>
+          </span>
+          <span class="label">They Contact You</span>
+        </div>
       </div>
-    </section>
-  );
-}
 
-function Footer() {
-  return (
-    <footer className="bg-[#2B0854] pt-12 sm:pt-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid grid-cols-2 gap-8 pb-10 sm:grid-cols-3">
-          <div className="col-span-2 sm:col-span-1">
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-                <span className="text-sm font-bold text-purple-700">C</span>
-              </span>
-              <span className="text-lg font-semibold text-white">Cloutinet</span>
-            </div>
-            <p className="mt-4 max-w-xs text-sm text-purple-200">
-              Helping Nigerian businesses get found and win more customers.
-            </p>
+      <div class="banner">
+        <p>More Visibility.<br>More Customers. More Sales.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRICING ================= -->
+  <section class="pricing" id="pricing">
+    <div class="wrap">
+      <p class="eyebrow">Simple pricing</p>
+      <h2>Plans for every stage of your business</h2>
+
+      <div class="plans">
+
+        <div class="plan-card">
+          <h3>Free</h3>
+          <div class="plan-price"><span class="amount">₦0</span><span class="cadence">forever</span></div>
+          <p class="plan-blurb">For businesses just getting started online.</p>
+          <ul class="plan-features">
+            <li><span class="check">✓</span><span>1 Google-searchable page</span></li>
+            <li><span class="check">✓</span><span>Up to 5 products or services</span></li>
+            <li><span class="check">✓</span><span>WhatsApp contact button</span></li>
+            <li><span class="check">✓</span><span>Basic visibility score</span></li>
+          </ul>
+          <a href="/signup?plan=free" class="btn-dark">Start Free</a>
+        </div>
+
+        <div class="plan-card highlight">
+          <h3>Growth</h3>
+          <div class="plan-price"><span class="amount">₦5,000</span><span class="cadence">/month</span></div>
+          <p class="plan-blurb">For businesses ready to rank and grow.</p>
+          <ul class="plan-features">
+            <li><span class="check">✓</span><span>Everything in Free</span></li>
+            <li><span class="check">✓</span><span>Unlimited products or services</span></li>
+            <li><span class="check">✓</span><span>Full visibility score + tips</span></li>
+            <li><span class="check">✓</span><span>Review management tools</span></li>
+            <li><span class="check">✓</span><span>Priority support</span></li>
+          </ul>
+          <a href="/signup?plan=growth" class="btn-green">Start Growth Plan</a>
+        </div>
+
+        <div class="plan-card">
+          <h3>Business</h3>
+          <div class="plan-price"><span class="amount">₦15,000</span><span class="cadence">/month</span></div>
+          <p class="plan-blurb">For teams managing multiple locations.</p>
+          <ul class="plan-features">
+            <li><span class="check">✓</span><span>Everything in Growth</span></li>
+            <li><span class="check">✓</span><span>Up to 5 business locations</span></li>
+            <li><span class="check">✓</span><span>Analytics dashboard</span></li>
+            <li><span class="check">✓</span><span>Dedicated account manager</span></li>
+          </ul>
+          <a href="/contact?topic=business-plan" class="btn-dark">Talk to Sales</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FINAL CTA ================= -->
+  <section class="final-cta">
+    <div class="wrap">
+      <h2>Ready to Get More Customers?</h2>
+      <p>Join Nigerian businesses already growing with Cloutinet.</p>
+      <a href="/signup" class="btn-green">Create Your Free Page</a>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer>
+    <div class="wrap">
+      <div class="footer-top">
+        <div>
+          <div class="footer-brand-row">
+            <span class="footer-logo-mark">C</span>
+            <span class="name">Cloutinet</span>
           </div>
-          {FOOTER_COLUMNS.map((col) => (
-            <div key={col.title}>
-              <p className="text-sm font-semibold text-white">{col.title}</p>
-              <ul className="mt-4 space-y-3">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <a href={link.href} className="text-sm text-purple-200 hover:text-white">
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <p class="tagline">Helping Nigerian businesses get found and win more customers.</p>
+          <p class="flag">Made for Nigerian businesses 🇳🇬</p>
         </div>
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/10 py-6 text-xs text-purple-300 sm:flex-row">
-          <p>© {new Date().getFullYear()} Cloutinet. All rights reserved.</p>
-          <p>Made for Nigerian businesses 🇳🇬</p>
+
+        <div class="footer-cols">
+          <div class="col">
+            <p class="head">Product</p>
+            <ul>
+              <li><a href="#how-it-works">How it Works</a></li>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#pricing">Pricing</a></li>
+              <li><a href="/check-score">Check Score</a></li>
+            </ul>
+          </div>
+          <div class="col">
+            <p class="head">Company</p>
+            <ul>
+              <li><a href="/about">About</a></li>
+              <li><a href="/contact">Contact</a></li>
+            </ul>
+          </div>
+          <div class="col">
+            <p class="head">Legal</p>
+            <ul>
+              <li><a href="/privacy">Privacy Policy</a></li>
+              <li><a href="/terms">Terms of Service</a></li>
+            </ul>
+          </div>
         </div>
       </div>
-    </footer>
-  );
-}
+
+      <p class="copyright">© 2026 Cloutinet. All rights reserved.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
