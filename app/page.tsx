@@ -229,8 +229,8 @@ function Navbar() {
     <header className="sticky top-0 z-50 relative border-b border-white/5 bg-[#0A0E27]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
         <a href="#" className="flex items-center gap-2">
-  <span className="text-base font-extrabold tracking-tight text-white sm:text-lg">
-    Cloutinet
+  <span className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+  Cloutinet
   </span>
 </a>
 
