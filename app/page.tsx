@@ -98,7 +98,7 @@ const PLANS = [
       "Basic visibility score",
     ],
     cta: "Start Free",
-    href: "/signup?plan=free",
+    href: "/auth?plan=free",
     highlighted: false,
   },
   {
@@ -114,7 +114,7 @@ const PLANS = [
       "Priority support",
     ],
     cta: "Start Growth Plan",
-    href: "/signup?plan=growth",
+    href: "/auth?plan=growth",
     highlighted: true,
   },
   {
@@ -189,7 +189,7 @@ const FOOTER_COLUMNS = [
       { label: "How it Works", href: "#how-it-works" },
       { label: "Features", href: "#features" },
       { label: "Pricing", href: "#pricing" },
-      { label: "Check Score", href: "/check-score" },
+      { label: "Check Score", href: "/checker" },
     ],
   },
   {
@@ -251,13 +251,13 @@ function Navbar() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <a
-            href="/check-score"
+            href="/checker"
             className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:border-white/40 hover:bg-white/5"
           >
             Check Score
           </a>
           <a
-            href="/signup"
+            href="/auth"
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
           >
             Get Started
@@ -286,13 +286,13 @@ function Navbar() {
           ))}
           <div className="mt-4 flex flex-col gap-3">
             <a
-              href="/check-score"
+              href="/checker"
               className="rounded-full border border-white/20 px-4 py-2.5 text-center text-sm font-medium text-white"
             >
               Check Score
             </a>
             <a
-              href="/signup"
+              href="/auth"
               className="rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
             >
               Get Started
@@ -306,14 +306,14 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#0A0E27] pb-14 pt-10 sm:pb-20 sm:pt-14 lg:pb-28 lg:pt-20">
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#2E1065] via-[#5B21B6] to-[#7C3AED] pb-14 pt-10 sm:pb-20 sm:pt-14 lg:pb-28 lg:pt-20">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 left-[10%] h-[500px] w-[700px] rounded-full bg-blue-700/30 blur-[130px]"
+        className="pointer-events-none absolute -top-32 left-[10%] h-[500px] w-[700px] rounded-full bg-purple-700/30 blur-[130px]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] rounded-full bg-blue-600/25 blur-[130px]"
+        className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] rounded-full bg-fuchsia-500/25 blur-[130px]"
       />
       <div
         aria-hidden
@@ -333,7 +333,7 @@ function Hero() {
             Get More <span className="text-emerald-400">Customers.</span>
           </h1>
 
-          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-200 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
             List your products and services for free. Cloutinet creates a
             Google-searchable page for your business so customers can find
             and contact you on WhatsApp.
@@ -341,7 +341,7 @@ function Hero() {
 
           <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
             <a
-              href="/signup"
+              href="/auth"
               className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
             >
               Create Your Free Page
@@ -356,7 +356,7 @@ function Hero() {
             </a>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-200 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
             <span className="flex items-center gap-1.5">
               <Gift className="h-4 w-4 text-emerald-400" />
               100% Free to Start
@@ -584,7 +584,9 @@ function Pricing() {
                 {plan.name}
               </p>
               <div className="mt-2 flex items-baseline gap-1">
-                <span className={`text-3xl font-bold ${plan.highlighted ? "text-white" : "text-slate-900"}`}>{plan.price}</span>
+                <span className={`text-3xl font-bold ${plan.highlighted ? "text-white" : "text-slate-900"}`}>
+                  {plan.price}
+                </span>
                 <span
                   className={`text-sm ${
                     plan.highlighted ? "text-blue-100" : "text-slate-400"
@@ -758,14 +760,14 @@ function FinalCta() {
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
                 <a
-                  href="/signup"
+                  href="/auth"
                   className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
                 >
                   Create Your Free Page
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
-                  href="/check-score"
+                  href="/checker"
                   className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
                 >
                   Check Your Score Free
