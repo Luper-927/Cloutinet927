@@ -174,7 +174,7 @@ const TESTIMONIALS = [
     name: "Ahmed R.",
     role: "Phone Accessories, Abuja",
   },
-  {n
+  {
     quote:
       "I love the visibility score feature. It shows me exactly what to fix and how to get more customers.",
     name: "Blessing O.",
