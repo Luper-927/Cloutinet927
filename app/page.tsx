@@ -327,7 +327,7 @@ function Hero() {
             Proudly built for Nigerian Businesses
           </div>
 
-          <h1 className="text-[1.75rem] font-bold leading-[1.15] tracking-tight text-white xs:text-3xl sm:text-4xl lg:text-5xl xl:text-[3.4rem]">
+          <h1 className="text-4xl font-extrabold leading-[0.95] tracking-tight text-white xs:text-5xl sm:text-6xl lg:text-7xl xl:text-8xl">
             Get Found on Google.
             <br />
             Get More <span className="text-emerald-400">Customers.</span>
@@ -367,7 +367,7 @@ function Hero() {
             </span>
             <span className="flex items-center gap-1.5">
               <Clock className="h-4 w-4 text-emerald-400" />
-              Setup in 5 Minutes
+              Setup in 2 Minutes
             </span>
           </div>
         </div>
@@ -379,7 +379,7 @@ function Hero() {
       </div>
     </section>
   );
-}
+} 
 
 function PhoneMockup() {
   return (
