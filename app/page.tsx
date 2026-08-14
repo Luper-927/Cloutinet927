@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-   "Cloutinet — Get Found on Google. Get More Customers.",
+ tittle: "Cloutinet — Get Found on Google. Get More Customers.",
   description:
     "Cloutinet creates a Google-searchable page for your business so customers can find and contact you on WhatsApp.",
 };
@@ -174,7 +174,7 @@ const TESTIMONIALS = [
     name: "Ahmed R.",
     role: "Phone Accessories, Abuja",
   },
-  {
+  {n
     quote:
       "I love the visibility score feature. It shows me exactly what to fix and how to get more customers.",
     name: "Blessing O.",
@@ -229,13 +229,10 @@ function Navbar() {
     <header className="sticky top-0 z-50 relative border-b border-white/5 bg-[#0A0E27]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
         <a href="#" className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 sm:h-8 sm:w-8">
-            <span className="text-xs font-bold text-white sm:text-sm">C</span>
-          </span>
-          <span className="text-base font-extrabold tracking-tight text-white sm:text-lg">
-  Cloutinet
-</span>
-        </a>
+  <span className="text-base font-extrabold tracking-tight text-white sm:text-lg">
+    Cloutinet
+  </span>
+</a>
 
         <nav className="hidden items-center gap-8 lg:flex">
           {NAV_LINKS.map((link) => (
