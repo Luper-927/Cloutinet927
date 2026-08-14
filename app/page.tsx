@@ -232,9 +232,9 @@ function Navbar() {
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 sm:h-8 sm:w-8">
             <span className="text-xs font-bold text-white sm:text-sm">C</span>
           </span>
-          <span className="text-base font-semibold tracking-tight text-white sm:text-lg">
-            Cloutinet
-          </span>
+          <span className="text-base font-extrabold tracking-tight text-white sm:text-lg">
+  Cloutinet
+</span>
         </a>
 
         <nav className="hidden items-center gap-8 lg:flex">
