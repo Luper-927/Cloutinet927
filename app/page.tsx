@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cloutinet — Get Found on Google. Get More Customers.",
+   "Cloutinet — Get Found on Google. Get More Customers.",
   description:
     "Cloutinet creates a Google-searchable page for your business so customers can find and contact you on WhatsApp.",
 };
