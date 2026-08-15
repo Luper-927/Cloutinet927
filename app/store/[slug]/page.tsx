@@ -1,6 +1,7 @@
 import { supabase } from '../../../lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const revalidate = 60
 
@@ -236,9 +237,21 @@ export default async function StorePage({ params }: { params: { slug: string } }
           <p style={{ textAlign: 'center', color: '#94A3B8', fontSize: '13px' }}>No products listed yet.</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
-            {products.map((p: any) => (
+            {products.map((p: any, index: number) => (
               <Link key={p.id} href={'/store/' + params.slug + '/' + p.slug} style={{ textDecoration: 'none', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
-                {p.image_url && <img src={p.image_url} style={{ width: '100%', height: '110px', objectFit: 'cover' as const }} alt={p.name} />}
+                {p.image_url && (
+                  <div style={{ position: 'relative' as const, width: '100%', height: '110px' }}>
+                    <Image
+                      src={p.image_url}
+                      alt={p.name}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
+                      style={{ objectFit: 'cover' as const }}
+                      loading={index < 4 ? 'eager' : 'lazy'}
+                      priority={index < 4}
+                    />
+                  </div>
+                )}
                 <div style={{ padding: '10px' }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{p.name}</div>
                   {p.price && <div style={{ fontSize: '12px', color: '#475569', fontWeight: 600 }}>{p.currency} {Number(p.price).toLocaleString()}</div>}
