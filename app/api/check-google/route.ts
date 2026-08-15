@@ -23,15 +23,20 @@ export async function GET(req: NextRequest) {
     const data = await response.json()
 
     if (data.error) {
-      return NextResponse.json({ found: false, googleScore: 0, business: null })
+      return NextResponse.json({ found: false, googleScore: 0, business: null, onCloutinetSearch: false })
     }
 
     const kg = data.knowledge_graph
     const local = data.local_results && data.local_results[0]
     const place = kg || local
 
+    const organicResults = data.organic_results || []
+    const onCloutinetSearch = organicResults.some((r: any) =>
+      typeof r.link === 'string' && r.link.includes('cloutinet.online')
+    )
+
     if (!place) {
-      return NextResponse.json({ found: false, googleScore: 0, business: null })
+      return NextResponse.json({ found: false, googleScore: 0, business: null, onCloutinetSearch })
     }
 
     let score = 0
@@ -67,6 +72,7 @@ export async function GET(req: NextRequest) {
       found: true,
       googleScore: score,
       breakdown,
+      onCloutinetSearch,
       business: {
         name: place.title || place.name || null,
         address: place.address || null,
