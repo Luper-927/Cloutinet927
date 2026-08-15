@@ -126,6 +126,11 @@ export default function OnboardingPage() {
 
     setSaving(false)
     if (saveError) { setError(saveError.message); return }
+
+    // Fire-and-forget: tell Google to re-check the sitemap now that a new
+    // business page exists. Doesn't block the redirect if it fails or is slow.
+    fetch('/api/ping-sitemap', { method: 'POST' }).catch(() => {})
+
     window.location.href = '/dashboard'
   }
 
