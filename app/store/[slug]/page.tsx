@@ -182,7 +182,7 @@ export default async function StorePage({ params }: { params: { slug: string } }
       <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0' }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
           <div style={{ width: '28px', height: '28px', background: '#0F172A', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>C</div>
-          <span style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>Cloutinet</span>
+          <span style={{TV TV: '16px', fontWeight: 700, color: '#0F172A' }}>Cloutinet</span>
         </Link>
       </nav>
 
@@ -194,14 +194,10 @@ export default async function StorePage({ params }: { params: { slug: string } }
       </section>
 
       {whatsappLink && (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
-          <a href={whatsappLink} style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: '#16A34A', color: '#fff', padding: '13px 28px',
-            borderRadius: '8px', textDecoration: 'none', fontSize: '15px', fontWeight: 700
-          }}>Contact on WhatsApp</a>
-        </div>
-      )}
+  <div style={{ textAlign: 'center', padding: '20px' }}>
+    <WhatsAppButton href={whatsappLink} businessSlug={params.slug} label="Contact on WhatsApp" />
+  </div>
+)}
 
       {(profile.business_hours || servicesList.length > 0 || socialLinks.length > 0 || profile.phone) && (
         <section style={{ maxWidth: '700px', margin: '0 auto 24px', padding: '0 16px' }}>
