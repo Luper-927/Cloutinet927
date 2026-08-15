@@ -17,8 +17,6 @@ import {
   CreditCard,
   Clock,
   CheckCircle2,
-  Menu,
-  X,
   Quote,
   ClipboardList,
   Rocket,
@@ -26,7 +24,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
- title: "Cloutinet — Get Found on Google. Get More Customers.",
+  title: "Cloutinet — Get Found on Google. Get More Customers.",
   description:
     "Cloutinet creates a Google-searchable page for your business so customers can find and contact you on WhatsApp.",
 };
@@ -229,10 +227,10 @@ function Navbar() {
     <header className="sticky top-0 z-50 relative border-b border-white/5 bg-[#0A0E27]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
         <a href="#" className="flex items-center gap-2">
-  <span className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-  Cloutinet
-  </span>
-</a>
+          <span className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+            Cloutinet
+          </span>
+        </a>
 
         <nav className="hidden items-center gap-8 lg:flex">
           {NAV_LINKS.map((link) => (
@@ -261,40 +259,19 @@ function Navbar() {
           </a>
         </div>
 
-        <input type="checkbox" id="nav-toggle" className="peer hidden" />
-        <label
-          htmlFor="nav-toggle"
-          className="z-50 flex h-9 w-9 cursor-pointer items-center justify-center text-white lg:hidden"
-          aria-label="Toggle menu"
-        >
-          <Menu className="h-6 w-6 peer-checked:hidden" />
-          <X className="hidden h-6 w-6 peer-checked:block" />
-        </label>
-
-        <div className="absolute inset-x-0 top-full z-40 hidden max-h-0 flex-col overflow-hidden border-b border-white/5 bg-[#0A0E27] px-4 opacity-0 transition-all duration-200 peer-checked:flex peer-checked:max-h-[480px] peer-checked:py-4 peer-checked:opacity-100 lg:hidden">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="border-b border-white/5 py-3 text-sm font-medium text-slate-300 hover:text-white"
-            >
-              {link.label}
-            </a>
-          ))}
-          <div className="mt-4 flex flex-col gap-3">
-            <a
-              href="/checker"
-              className="rounded-full border border-white/20 px-4 py-2.5 text-center text-sm font-medium text-white"
-            >
-              Check Score
-            </a>
-            <a
-              href="/auth"
-              className="rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white"
-            >
-              Get Started
-            </a>
-          </div>
+        <div className="flex items-center gap-1.5 lg:hidden">
+          <a
+            href="/checker"
+            className="rounded-full border border-white/20 px-2.5 py-1.5 text-[11px] font-medium text-white"
+          >
+            Check Score
+          </a>
+          <a
+            href="/auth"
+            className="rounded-lg bg-blue-600 px-2.5 py-1.5 text-[11px] font-semibold text-white"
+          >
+            Get Started
+          </a>
         </div>
       </div>
     </header>
@@ -303,14 +280,14 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#2E1065] via-[#5B21B6] to-[#7C3AED] pb-14 pt-10 sm:pb-20 sm:pt-14 lg:pb-28 lg:pt-20">
+    <section className="relative overflow-hidden bg-[#0A0E27] pb-14 pt-10 sm:pb-20 sm:pt-14 lg:pb-28 lg:pt-20">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 left-[10%] h-[500px] w-[700px] rounded-full bg-purple-700/30 blur-[130px]"
+        className="pointer-events-none absolute -top-32 left-[10%] h-[500px] w-[700px] rounded-full bg-blue-700/30 blur-[130px]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] rounded-full bg-fuchsia-500/25 blur-[130px]"
+        className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] rounded-full bg-blue-600/25 blur-[130px]"
       />
       <div
         aria-hidden
@@ -330,7 +307,7 @@ function Hero() {
             Get More <span className="text-emerald-400">Customers.</span>
           </h1>
 
-          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-200 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
             List your products and services for free. Cloutinet creates a
             Google-searchable page for your business so customers can find
             and contact you on WhatsApp.
@@ -353,7 +330,21 @@ function Hero() {
             </a>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-200 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
+          <div className="mt-5 flex items-center justify-center gap-2 text-xs text-slate-400 lg:justify-start">
+            <span className="flex -space-x-1.5">
+              {["C", "A", "B"].map((letter) => (
+                <span
+                  key={letter}
+                  className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#0A0E27] bg-emerald-500 text-[10px] font-bold text-white"
+                >
+                  {letter}
+                </span>
+              ))}
+            </span>
+            Trusted by real Nigerian businesses already growing with Cloutinet
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
             <span className="flex items-center gap-1.5">
               <Gift className="h-4 w-4 text-emerald-400" />
               100% Free to Start
@@ -364,7 +355,7 @@ function Hero() {
             </span>
             <span className="flex items-center gap-1.5">
               <Clock className="h-4 w-4 text-emerald-400" />
-              Setup in 2 Minutes
+              Setup in 5 Minutes
             </span>
           </div>
         </div>
@@ -376,7 +367,7 @@ function Hero() {
       </div>
     </section>
   );
-} 
+}
 
 function PhoneMockup() {
   return (
@@ -640,21 +631,11 @@ function Testimonials() {
         <div className="rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
           <div className="mx-auto max-w-xl text-center">
             <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-slate-300 sm:text-xs">
-              TRUSTED BY 2,000+ BUSINESSES
+              BUILT FOR NIGERIAN BUSINESSES
             </span>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:mt-4 sm:text-3xl lg:text-4xl">
               Loved by Nigerian Businesses
             </h2>
-            <div className="mt-3 flex items-center justify-center gap-2">
-              <div className="flex text-amber-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" />
-                ))}
-              </div>
-              <span className="text-xs text-slate-400 sm:text-sm">
-                4.9/5 from 500+ reviews
-              </span>
-            </div>
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:gap-5 md:grid-cols-3">
@@ -677,17 +658,6 @@ function Testimonials() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-7 flex items-center justify-center gap-2 sm:mt-9">
-            {[0, 1, 2, 3].map((i) => (
-              <span
-                key={i}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === 0 ? "w-5 bg-blue-500" : "w-1.5 bg-white/20"
-                }`}
-              />
             ))}
           </div>
         </div>
@@ -753,7 +723,7 @@ function FinalCta() {
                 Ready to Get More Customers?
               </h2>
               <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 sm:mt-4 sm:text-base lg:mx-0">
-                Join thousands of Nigerian businesses already growing with Cloutinet.
+                Join Nigerian businesses already growing with Cloutinet.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
                 <a
@@ -836,10 +806,7 @@ function Footer() {
         <div className="grid grid-cols-2 gap-8 pb-10 sm:grid-cols-3 sm:gap-10 sm:pb-12 lg:grid-cols-6">
           <div className="col-span-2 sm:col-span-3 lg:col-span-2">
             <a href="#" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                <span className="text-sm font-bold text-white">C</span>
-              </span>
-              <span className="text-lg font-semibold text-white">Cloutinet</span>
+              <span className="text-lg font-black text-white">Cloutinet</span>
             </a>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
               Helping Nigerian businesses get found on Google and win more customers, every day.
