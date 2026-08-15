@@ -15,15 +15,18 @@ export default function AboutPage() {
       <section style={{ maxWidth: '580px', margin: '0 auto', padding: '40px 20px' }}>
 
         <div style={{ color: '#475569', fontSize: '11px', fontWeight: 700, letterSpacing: '2px', marginBottom: '10px', textTransform: 'uppercase' }}>Our Story</div>
-        <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '16px', lineHeight: 1.2, color: '#0F172A' }}>Built for the Business Owner on the Street Corner</h1>
+        <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '16px', lineHeight: 1.2, color: '#0F172A' }}>Built So No Business Stays Invisible</h1>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          My name is Luper. I grew up watching hardworking people — farmers, traders, artisans — build real businesses with their hands, their skill, and their sweat. People like my family in Benue State who grow food that feeds thousands, but struggle to reach customers beyond their immediate community.
+          I built Cloutinet because I believe businesses shouldn't stay invisible just because they lack money, technical skill, or access to expensive marketing tools. A business owner's ability to be found online shouldn't depend on whether they can afford an agency or a developer.
         </p>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          I built Cloutinet because I believe every small business owner deserves the same visibility that big companies pay millions to achieve. A woman selling rice in Port Harcourt should be able to type her business name into Google and see her own page — with her products, her prices, and a direct WhatsApp link for customers to reach her.
+          My vision for Cloutinet goes beyond a simple directory — I want it to become a complete business visibility operating system. A place where any business can establish a real digital presence, become discoverable on Google, showcase what they sell, reach customers directly, and grow through tools that work automatically in the background.
+        </p>
+        <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
+          That means building Cloutinet to be fast, lightweight, affordable, and built to scale — especially for SMEs across Nigeria and other emerging markets, where data is expensive and every second of load time matters.
         </p>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '32px' }}>
-          No agency. No web developer. No monthly subscription to get started. Just a free tool that works.
+          At its core, Cloutinet is infrastructure. The technology should do the complicated work — visibility, discoverability, automation — so business owners can spend their time on what actually matters: serving their customers.
         </p>
 
         <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '24px', marginBottom: '32px' }}>
