@@ -76,7 +76,7 @@ export default function CheckerPage() {
     if (score >= 70) return 'Good Visibility'
     if (score >= 40) return 'Moderate Visibility'
     if (score > 0) return 'Poor Visibility'
-    return 'Not Visible on Google'
+    return 'No Google Business Profile'
   }
 
   return (
@@ -130,9 +130,31 @@ export default function CheckerPage() {
       {result && (
         <section style={{ maxWidth: '520px', margin: '0 auto', padding: '32px 20px' }}>
 
+          {/* CLOUTINET SEARCH VISIBILITY - NEW, HONEST CHECK */}
+          <div style={{
+            background: result.googleData.onCloutinetSearch ? '#F0FDF4' : '#FFF7ED',
+            border: result.googleData.onCloutinetSearch ? '1px solid #BBF7D0' : '1px solid #FED7AA',
+            borderRadius: '12px', padding: '16px', marginBottom: '16px'
+          }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '8px' }}>Google Search Visibility</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '20px' }}>{result.googleData.onCloutinetSearch ? '✅' : '⏳'}</span>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: result.googleData.onCloutinetSearch ? '#166534' : '#9A3412' }}>
+                {result.googleData.onCloutinetSearch
+                  ? 'This business page is showing up in Google Search results'
+                  : 'Not yet appearing in Google Search for this name'}
+              </span>
+            </div>
+            {!result.googleData.onCloutinetSearch && (
+              <div style={{ fontSize: '12px', color: '#64748B', marginTop: '6px' }}>
+                New pages can take 1-2 weeks to appear. This is separate from Google Business Profile below.
+              </div>
+            )}
+          </div>
+
           {/* GOOGLE RESULT */}
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '12px' }}>Google Visibility</div>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '12px' }}>Google Business Profile</div>
 
             {result.googleData.found ? (
               <div>
@@ -178,8 +200,8 @@ export default function CheckerPage() {
             ) : (
               <div style={{ textAlign: 'center', padding: '16px 0' }}>
                 <div style={{ fontSize: '48px', fontWeight: 800, color: '#ff4444', marginBottom: '6px' }}>0</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#ff4444', marginBottom: '8px' }}>Not Found on Google</div>
-                <div style={{ fontSize: '12px', color: '#64748B' }}>This business has no Google presence. Customers searching online cannot find it.</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#ff4444', marginBottom: '8px' }}>No Google Business Profile Found</div>
+                <div style={{ fontSize: '12px', color: '#64748B' }}>This checks Google Maps/Business Profile specifically. Your website can still rank in Google Search separately — add a Business Profile at business.google.com to boost local visibility further.</div>
               </div>
             )}
           </div>
@@ -245,7 +267,7 @@ export default function CheckerPage() {
       {!result && !loading && (
         <section style={{ maxWidth: '520px', margin: '0 auto', padding: '32px 20px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: '#0F172A' }}>What this tool checks</h2>
-          <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px' }}>We search Google for your business and score it across 9 key visibility factors.</p>
+          <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px' }}>We check both your Google Search visibility and your Google Business Profile across 9 key factors.</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', textAlign: 'left' as const }}>
             {['Business Name', 'Address Listed', 'Phone Number', 'Business Hours', 'Website Link', 'Star Rating', 'Customer Reviews', 'Photos Added', 'Business Category'].map(item => (
               <div key={item} style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '12px', color: '#475569' }}>
