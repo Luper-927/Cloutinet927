@@ -17,10 +17,10 @@ export default function AboutPage() {
         <div style={{ color: '#475569', fontSize: '11px', fontWeight: 700, letterSpacing: '2px', marginBottom: '10px', textTransform: 'uppercase' }}>Our Story</div>
         <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '16px', lineHeight: 1.2, color: '#0F172A' }}>Built So No Business Stays Invisible</h1>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          I built Cloutinet because I believe businesses shouldn't stay invisible just because they lack money, technical skill, or access to expensive marketing tools. A business owner's ability to be found online shouldn't depend on whether they can afford an agency or a developer.
+          We built Cloutinet because we believe businesses shouldn't stay invisible just because they lack money, technical skill, or access to expensive marketing tools. A business owner's ability to be found online shouldn't depend on whether they can afford an agency or a developer.
         </p>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          My vision for Cloutinet goes beyond a simple directory — I want it to become a complete business visibility operating system. A place where any business can establish a real digital presence, become discoverable on Google, showcase what they sell, reach customers directly, and grow through tools that work automatically in the background.
+          Our vision for Cloutinet goes beyond a simple directory — we want it to become a complete business visibility operating system. A place where any business can establish a real digital presence, become discoverable on Google, showcase what they sell, reach customers directly, and grow through tools that work automatically in the background.
         </p>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
           That means building Cloutinet to be fast, lightweight, affordable, and built to scale — especially for SMEs across Nigeria and other emerging markets, where data is expensive and every second of load time matters.
@@ -43,12 +43,6 @@ export default function AboutPage() {
               <span style={{ color: '#475569', fontSize: '14px', lineHeight: 1.5 }}>{item}</span>
             </div>
           ))}
-        </div>
-
-        <div style={{ background: '#0F172A', borderRadius: '12px', padding: '24px', marginBottom: '32px', textAlign: 'center' }}>
-          <div style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '6px' }}>BUILT BY</div>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>Luper David</div>
-          <div style={{ fontSize: '13px', color: '#94A3B8' }}>Port Harcourt, Nigeria</div>
         </div>
 
         <div style={{ textAlign: 'center' }}>
