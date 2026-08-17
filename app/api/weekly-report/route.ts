@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
 
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     let sentCount = 0
+    const failures: { email: string; error: string }[] = []
 
     for (const profile of profiles) {
       const { count: viewCount } = await supabaseAdmin
@@ -134,7 +135,7 @@ export async function GET(req: NextRequest) {
         </html>
       `
 
-      await fetch('https://api.resend.com/emails', {
+      const emailResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + process.env.RESEND_API_KEY,
@@ -148,15 +149,25 @@ export async function GET(req: NextRequest) {
         }),
       })
 
+      if (emailResponse.ok) {
+        sentCount++
+      } else {
+        const errorBody = await emailResponse.text()
+        failures.push({ email: profile.email, error: `${emailResponse.status}: ${errorBody}` })
+      }
+
       await supabaseAdmin
         .from('profiles')
         .update({ last_visibility_score: score, last_score_check: new Date().toISOString() })
         .eq('id', profile.id)
-
-      sentCount++
     }
 
-    return NextResponse.json({ success: true, sent: sentCount })
+    return NextResponse.json({
+      success: true,
+      sent: sentCount,
+      failed: failures.length,
+      failures,
+    })
   } catch (e: any) {
     return NextResponse.json({ success: false, error: e.message }, { status: 500 })
   }
