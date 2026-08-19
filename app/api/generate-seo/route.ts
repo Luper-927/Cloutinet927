@@ -21,7 +21,15 @@ export async function POST(req: NextRequest) {
     }
 
     if (type === 'product_description') {
-      prompt = `Write a 2-sentence SEO product description for "${productName}" sold by "${businessName || 'a Nigerian business'}" in ${location || 'Nigeria'}. Price: ${price ? currency + ' ' + price : 'contact for price'}. Tell customers to contact the business on WhatsApp to order. Do not include any phone number. Return only the description, nothing else.`
+      prompt = `Write a compelling, high-converting product description for "${productName}" sold by "${businessName || 'a Nigerian business'}" in ${location || 'Nigeria'}. Price: ${price ? currency + ' ' + price : 'contact for price'}.
+
+Write 3-4 sentences that:
+- Open with a strong hook about the product's main benefit or quality
+- Highlight what makes it desirable (materials, craftsmanship, durability, style — infer from the product name/category if not given)
+- Create urgency or desire without being pushy
+- End by directing customers to contact via WhatsApp to order
+
+Write like a premium retailer would — confident, specific, and persuasive. Avoid generic phrases like "upgrade your home" or "look no further." Do not include any phone number. Return only the description, nothing else.`
     }
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
