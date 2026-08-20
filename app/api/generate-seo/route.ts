@@ -41,7 +41,7 @@ Write like a premium retailer would — confident, specific, and persuasive. Avo
       body: JSON.stringify({
         model: 'openai/gpt-oss-120b',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 200,
+        max_tokens: 600,
         temperature: 0.7,
       })
     })
