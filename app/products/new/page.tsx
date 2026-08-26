@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
 import Link from 'next/link'
 
 const currencies = ['NGN', 'USD', 'GBP', 'EUR', 'GHS']
+const FREE_PRODUCT_LIMIT = 20
 
 export default function NewProductPage() {
   const [name, setName] = useState('')
@@ -17,6 +18,26 @@ export default function NewProductPage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const [productCount, setProductCount] = useState<number | null>(null)
+  const [checkingLimit, setCheckingLimit] = useState(true)
+
+  useEffect(() => {
+    checkProductCount()
+  }, [])
+
+  async function checkProductCount() {
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) { window.location.href = '/auth'; return }
+
+    const { count } = await supabase
+      .from('products')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userData.user.id)
+
+    setProductCount(count ?? 0)
+    setCheckingLimit(false)
+  }
 
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -71,6 +92,18 @@ export default function NewProductPage() {
     const { data: userData } = await supabase.auth.getUser()
     if (!userData.user) { window.location.href = '/auth'; return }
 
+    const { count } = await supabase
+      .from('products')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userData.user.id)
+
+    if ((count ?? 0) >= FREE_PRODUCT_LIMIT) {
+      setSaving(false)
+      setProductCount(count ?? 0)
+      setError('You\u2019ve reached the free plan limit of ' + FREE_PRODUCT_LIMIT + ' products.')
+      return
+    }
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('business_name, location, business_slug')
@@ -114,6 +147,42 @@ export default function NewProductPage() {
     window.location.href = '/dashboard'
   }
 
+  if (checkingLimit) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (productCount !== null && productCount >= FREE_PRODUCT_LIMIT) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+        <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Add Product</div>
+          <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Cancel</Link>
+        </div>
+        <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: '36px', marginBottom: '12px' }}>📦</div>
+          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+            You&rsquo;ve reached the free plan limit
+          </h2>
+          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.5, marginBottom: '24px' }}>
+            Your free Cloutinet account can list up to {FREE_PRODUCT_LIMIT} products. You currently have {productCount} listed.
+            Higher limits will be available with paid plans soon.
+          </p>
+          <Link href="/dashboard" style={{
+            display: 'inline-block', background: '#0F172A', color: '#fff',
+            borderRadius: '8px', padding: '12px 24px', fontSize: '14px',
+            fontWeight: 700, textDecoration: 'none'
+          }}>
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
       <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -122,6 +191,12 @@ export default function NewProductPage() {
       </div>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
+
+        {productCount !== null && (
+          <p style={{ fontSize: '12px', color: '#94A3B8', fontWeight: 600, marginBottom: '16px' }}>
+            {productCount} / {FREE_PRODUCT_LIMIT} products used
+          </p>
+        )}
 
         <div
           onClick={() => fileRef.current?.click()}
