@@ -87,11 +87,11 @@ const PLANS = [
   {
     name: "Free",
     price: "₦0",
-    period: "forever",
+    period: "",
     description: "For businesses just getting started online.",
     features: [
       "1 Google-searchable page",
-      "Up to 5 products or services",
+      "Up to 20 products or services",
       "WhatsApp contact button",
       "Basic visibility score",
     ],
@@ -347,7 +347,7 @@ function Hero() {
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
             <span className="flex items-center gap-1.5">
               <Gift className="h-4 w-4 text-emerald-400" />
-              100% Free to Start
+              Free to Start
             </span>
             <span className="flex items-center gap-1.5">
               <CreditCard className="h-4 w-4 text-emerald-400" />
@@ -747,7 +747,7 @@ function FinalCta() {
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  Free Forever
+                  Free to Join
                 </span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-400" />
