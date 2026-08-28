@@ -10,12 +10,13 @@ export default function AdminPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [unauthorized, setUnauthorized] = useState(false)
-  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'products' | 'feedback'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'products' | 'feedback' | 'leads'>('overview')
 
   const [stats, setStats] = useState({ businesses: 0, products: 0, views: 0, leads: 0, feedback: 0 })
   const [businesses, setBusinesses] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [feedbacks, setFeedbacks] = useState<any[]>([])
+  const [leads, setLeads] = useState<any[]>([])
 
   useEffect(() => { load() }, [])
 
@@ -35,6 +36,7 @@ export default function AdminPage() {
       { data: bizData },
       { data: prodData },
       { data: feedData },
+      { data: leadData },
     ] = await Promise.all([
       supabase.from('profiles').select('*', { count: 'exact', head: true }).not('business_name', 'is', null),
       supabase.from('products').select('*', { count: 'exact', head: true }),
@@ -44,6 +46,7 @@ export default function AdminPage() {
       supabase.from('profiles').select('*').not('business_name', 'is', null).order('created_at', { ascending: false }),
       supabase.from('products').select('*').order('created_at', { ascending: false }).limit(50),
       supabase.from('feedback').select('*').order('created_at', { ascending: false }),
+      supabase.from('analytics_events').select('*').eq('event_type', 'whatsapp_click').order('created_at', { ascending: false }).limit(200),
     ])
 
     setStats({
@@ -56,7 +59,19 @@ export default function AdminPage() {
     setBusinesses(bizData || [])
     setProducts(prodData || [])
     setFeedbacks(feedData || [])
+    setLeads(leadData || [])
     setLoading(false)
+  }
+
+  function businessNameFor(slug: string) {
+    const b = businesses.find(biz => biz.business_slug === slug)
+    return b?.business_name || slug
+  }
+
+  function productNameFor(productId: string | null) {
+    if (!productId) return null
+    const p = products.find(prod => prod.id === productId)
+    return p?.name || null
   }
 
   if (loading) return (
@@ -100,15 +115,16 @@ export default function AdminPage() {
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '4px', background: '#0f0f1a', borderRadius: '10px', padding: '4px', marginBottom: '20px', border: '1px solid #252535' }}>
+        <div style={{ display: 'flex', gap: '4px', background: '#0f0f1a', borderRadius: '10px', padding: '4px', marginBottom: '20px', border: '1px solid #252535', flexWrap: 'wrap' as const }}>
           {[
             { id: 'overview', label: '📊 Overview' },
             { id: 'businesses', label: '🏪 Businesses' },
             { id: 'products', label: '📦 Products' },
+            { id: 'leads', label: '📨 Leads' },
             { id: 'feedback', label: '💬 Feedback' },
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{
-              flex: 1, padding: '8px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              flex: 1, minWidth: '80px', padding: '8px', borderRadius: '8px', border: 'none', cursor: 'pointer',
               fontSize: '12px', fontWeight: 600,
               background: activeTab === tab.id ? 'linear-gradient(135deg, #FF6B35, #E91E8C)' : 'transparent',
               color: activeTab === tab.id ? '#fff' : '#8888aa'
@@ -169,6 +185,34 @@ export default function AdminPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'leads' && (
+          <div>
+            <h3 style={{ color: '#f0f0ff', fontSize: '14px', marginBottom: '12px' }}>WhatsApp Leads ({leads.length})</h3>
+            {leads.length === 0 ? (
+              <p style={{ color: '#8888aa', fontSize: '13px', textAlign: 'center', padding: '20px' }}>No leads yet</p>
+            ) : (
+              leads.map(lead => {
+                const productName = productNameFor(lead.product_id)
+                return (
+                  <div key={lead.id} style={{ background: '#0f0f1a', border: '1px solid #252535', borderRadius: '10px', padding: '12px', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ color: '#f0f0ff', fontWeight: 600, fontSize: '13px' }}>{businessNameFor(lead.business_slug)}</div>
+                        {productName && <div style={{ color: '#06B6D4', fontSize: '11px', marginTop: '2px' }}>📦 {productName}</div>}
+                        <div style={{ color: '#8888aa', fontSize: '11px', marginTop: '2px' }}>Source: {lead.source || 'unknown'}</div>
+                      </div>
+                      {lead.business_slug && (
+                        <a href={'/store/' + lead.business_slug} style={{ color: '#00e676', fontSize: '11px', textDecoration: 'none', flexShrink: 0 }}>View →</a>
+                      )}
+                    </div>
+                    <div style={{ color: '#8888aa', fontSize: '10px', marginTop: '6px' }}>{new Date(lead.created_at).toLocaleString()}</div>
+                  </div>
+                )
+              })
+            )}
           </div>
         )}
 
