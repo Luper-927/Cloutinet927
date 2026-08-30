@@ -127,11 +127,17 @@ export default function OnboardingPage() {
     setSaving(false)
     if (saveError) { setError(saveError.message); return }
 
-    // Fire-and-forget: tell Google to re-check the sitemap now that a new
-    // business page exists. Doesn't block the redirect if it fails or is slow.
+   // Fire-and-forget: tell Google to re-check the sitemap, and directly
+    // request indexing for the new business page. Doesn't block the
+    // redirect if either fails or is slow.
     fetch('/api/ping-sitemap', { method: 'POST' }).catch(() => {})
+    fetch('/api/request-indexing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: 'https://cloutinet.online/store/' + slug }),
+    }).catch(() => {})
 
-    window.location.href = '/dashboard'
+    window.location.href = '/dashboard' 
   }
 
   return (
