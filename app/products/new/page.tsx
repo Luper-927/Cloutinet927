@@ -18,6 +18,7 @@ export default function NewProductPage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+  const savingLock = useRef(false)
 
   const [productCount, setProductCount] = useState<number | null>(null)
   const [checkingLimit, setCheckingLimit] = useState(true)
@@ -85,7 +86,14 @@ export default function NewProductPage() {
   }
 
   async function handleSave() {
-    if (!name.trim()) { setError('Product name is required'); return }
+    if (savingLock.current) return
+    savingLock.current = true
+
+    if (!name.trim()) {
+      setError('Product name is required')
+      savingLock.current = false
+      return
+    }
     setSaving(true)
     setError('')
 
@@ -99,6 +107,7 @@ export default function NewProductPage() {
 
     if ((count ?? 0) >= FREE_PRODUCT_LIMIT) {
       setSaving(false)
+      savingLock.current = false
       setProductCount(count ?? 0)
       setError('You\u2019ve reached the free plan limit of ' + FREE_PRODUCT_LIMIT + ' products.')
       return
@@ -143,6 +152,7 @@ export default function NewProductPage() {
     })
 
     setSaving(false)
+    savingLock.current = false
     if (saveError) { setError(saveError.message); return }
     window.location.href = '/dashboard'
   }
