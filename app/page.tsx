@@ -27,6 +27,9 @@ export const metadata: Metadata = {
   title: "Cloutinet — Get Found on Google. Get More Customers.",
   description:
     "Cloutinet creates a Google-searchable page for your business so customers can find and contact you on WhatsApp.",
+  alternates: {
+    canonical: '/',
+  },
 };
 
 export const viewport: Viewport = {
@@ -280,15 +283,13 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#0A0E27] pb-14 pt-10 sm:pb-20 sm:pt-14 lg:pb-28 lg:pt-20">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 left-[10%] h-[500px] w-[700px] rounded-full bg-blue-700/30 blur-[130px]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-0 top-0 h-[600px] w-[600px] rounded-full bg-blue-600/25 blur-[130px]"
-      />
+    <section
+      className="relative overflow-hidden bg-[#0A0E27] pb-14 pt-10 sm:pb-20 sm:pt-14 lg:pb-28 lg:pt-20"
+      style={{
+        backgroundImage:
+          "radial-gradient(ellipse 700px 500px at 10% -10%, rgba(29,78,216,0.35), transparent 70%), radial-gradient(ellipse 600px 600px at 100% 0%, rgba(37,99,235,0.28), transparent 70%)",
+      }}
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 [background-image:radial-gradient(rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_70%_70%_at_70%_40%,black_30%,transparent_75%)] lg:block"
