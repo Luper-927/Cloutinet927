@@ -8,6 +8,31 @@ const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+const ALERT_EMAIL = 'luperabenga8@gmail.com'
+
+async function sendFailureAlert(subject: string, details: string) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return
+
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+      },
+      body: JSON.stringify({
+        from: 'Cloutinet Alerts <alerts@cloutinet.online>',
+        to: ALERT_EMAIL,
+        subject,
+        text: details,
+      }),
+    })
+  } catch (e) {
+    // If even the alert email fails, there's nothing more we can do here.
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { data: profiles } = await supabaseAdmin
@@ -173,6 +198,13 @@ export async function GET(req: NextRequest) {
         .eq('id', profile.id)
     }
 
+    if (failures.length > 0) {
+      await sendFailureAlert(
+        `⚠️ Cloutinet: Weekly report had ${failures.length} failed send(s)`,
+        `Sent: ${sentCount}\nFailed: ${failures.length}\n\nDetails:\n${JSON.stringify(failures, null, 2)}`
+      )
+    }
+
     return NextResponse.json({
       success: true,
       sent: sentCount,
@@ -180,6 +212,10 @@ export async function GET(req: NextRequest) {
       failures,
     })
   } catch (e: any) {
+    await sendFailureAlert(
+      '🔴 Cloutinet: Weekly report cron crashed entirely',
+      `The weekly report job failed completely:\n\n${e.message}\n\n${e.stack || ''}`
+    )
     return NextResponse.json({ success: false, error: e.message }, { status: 500 })
   }
 }
