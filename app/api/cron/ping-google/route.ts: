@@ -5,6 +5,31 @@ const SITEMAP_URLS = [
   'https://cloutinet.online/sitemap/1.xml',
 ]
 
+const ALERT_EMAIL = 'luperabenga8@gmail.com'
+
+async function sendFailureAlert(details: string) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return
+
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey,
+      },
+      body: JSON.stringify({
+        from: 'Cloutinet Alerts <alerts@cloutinet.online>',
+        to: ALERT_EMAIL,
+        subject: '⚠️ Cloutinet: Google ping cron failed',
+        text: 'The daily Google sitemap ping job ran into a problem:\n\n' + details,
+      }),
+    })
+  } catch (e) {
+    // If even the alert email fails, there's nothing more we can do here.
+  }
+}
+
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -12,15 +37,22 @@ export async function GET(req: NextRequest) {
   }
 
   const results = []
+  let hadFailure = false
 
   for (const sitemapUrl of SITEMAP_URLS) {
     try {
       const pingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`
       const response = await fetch(pingUrl)
       results.push({ sitemap: sitemapUrl, status: response.status, ok: response.ok })
+      if (!response.ok) hadFailure = true
     } catch (e: any) {
       results.push({ sitemap: sitemapUrl, error: e.message })
+      hadFailure = true
     }
+  }
+
+  if (hadFailure) {
+    await sendFailureAlert(JSON.stringify(results, null, 2))
   }
 
   return NextResponse.json({ pinged_at: new Date().toISOString(), results })
