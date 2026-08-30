@@ -1,0 +1,27 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+const SITEMAP_URLS = [
+  'https://cloutinet.online/sitemap/0.xml',
+  'https://cloutinet.online/sitemap/1.xml',
+]
+
+export async function GET(req: NextRequest) {
+  const authHeader = req.headers.get('authorization')
+  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const results = []
+
+  for (const sitemapUrl of SITEMAP_URLS) {
+    try {
+      const pingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`
+      const response = await fetch(pingUrl)
+      results.push({ sitemap: sitemapUrl, status: response.status, ok: response.ok })
+    } catch (e: any) {
+      results.push({ sitemap: sitemapUrl, error: e.message })
+    }
+  }
+
+  return NextResponse.json({ pinged_at: new Date().toISOString(), results })
+}
