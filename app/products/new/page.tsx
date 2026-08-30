@@ -154,6 +154,16 @@ export default function NewProductPage() {
     setSaving(false)
     savingLock.current = false
     if (saveError) { setError(saveError.message); return }
+
+    // Fire-and-forget: request indexing for the new product page.
+    if (profile?.business_slug) {
+      fetch('/api/request-indexing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: 'https://cloutinet.online/store/' + profile.business_slug + '/' + slug }),
+      }).catch(() => {})
+    }
+
     window.location.href = '/dashboard'
   }
 
