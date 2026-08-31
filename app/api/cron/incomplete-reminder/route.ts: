@@ -1,0 +1,136 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+export const dynamic = 'force-dynamic'
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+const ALERT_EMAIL = 'luperabenga8@gmail.com'
+
+async function sendFailureAlert(subject: string, details: string) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+      body: JSON.stringify({
+        from: 'Cloutinet Alerts <alerts@cloutinet.online>',
+        to: ALERT_EMAIL,
+        subject,
+        text: details,
+      }),
+    })
+  } catch (e) {}
+}
+
+function isIncomplete(profile: any, productCount: number) {
+  return !profile.location || !profile.tagline || !profile.business_hours || !profile.services || productCount === 0
+}
+
+export async function GET(req: NextRequest) {
+  const authHeader = req.headers.get('authorization')
+  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+
+    const { data: profiles } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .not('business_name', 'is', null)
+      .not('email', 'is', null)
+      .is('reminder_sent_at', null)
+      .gte('created_at', fortyEightHoursAgo)
+      .lte('created_at', twentyFourHoursAgo)
+
+    if (!profiles || profiles.length === 0) {
+      return NextResponse.json({ success: true, sent: 0 })
+    }
+
+    let sentCount = 0
+    const failures: { email: string; error: string }[] = []
+
+    for (const profile of profiles) {
+      const { count: productCount } = await supabaseAdmin
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+        .eq('is_published', true)
+
+      if (!isIncomplete(profile, productCount || 0)) {
+        await supabaseAdmin.from('profiles').update({ reminder_sent_at: new Date().toISOString() }).eq('id', profile.id)
+        continue
+      }
+
+      const missing = []
+      if (!profile.location) missing.push('your location')
+      if (!profile.tagline) missing.push('a tagline')
+      if (!profile.business_hours) missing.push('your business hours')
+      if (!profile.services) missing.push('your services or products')
+      if ((productCount || 0) === 0) missing.push('at least one product')
+
+      const emailHtml = `
+        <html>
+          <body style="font-family: Segoe UI, system-ui, sans-serif; background: #f5f5f5; padding: 20px;">
+            <div style="max-width: 480px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+              <div style="background: #0F172A; padding: 28px 24px; text-align: center;">
+                <div style="font-size: 22px; font-weight: 800; color: #fff;">Cloutinet</div>
+              </div>
+              <div style="padding: 28px 24px;">
+                <h2 style="font-size: 18px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">You're almost visible, ${profile.business_name}!</h2>
+                <p style="color: #64748B; font-size: 13px; line-height: 1.6; margin-bottom: 20px;">
+                  You started setting up your free Cloutinet page, but a few things are still missing — which means customers searching for you on Google might not find the full picture yet.
+                </p>
+                <div style="background: #FFF7ED; border-radius: 10px; padding: 16px; margin-bottom: 22px;">
+                  <div style="font-size: 13px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px;">Still needed:</div>
+                  <div style="font-size: 13px; color: #7C4A12;">${missing.join(', ')}</div>
+                </div>
+                <a href="https://cloutinet.online/onboarding" style="display: block; text-align: center; background: #0F172A; color: #fff; padding: 13px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 700;">
+                  👉 Finish My Page (2 minutes)
+                </a>
+              </div>
+            </div>
+          </body>
+        </html>
+      `
+
+      const emailResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'Cloutinet <noreply@cloutinet.online>',
+          to: [profile.email],
+          subject: `${profile.business_name}, finish setting up your free page`,
+          html: emailHtml,
+        }),
+      })
+
+      if (emailResponse.ok) {
+        sentCount++
+        await supabaseAdmin.from('profiles').update({ reminder_sent_at: new Date().toISOString() }).eq('id', profile.id)
+      } else {
+        const errorBody = await emailResponse.text()
+        failures.push({ email: profile.email, error: `${emailResponse.status}: ${errorBody}` })
+      }
+    }
+
+    if (failures.length > 0) {
+      await sendFailureAlert(
+        `⚠️ Cloutinet: Incomplete-profile reminder had ${failures.length} failed send(s)`,
+        JSON.stringify(failures, null, 2)
+      )
+    }
+
+    return NextResponse.json({ success: true, sent: sentCount, failed: failures.length })
+  } catch (e: any) {
+    await sendFailureAlert('🔴 Cloutinet: Incomplete-reminder cron crashed', e.message)
+    return NextResponse.json({ success: false, error: e.message }, { status: 500 })
+  }
+}
