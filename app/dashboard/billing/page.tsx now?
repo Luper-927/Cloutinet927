@@ -1,0 +1,213 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { supabase } from '../../../lib/supabase'
+import Link from 'next/link'
+
+interface Plan {
+  id: string
+  name: string
+  price_ngn: number
+}
+
+interface Subscription {
+  plan_id: string
+  status: string
+  current_period_end: string | null
+}
+
+export default function BillingPage() {
+  const searchParams = useSearchParams()
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [upgrading, setUpgrading] = useState<string | null>(null)
+  const [banner, setBanner] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
+
+  useEffect(() => {
+    init()
+  }, [])
+
+  async function init() {
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) { window.location.href = '/auth'; return }
+
+    await loadPlansAndSubscription()
+
+    const reference = searchParams.get('reference') || searchParams.get('trxref')
+    if (reference) {
+      await verifyPayment(reference)
+    }
+
+    setLoading(false)
+  }
+
+  async function loadPlansAndSubscription() {
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) return
+
+    const [{ data: plansData }, { data: subData }] = await Promise.all([
+      supabase.from('plans').select('*').eq('is_active', true).order('price_ngn', { ascending: true }),
+      supabase.from('subscriptions').select('*').eq('user_id', userData.user.id).single(),
+    ])
+
+    setPlans(plansData || [])
+    setSubscription(subData || { plan_id: 'free', status: 'active', current_period_end: null })
+  }
+
+  async function verifyPayment(reference: string) {
+    const { data: sessionData } = await supabase.auth.getSession()
+    const token = sessionData.session?.access_token
+    if (!token) return
+
+    try {
+      const response = await fetch('/api/payments/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token,
+        },
+        body: JSON.stringify({ reference }),
+      })
+      const data = await response.json()
+
+      if (data.status === 'success') {
+        setBanner({ type: 'success', message: 'Payment successful! Your plan has been upgraded.' })
+        await loadPlansAndSubscription()
+      } else if (data.status === 'pending') {
+        setBanner({ type: 'info', message: 'Your payment is still processing. This page will update shortly — refresh in a moment.' })
+      } else {
+        setBanner({ type: 'error', message: 'We could not confirm this payment. If you were charged, contact support.' })
+      }
+    } catch (e) {
+      setBanner({ type: 'error', message: 'Could not verify payment status. Please refresh the page.' })
+    }
+  }
+
+  async function handleUpgrade(planId: string) {
+    setUpgrading(planId)
+    setBanner(null)
+
+    const { data: sessionData } = await supabase.auth.getSession()
+    const token = sessionData.session?.access_token
+    if (!token) { window.location.href = '/auth'; return }
+
+    try {
+      const response = await fetch('/api/payments/initialize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token,
+        },
+        body: JSON.stringify({ plan_id: planId }),
+      })
+      const data = await response.json()
+
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url
+      } else {
+        setBanner({ type: 'error', message: data.error || 'Could not start payment. Please try again.' })
+        setUpgrading(null)
+      }
+    } catch (e) {
+      setBanner({ type: 'error', message: 'Could not start payment. Please try again.' })
+      setUpgrading(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  const currentPlanId = subscription?.plan_id || 'free'
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Billing & Subscription</div>
+        <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</Link>
+      </div>
+
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
+
+        {banner && (
+          <div style={{
+            background: banner.type === 'success' ? '#F0FDF4' : banner.type === 'error' ? '#FEF2F2' : '#EFF6FF',
+            border: '1px solid ' + (banner.type === 'success' ? '#BBF7D0' : banner.type === 'error' ? '#FECACA' : '#BFDBFE'),
+            borderRadius: '10px', padding: '14px', marginBottom: '20px'
+          }}>
+            <p style={{
+              color: banner.type === 'success' ? '#166534' : banner.type === 'error' ? '#dc2626' : '#1D4ED8',
+              fontSize: '13px', margin: 0, fontWeight: 600
+            }}>{banner.message}</p>
+          </div>
+        )}
+
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '18px', marginBottom: '24px' }}>
+          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>Current Plan</div>
+          <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', textTransform: 'capitalize' as const }}>
+            {plans.find(p => p.id === currentPlanId)?.name || 'Free'}
+          </div>
+          {subscription?.current_period_end && (
+            <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>
+              Renews {new Date(subscription.current_period_end).toLocaleDateString()}
+            </div>
+          )}
+        </div>
+
+        <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginBottom: '14px' }}>Available Plans</h2>
+
+        {plans.map(plan => {
+          const isCurrent = plan.id === currentPlanId
+          return (
+            <div key={plan.id} style={{
+              border: '1px solid ' + (isCurrent ? '#0F172A' : '#E2E8F0'),
+              borderRadius: '12px', padding: '16px', marginBottom: '12px',
+              background: isCurrent ? '#F8FAFC' : '#fff'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>{plan.name}</span>
+                <span style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
+                  {plan.price_ngn === 0 ? 'Free' : '₦' + plan.price_ngn.toLocaleString() + '/mo'}
+                </span>
+              </div>
+
+              {isCurrent ? (
+                <div style={{
+                  marginTop: '10px', textAlign: 'center' as const, padding: '10px',
+                  background: '#E2E8F0', borderRadius: '8px', fontSize: '13px',
+                  fontWeight: 700, color: '#64748B'
+                }}>
+                  Current Plan
+                </div>
+              ) : plan.price_ngn === 0 ? null : (
+                <button
+                  onClick={() => handleUpgrade(plan.id)}
+                  disabled={upgrading === plan.id}
+                  style={{
+                    marginTop: '10px', width: '100%', padding: '11px',
+                    background: '#0F172A', color: '#fff', border: 'none',
+                    borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    opacity: upgrading === plan.id ? 0.6 : 1
+                  }}
+                >
+                  {upgrading === plan.id ? 'Redirecting to payment...' : 'Upgrade to ' + plan.name}
+                </button>
+              )}
+            </div>
+          )
+        })}
+
+        <p style={{ fontSize: '11px', color: '#94A3B8', textAlign: 'center' as const, marginTop: '20px', lineHeight: 1.5 }}>
+          Payments are securely processed by Paystack. Your card details are never stored on Cloutinet's servers.
+        </p>
+      </div>
+    </div>
+  )
+}
