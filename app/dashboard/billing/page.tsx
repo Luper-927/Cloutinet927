@@ -17,6 +17,16 @@ interface Subscription {
   current_period_end: string | null
 }
 
+const TIER_ORDER = ['free', 'essential', 'growth', 'business', 'advanced']
+
+const TIER_STYLE: Record<string, { accent: string; tint: string; label: string }> = {
+  free:      { accent: '#64748B', tint: '#F8FAFC', label: 'Getting started' },
+  essential: { accent: '#0F766E', tint: '#F0FDFA', label: 'Build visibility' },
+  growth:    { accent: '#D97706', tint: '#FFFBEB', label: 'Recommended' },
+  business:  { accent: '#C2410C', tint: '#FFF7ED', label: 'Multiple locations' },
+  advanced:  { accent: '#4C1D95', tint: '#FAF5FF', label: 'Full platform' },
+}
+
 function BillingContent() {
   const searchParams = useSearchParams()
   const [plans, setPlans] = useState<Plan[]>([])
@@ -125,6 +135,7 @@ function BillingContent() {
   }
 
   const currentPlanId = subscription?.plan_id || 'free'
+  const currentIndex = TIER_ORDER.indexOf(currentPlanId)
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
@@ -148,31 +159,58 @@ function BillingContent() {
           </div>
         )}
 
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '18px', marginBottom: '24px' }}>
-          <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>Current Plan</div>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', textTransform: 'capitalize' as const }}>
+        {/* CURRENT PLAN — signature gradient hero */}
+        <div style={{
+          background: 'linear-gradient(135deg, #0F172A 0%, #0F766E 100%)',
+          borderRadius: '16px', padding: '22px', marginBottom: '20px',
+          boxShadow: '0 8px 24px rgba(15,23,42,0.18)'
+        }}>
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', fontWeight: 700, marginBottom: '6px' }}>Current plan</div>
+          <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', textTransform: 'capitalize' as const, marginBottom: '4px' }}>
             {plans.find(p => p.id === currentPlanId)?.name || 'Free'}
           </div>
           {subscription?.current_period_end && (
-            <div style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '14px' }}>
               Renews {new Date(subscription.current_period_end).toLocaleDateString()}
             </div>
           )}
+
+          {/* Tier ladder — a real sequence, so a stepped marker earns its place */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '14px' }}>
+            {TIER_ORDER.map((tierId, i) => (
+              <div key={tierId} style={{
+                flex: 1, height: '5px', borderRadius: '3px',
+                background: i <= currentIndex ? '#E7A93D' : 'rgba(255,255,255,0.2)'
+              }} />
+            ))}
+          </div>
         </div>
 
         <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginBottom: '14px' }}>Available Plans</h2>
 
         {plans.map(plan => {
           const isCurrent = plan.id === currentPlanId
+          const style = TIER_STYLE[plan.id] || TIER_STYLE.free
           return (
             <div key={plan.id} style={{
-              border: '1px solid ' + (isCurrent ? '#0F172A' : '#E2E8F0'),
-              borderRadius: '12px', padding: '16px', marginBottom: '12px',
-              background: isCurrent ? '#F8FAFC' : '#fff'
+              border: '1px solid ' + (isCurrent ? style.accent : '#E2E8F0'),
+              borderLeft: '4px solid ' + style.accent,
+              borderRadius: '10px', padding: '16px', marginBottom: '12px',
+              background: isCurrent ? style.tint : '#fff'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>{plan.name}</span>
-                <span style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                <div>
+                  <span style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>{plan.name}</span>
+                  {plan.id === 'growth' && !isCurrent && (
+                    <span style={{
+                      marginLeft: '8px', fontSize: '10px', fontWeight: 700, color: style.accent,
+                      background: style.tint, border: '1px solid ' + style.accent,
+                      borderRadius: '999px', padding: '2px 8px'
+                    }}>Recommended</span>
+                  )}
+                  <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>{style.label}</div>
+                </div>
+                <span style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap' as const }}>
                   {plan.price_ngn === 0 ? 'Free' : '₦' + plan.price_ngn.toLocaleString() + '/mo'}
                 </span>
               </div>
@@ -180,8 +218,8 @@ function BillingContent() {
               {isCurrent ? (
                 <div style={{
                   marginTop: '10px', textAlign: 'center' as const, padding: '10px',
-                  background: '#E2E8F0', borderRadius: '8px', fontSize: '13px',
-                  fontWeight: 700, color: '#64748B'
+                  background: '#fff', border: '1px solid ' + style.accent, borderRadius: '8px',
+                  fontSize: '13px', fontWeight: 700, color: style.accent
                 }}>
                   Current Plan
                 </div>
@@ -191,7 +229,7 @@ function BillingContent() {
                   disabled={upgrading === plan.id}
                   style={{
                     marginTop: '10px', width: '100%', padding: '11px',
-                    background: '#0F172A', color: '#fff', border: 'none',
+                    background: style.accent, color: '#fff', border: 'none',
                     borderRadius: '8px', fontSize: '13px', fontWeight: 700,
                     cursor: 'pointer', fontFamily: 'inherit',
                     opacity: upgrading === plan.id ? 0.6 : 1
