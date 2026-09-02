@@ -130,10 +130,16 @@ export default function OnboardingPage() {
    // Fire-and-forget: tell Google to re-check the sitemap, and directly
     // request indexing for the new business page. Doesn't block the
     // redirect if either fails or is slow.
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+
     fetch('/api/ping-sitemap', { method: 'POST' }).catch(() => {})
     fetch('/api/request-indexing', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
       body: JSON.stringify({ url: 'https://cloutinet.online/store/' + slug }),
     }).catch(() => {})
 
