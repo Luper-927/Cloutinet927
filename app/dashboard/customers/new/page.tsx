@@ -10,11 +10,13 @@ export default function NewCustomerPage() {
   const [email, setEmail] = useState('')
   const [address, setAddress] = useState('')
   const [notes, setNotes] = useState('')
+  const [tagsInput, setTagsInput] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   const [checkingAccess, setCheckingAccess] = useState(true)
   const [hasAccess, setHasAccess] = useState(true)
+  const [hasTags, setHasTags] = useState(false)
   const [tierName, setTierName] = useState('Free')
 
   useEffect(() => {
@@ -28,6 +30,7 @@ export default function NewCustomerPage() {
     const { limits } = await getBusinessTier(userData.user.id)
     setTierName(limits.name)
     setHasAccess(limits.customerRecords)
+    setHasTags(limits.advancedCustomers)
     setCheckingAccess(false)
   }
 
@@ -42,9 +45,6 @@ export default function NewCustomerPage() {
     const { data: userData } = await supabase.auth.getUser()
     if (!userData.user) { window.location.href = '/auth'; return }
 
-    // Re-check tier right before saving too, not just on page load —
-    // same pattern used for product limits, so a downgrade mid-session
-    // can't be used to sneak in a save.
     const { limits } = await getBusinessTier(userData.user.id)
     if (!limits.customerRecords) {
       setSaving(false)
@@ -53,6 +53,12 @@ export default function NewCustomerPage() {
       return
     }
 
+    // Only save tags if this business's tier actually has advancedCustomers —
+    // re-checked here too, not just trusted from what rendered on screen.
+    const tags = limits.advancedCustomers
+      ? tagsInput.split(',').map(t => t.trim()).filter(Boolean)
+      : []
+
     const { error: saveError } = await supabase.from('customers').insert({
       user_id: userData.user.id,
       name,
@@ -60,6 +66,7 @@ export default function NewCustomerPage() {
       email: email || null,
       address: address || null,
       notes: notes || null,
+      tags,
     })
 
     setSaving(false)
@@ -142,6 +149,18 @@ export default function NewCustomerPage() {
           onChange={e => setAddress(e.target.value)}
           style={inputStyle}
         />
+
+        {hasTags && (
+          <>
+            <label style={labelStyle}>Tags</label>
+            <input
+              placeholder="e.g. VIP, Wholesale (separate with commas)"
+              value={tagsInput}
+              onChange={e => setTagsInput(e.target.value)}
+              style={inputStyle}
+            />
+          </>
+        )}
 
         <label style={labelStyle}>Notes</label>
         <textarea
