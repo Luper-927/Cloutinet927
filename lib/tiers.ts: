@@ -18,8 +18,8 @@ export const TIER_LIMITS = {
   },
   essential: {
     name: 'Essential',
-    productLimit: 40,
-    aiGenerationsPerMonth: 50,
+    productLimit: 45,
+    aiGenerationsPerMonth: 70,
     customerRecords: true,
     advancedCustomers: false,
     marketingAutomation: false,
@@ -31,8 +31,8 @@ export const TIER_LIMITS = {
   },
   growth: {
     name: 'Growth',
-    productLimit: 120,
-    aiGenerationsPerMonth: 150,
+    productLimit: 90,
+    aiGenerationsPerMonth: 180,
     customerRecords: true,
     advancedCustomers: true,
     marketingAutomation: true,
@@ -44,8 +44,8 @@ export const TIER_LIMITS = {
   },
   business: {
     name: 'Business',
-    productLimit: 250,
-    aiGenerationsPerMonth: 400,
+    productLimit: 300,
+    aiGenerationsPerMonth: 600,
     customerRecords: true,
     advancedCustomers: true,
     marketingAutomation: true,
@@ -57,8 +57,8 @@ export const TIER_LIMITS = {
   },
   advanced: {
     name: 'Advanced',
-    productLimit: 999999,
-    aiGenerationsPerMonth: 999999,
+    productLimit: 999,
+    aiGenerationsPerMonth: 2999,
     customerRecords: true,
     advancedCustomers: true,
     marketingAutomation: true,
@@ -73,7 +73,7 @@ export const TIER_LIMITS = {
 export type TierKey = keyof typeof TIER_LIMITS
 
 // Maps your `plans` table id -> a TierKey above.
-// Update this if plan ids in the database ever change.
+// Confirmed against the live `plans` table: free, essential, growth, business, advanced.
 const PLAN_ID_TO_TIER: Record<string, TierKey> = {
   free: 'free',
   essential: 'essential',
