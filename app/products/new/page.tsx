@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
+import { getBusinessTier } from '../../../lib/tiers'
 import Link from 'next/link'
 
 const currencies = ['NGN', 'USD', 'GBP', 'EUR', 'GHS']
-const FREE_PRODUCT_LIMIT = 20
 
 export default function NewProductPage() {
   const [name, setName] = useState('')
@@ -21,6 +21,8 @@ export default function NewProductPage() {
   const savingLock = useRef(false)
 
   const [productCount, setProductCount] = useState<number | null>(null)
+  const [productLimit, setProductLimit] = useState<number>(5)
+  const [tierName, setTierName] = useState<string>('Free')
   const [checkingLimit, setCheckingLimit] = useState(true)
 
   useEffect(() => {
@@ -35,6 +37,10 @@ export default function NewProductPage() {
       .from('products')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userData.user.id)
+
+    const { tierKey, limits } = await getBusinessTier(userData.user.id)
+    setProductLimit(limits.productLimit)
+    setTierName(limits.name)
 
     setProductCount(count ?? 0)
     setCheckingLimit(false)
@@ -105,11 +111,15 @@ export default function NewProductPage() {
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userData.user.id)
 
-    if ((count ?? 0) >= FREE_PRODUCT_LIMIT) {
+    const { limits } = await getBusinessTier(userData.user.id)
+
+    if ((count ?? 0) >= limits.productLimit) {
       setSaving(false)
       savingLock.current = false
       setProductCount(count ?? 0)
-      setError('You\u2019ve reached the free plan limit of ' + FREE_PRODUCT_LIMIT + ' products.')
+      setProductLimit(limits.productLimit)
+      setTierName(limits.name)
+      setError('You\u2019ve reached your ' + limits.name + ' plan limit of ' + limits.productLimit + ' products.')
       return
     }
 
@@ -181,7 +191,7 @@ export default function NewProductPage() {
     )
   }
 
-  if (productCount !== null && productCount >= FREE_PRODUCT_LIMIT) {
+  if (productCount !== null && productCount >= productLimit) {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
         <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -191,18 +201,18 @@ export default function NewProductPage() {
         <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 20px', textAlign: 'center' }}>
           <div style={{ fontSize: '36px', marginBottom: '12px' }}>📦</div>
           <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-            You&rsquo;ve reached the free plan limit
+            You&rsquo;ve reached your {tierName} plan limit
           </h2>
           <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.5, marginBottom: '24px' }}>
-            Your free Cloutinet account can list up to {FREE_PRODUCT_LIMIT} products. You currently have {productCount} listed.
-            Higher limits will be available with paid plans soon.
+            Your {tierName} Cloutinet account can list up to {productLimit} products. You currently have {productCount} listed.
+            Upgrade your plan to list more.
           </p>
-          <Link href="/dashboard" style={{
+          <Link href="/dashboard/billing" style={{
             display: 'inline-block', background: '#0F172A', color: '#fff',
             borderRadius: '8px', padding: '12px 24px', fontSize: '14px',
             fontWeight: 700, textDecoration: 'none'
           }}>
-            Back to Dashboard
+            View Plans
           </Link>
         </div>
       </div>
@@ -220,7 +230,7 @@ export default function NewProductPage() {
 
         {productCount !== null && (
           <p style={{ fontSize: '12px', color: '#94A3B8', fontWeight: 600, marginBottom: '16px' }}>
-            {productCount} / {FREE_PRODUCT_LIMIT} products used
+            {productCount} / {productLimit} products used ({tierName} plan)
           </p>
         )}
 
