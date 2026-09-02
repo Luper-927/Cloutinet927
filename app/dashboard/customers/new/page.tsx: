@@ -1,0 +1,122 @@
+'use client'
+
+import { useState } from 'react'
+import { supabase } from '../../../../lib/supabase'
+
+export default function NewCustomerPage() {
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [address, setAddress] = useState('')
+  const [notes, setNotes] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleSave() {
+    if (!name.trim()) {
+      setError('Customer name is required')
+      return
+    }
+    setSaving(true)
+    setError('')
+
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) { window.location.href = '/auth'; return }
+
+    const { error: saveError } = await supabase.from('customers').insert({
+      user_id: userData.user.id,
+      name,
+      phone: phone || null,
+      email: email || null,
+      address: address || null,
+      notes: notes || null,
+    })
+
+    setSaving(false)
+    if (saveError) { setError(saveError.message); return }
+
+    window.location.href = '/dashboard/customers'
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Add Customer</div>
+        <a href="/dashboard/customers" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Cancel</a>
+      </div>
+
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
+        <label style={labelStyle}>Customer Name *</label>
+        <input
+          placeholder="e.g. Chidi Okafor"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          style={inputStyle}
+        />
+
+        <label style={labelStyle}>Phone / WhatsApp</label>
+        <input
+          placeholder="e.g. 08012345678"
+          value={phone}
+          onChange={e => setPhone(e.target.value)}
+          style={inputStyle}
+        />
+
+        <label style={labelStyle}>Email</label>
+        <input
+          placeholder="customer@example.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          style={inputStyle}
+        />
+
+        <label style={labelStyle}>Address</label>
+        <input
+          placeholder="Delivery address (optional)"
+          value={address}
+          onChange={e => setAddress(e.target.value)}
+          style={inputStyle}
+        />
+
+        <label style={labelStyle}>Notes</label>
+        <textarea
+          placeholder="e.g. Prefers weekend delivery, buys in bulk..."
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' as const }}
+        />
+
+        {error && (
+          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
+            <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
+          </div>
+        )}
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            width: '100%', background: '#0F172A', color: '#fff', border: 'none',
+            borderRadius: '8px', padding: '14px', cursor: 'pointer',
+            fontSize: '15px', fontWeight: 700, fontFamily: 'inherit',
+            opacity: saving ? 0.7 : 1
+          }}
+        >
+          {saving ? 'Saving...' : 'Save Customer'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block', color: '#475569', fontSize: '12px',
+  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase'
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
+  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
+  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
+  boxSizing: 'border-box'
+}
