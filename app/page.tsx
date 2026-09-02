@@ -94,7 +94,7 @@ const PLANS = [
     description: "For businesses just getting started online.",
     features: [
       "1 Google-searchable page",
-      "Up to 10 products or services",
+      "Up to 5 products or services",
       "WhatsApp contact button",
       "Basic visibility score",
     ],
