@@ -122,6 +122,29 @@ const categoryBlurb: Record<string, string> = {
   'other': 'A wide range of Nigerian businesses that don\u2019t fit neatly into one category, but deserve to be found too.',
 }
 
+const cityMap: Record<string, string> = {
+  'lagos': 'Lagos',
+  'abuja': 'Abuja',
+  'port-harcourt': 'Port Harcourt',
+  'kano': 'Kano',
+  'ibadan': 'Ibadan',
+  'benin-city': 'Benin City',
+  'enugu': 'Enugu',
+  'owerri': 'Owerri',
+  'warri': 'Warri',
+  'kaduna': 'Kaduna',
+  'makurdi': 'Makurdi',
+  'jos': 'Jos',
+  'calabar': 'Calabar',
+  'uyo': 'Uyo',
+  'asaba': 'Asaba',
+  'ilorin': 'Ilorin',
+  'abeokuta': 'Abeokuta',
+  'akure': 'Akure',
+  'awka': 'Awka',
+  'umuahia': 'Umuahia',
+}
+
 async function getCategoryBusinesses(category: string) {
   const categoryName = categoryMap[category]
   if (!categoryName) return null
@@ -249,6 +272,20 @@ export default async function CategoryPage({ params }: { params: { category: str
             ))}
           </div>
         )}
+
+        <div style={{ marginTop: '32px', borderTop: '1px solid #F1F5F9', paddingTop: '20px' }}>
+          <p style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '10px', textAlign: 'center' as const }}>Browse {categoryName} by City</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px', justifyContent: 'center' }}>
+            {Object.entries(cityMap).map(([citySlug, cityName]) => (
+              <Link key={citySlug} href={'/businesses/' + params.category + '/' + citySlug} style={{
+                fontSize: '12px', color: '#0F172A', textDecoration: 'none',
+                border: '1px solid #E2E8F0', borderRadius: '999px', padding: '6px 12px'
+              }}>
+                {cityName}
+              </Link>
+            ))}
+          </div>
+        </div>
 
         {businesses.length > 0 && (
           <div style={{ marginTop: '32px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
