@@ -157,9 +157,15 @@ export default function NewProductPage() {
 
     // Fire-and-forget: request indexing for the new product page.
     if (profile?.business_slug) {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+
       fetch('/api/request-indexing', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({ url: 'https://cloutinet.online/store/' + profile.business_slug + '/' + slug }),
       }).catch(() => {})
     }
