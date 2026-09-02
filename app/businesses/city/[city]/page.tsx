@@ -27,6 +27,65 @@ const cityMap: Record<string, string> = {
   'umuahia': 'Umuahia',
 }
 
+const categoryMap: Record<string, string> = {
+  'food-groceries': 'Food & Groceries',
+  'fashion-clothing': 'Fashion & Clothing',
+  'electronics-gadgets': 'Electronics & Gadgets',
+  'furniture-interior': 'Furniture & Interior',
+  'building-materials': 'Building Materials',
+  'supermarket-store': 'Supermarket & Store',
+  'wholesale-distribution': 'Wholesale & Distribution',
+  'salon-hair': 'Salon & Hair',
+  'barber-shop': 'Barber Shop',
+  'spa-massage': 'Spa & Massage',
+  'cosmetics-skincare': 'Cosmetics & Skincare',
+  'gym-fitness': 'Gym & Fitness',
+  'restaurant-eatery': 'Restaurant & Eatery',
+  'fast-food-snacks': 'Fast Food & Snacks',
+  'catering-services': 'Catering Services',
+  'bakery-pastry': 'Bakery & Pastry',
+  'bar-drinks': 'Bar & Drinks',
+  'logistics-delivery': 'Logistics & Delivery',
+  'printing-graphics': 'Printing & Graphics',
+  'photography-video': 'Photography & Video',
+  'event-planning': 'Event Planning',
+  'cleaning-services': 'Cleaning Services',
+  'security-services': 'Security Services',
+  'laundry-dry-cleaning': 'Laundry & Dry Cleaning',
+  'tailoring-fashion-design': 'Tailoring & Fashion Design',
+  'shoe-making-repair': 'Shoe Making & Repair',
+  'pharmacy-chemist': 'Pharmacy & Chemist',
+  'hospital-clinic': 'Hospital & Clinic',
+  'optical-services': 'Optical Services',
+  'dental-care': 'Dental Care',
+  'herbal-natural-health': 'Herbal & Natural Health',
+  'real-estate-property': 'Real Estate & Property',
+  'architecture-design': 'Architecture & Design',
+  'plumbing-electrical': 'Plumbing & Electrical',
+  'building-construction': 'Building & Construction',
+  'paint-finishing': 'Paint & Finishing',
+  'school-tutorial': 'School & Tutorial',
+  'church-ministry': 'Church & Ministry',
+  'mosque-islamic-center': 'Mosque & Islamic Center',
+  'skills-training': 'Skills & Training',
+  'tech-it-services': 'Tech & IT Services',
+  'phone-repair': 'Phone Repair',
+  'computer-services': 'Computer Services',
+  'digital-marketing': 'Digital Marketing',
+  'farming-agriculture': 'Farming & Agriculture',
+  'livestock-poultry': 'Livestock & Poultry',
+  'fish-farming': 'Fish Farming',
+  'crop-production': 'Crop Production',
+  'car-sales': 'Car Sales',
+  'auto-repair-mechanic': 'Auto Repair & Mechanic',
+  'spare-parts': 'Spare Parts',
+  'car-wash-detailing': 'Car Wash & Detailing',
+  'financial-services': 'Financial Services',
+  'insurance': 'Insurance',
+  'pos-mobile-money': 'POS & Mobile Money',
+  'other': 'Other',
+}
+
 async function getCityBusinesses(citySlug: string) {
   const cityName = cityMap[citySlug]
   if (!cityName) return null
@@ -117,6 +176,20 @@ export default async function CityPage({ params }: { params: { city: string } })
             ))}
           </div>
         )}
+
+        <div style={{ marginTop: '32px', borderTop: '1px solid #f0f0f0', paddingTop: '20px' }}>
+          <p style={{ fontSize: '12px', fontWeight: 700, color: '#888', textTransform: 'uppercase' as const, marginBottom: '10px', textAlign: 'center' as const }}>Browse Categories in {cityName}</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '8px', justifyContent: 'center' }}>
+            {Object.entries(categoryMap).map(([catSlug, catName]) => (
+              <Link key={catSlug} href={'/businesses/' + catSlug + '/' + params.city} style={{
+                fontSize: '12px', color: '#6B21A8', textDecoration: 'none',
+                border: '1px solid #e5d5ff', borderRadius: '999px', padding: '6px 12px'
+              }}>
+                {catName}
+              </Link>
+            ))}
+          </div>
+        </div>
 
         <div style={{ marginTop: '32px', background: '#f9f5ff', border: '1px solid #e5d5ff', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
           <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '6px' }}>Have a business in {cityName}?</div>
