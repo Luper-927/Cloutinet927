@@ -109,7 +109,7 @@ const PLANS = [
     description: "For businesses ready to build real visibility.",
     features: [
       "Everything in Free",
-      "Unlimited products or services",
+      "up to 40 products or services",
       "Full visibility score + tips",
       "Review management tools",
     ],
@@ -123,7 +123,7 @@ const PLANS = [
     period: "/month",
     description: "For businesses ready to rank and grow.",
     features: [
-      "Everything in Essential",
+      "up to 120 products or services",
       "Priority support",
       "Advanced analytics",
     ],
@@ -137,7 +137,8 @@ const PLANS = [
     period: "/month",
     description: "For teams managing multiple locations.",
     features: [
-      "Everything in Growth",
+      "Everything in growth",
+      "up to 250 products or services",
       "Up to 5 business locations",
       "Analytics dashboard",
       "Dedicated account manager",
@@ -152,8 +153,8 @@ const PLANS = [
     period: "/month",
     description: "Full platform access with priority support.",
     features: [
-      "Everything in Business",
-      "Full platform access",
+    "Everything in Business",
+      "Up to 999 products or services",
       "Priority support",
       "Custom integrations",
     ],
