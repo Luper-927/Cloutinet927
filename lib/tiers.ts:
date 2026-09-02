@@ -5,7 +5,7 @@ import { supabase } from './supabase'
 export const TIER_LIMITS = {
   free: {
     name: 'Free',
-    productLimit: 10,
+    productLimit: 5,
     aiGenerationsPerMonth: 10,
     customerRecords: false,
     advancedCustomers: false,
@@ -18,7 +18,7 @@ export const TIER_LIMITS = {
   },
   essential: {
     name: 'Essential',
-    productLimit: 50,
+    productLimit: 40,
     aiGenerationsPerMonth: 50,
     customerRecords: true,
     advancedCustomers: false,
@@ -31,7 +31,7 @@ export const TIER_LIMITS = {
   },
   growth: {
     name: 'Growth',
-    productLimit: 150,
+    productLimit: 120,
     aiGenerationsPerMonth: 150,
     customerRecords: true,
     advancedCustomers: true,
@@ -44,8 +44,8 @@ export const TIER_LIMITS = {
   },
   business: {
     name: 'Business',
-    productLimit: 500,
-    aiGenerationsPerMonth: 500,
+    productLimit: 250,
+    aiGenerationsPerMonth: 400,
     customerRecords: true,
     advancedCustomers: true,
     marketingAutomation: true,
