@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../../../lib/supabase'
 import { getBusinessTier } from '../../../../lib/tiers'
+import { getActingContext, logActivity } from '../../../../lib/permissions'
 
 export default function NewCustomerPage() {
   const [name, setName] = useState('')
@@ -16,8 +17,11 @@ export default function NewCustomerPage() {
 
   const [checkingAccess, setCheckingAccess] = useState(true)
   const [hasAccess, setHasAccess] = useState(true)
+  const [noPermission, setNoPermission] = useState(false)
   const [hasTags, setHasTags] = useState(false)
   const [tierName, setTierName] = useState('Free')
+  const [ownerId, setOwnerId] = useState('')
+  const [actorName, setActorName] = useState('')
 
   useEffect(() => {
     checkAccess()
@@ -27,7 +31,19 @@ export default function NewCustomerPage() {
     const { data: userData } = await supabase.auth.getUser()
     if (!userData.user) { window.location.href = '/auth'; return }
 
-    const { limits } = await getBusinessTier(userData.user.id)
+    const context = await getActingContext(userData.user.id)
+    if (!context) { window.location.href = '/onboarding'; return }
+
+    if (!context.permissions.customers) {
+      setNoPermission(true)
+      setCheckingAccess(false)
+      return
+    }
+
+    setOwnerId(context.ownerId)
+    setActorName(context.employeeName || 'Owner')
+
+    const { limits } = await getBusinessTier(context.ownerId)
     setTierName(limits.name)
     setHasAccess(limits.customerRecords)
     setHasTags(limits.advancedCustomers)
@@ -42,10 +58,7 @@ export default function NewCustomerPage() {
     setSaving(true)
     setError('')
 
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
-
-    const { limits } = await getBusinessTier(userData.user.id)
+    const { limits } = await getBusinessTier(ownerId)
     if (!limits.customerRecords) {
       setSaving(false)
       setHasAccess(false)
@@ -53,14 +66,12 @@ export default function NewCustomerPage() {
       return
     }
 
-    // Only save tags if this business's tier actually has advancedCustomers —
-    // re-checked here too, not just trusted from what rendered on screen.
     const tags = limits.advancedCustomers
       ? tagsInput.split(',').map(t => t.trim()).filter(Boolean)
       : []
 
     const { error: saveError } = await supabase.from('customers').insert({
-      user_id: userData.user.id,
+      user_id: ownerId,
       name,
       phone: phone || null,
       email: email || null,
@@ -72,6 +83,8 @@ export default function NewCustomerPage() {
     setSaving(false)
     if (saveError) { setError(saveError.message); return }
 
+    await logActivity(ownerId, actorName, 'added', 'customer', name)
+
     window.location.href = '/dashboard/customers'
   }
 
@@ -79,6 +92,14 @@ export default function NewCustomerPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (noPermission) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to manage customers.</p>
       </div>
     )
   }
