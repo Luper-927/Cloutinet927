@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { getBusinessTier } from '../../../lib/tiers'
+import { getActingContext } from '../../../lib/permissions'
 import Link from 'next/link'
 
 type Customer = {
@@ -23,6 +24,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
   const [hasAccess, setHasAccess] = useState(true)
+  const [noPermission, setNoPermission] = useState(false)
   const [hasAdvanced, setHasAdvanced] = useState(false)
   const [hasMarketing, setHasMarketing] = useState(false)
   const [tierName, setTierName] = useState('Free')
@@ -36,7 +38,16 @@ export default function CustomersPage() {
     const { data: userData } = await supabase.auth.getUser()
     if (!userData.user) { window.location.href = '/auth'; return }
 
-    const { limits } = await getBusinessTier(userData.user.id)
+    const context = await getActingContext(userData.user.id)
+    if (!context) { window.location.href = '/onboarding'; return }
+
+    if (!context.permissions.customers) {
+      setNoPermission(true)
+      setLoading(false)
+      return
+    }
+
+    const { limits } = await getBusinessTier(context.ownerId)
     setTierName(limits.name)
     setHasAdvanced(limits.advancedCustomers)
     setHasMarketing(limits.marketingAutomation)
@@ -50,6 +61,7 @@ export default function CustomersPage() {
     const { data } = await supabase
       .from('customers')
       .select('id, name, phone, email, address, notes, tags, last_contacted_at, created_at')
+      .eq('user_id', context.ownerId)
       .order('created_at', { ascending: false })
 
     setCustomers(data || [])
@@ -77,6 +89,14 @@ export default function CustomersPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (noPermission) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to view customers.</p>
       </div>
     )
   }
