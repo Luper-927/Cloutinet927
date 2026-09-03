@@ -24,6 +24,7 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true)
   const [hasAccess, setHasAccess] = useState(true)
   const [hasAdvanced, setHasAdvanced] = useState(false)
+  const [hasMarketing, setHasMarketing] = useState(false)
   const [tierName, setTierName] = useState('Free')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
 
@@ -38,6 +39,7 @@ export default function CustomersPage() {
     const { limits } = await getBusinessTier(userData.user.id)
     setTierName(limits.name)
     setHasAdvanced(limits.advancedCustomers)
+    setHasMarketing(limits.marketingAutomation)
 
     if (!limits.customerRecords) {
       setHasAccess(false)
@@ -119,10 +121,20 @@ export default function CustomersPage() {
         <Link href="/dashboard/customers/new" style={{
           display: 'block', width: '100%', textAlign: 'center', background: '#0F172A', color: '#fff',
           borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 700,
-          textDecoration: 'none', marginBottom: '20px', boxSizing: 'border-box' as const
+          textDecoration: 'none', marginBottom: '10px', boxSizing: 'border-box' as const
         }}>
           + Add Customer
         </Link>
+
+        {hasMarketing && (
+          <Link href="/dashboard/customers/message" style={{
+            display: 'block', width: '100%', textAlign: 'center', background: '#fff', color: '#0F172A',
+            border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px', fontSize: '15px', fontWeight: 700,
+            textDecoration: 'none', marginBottom: '20px', boxSizing: 'border-box' as const
+          }}>
+            📢 Message Customers
+          </Link>
+        )}
 
         {hasAdvanced && followUpCustomers.length > 0 && (
           <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
