@@ -125,7 +125,7 @@ export default function Dashboard() {
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A', flexWrap: 'wrap' as const, gap: '8px' }}>
         <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>
           Cloutinet
           {context && !context.isOwner && (
@@ -134,15 +134,27 @@ export default function Dashboard() {
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' as const }}>
           {context?.permissions.customers && (
-            <Link href="/dashboard/customers" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textDecoration: 'none', fontWeight: 700 }}>Customers</Link>
+            <Link href="/dashboard/customers" style={navLinkStyle}>Customers</Link>
+          )}
+          {context?.permissions.payments && tierLimits?.paymentsModule && (
+            <Link href="/dashboard/payments" style={navLinkStyle}>Payments</Link>
+          )}
+          {context?.permissions.documents && tierLimits?.documentsModule && (
+            <Link href="/dashboard/documents" style={navLinkStyle}>Documents</Link>
+          )}
+          {tierLimits?.advancedAI && (
+            <Link href="/dashboard/ai" style={navLinkStyle}>AI</Link>
           )}
           {context?.permissions.employees && tierLimits?.employees && (
-            <Link href="/dashboard/employees" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textDecoration: 'none', fontWeight: 700 }}>Employees</Link>
+            <Link href="/dashboard/employees" style={navLinkStyle}>Employees</Link>
           )}
           {context?.isOwner && (
-            <Link href="/dashboard/billing" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textDecoration: 'none', fontWeight: 700 }}>Billing</Link>
+            <Link href="/dashboard/activity" style={navLinkStyle}>Activity</Link>
+          )}
+          {context?.isOwner && (
+            <Link href="/dashboard/billing" style={navLinkStyle}>Billing</Link>
           )}
           <button onClick={handleSignOut} style={{ background: 'rgba(255,255,255,0.1)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontFamily: 'inherit' }}>Sign Out</button>
         </div>
@@ -279,4 +291,9 @@ export default function Dashboard() {
       </div>
     </div>
   )
+}
+
+const navLinkStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)',
+  borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textDecoration: 'none', fontWeight: 700
 }
