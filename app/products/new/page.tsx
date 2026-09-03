@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { getBusinessTier } from '../../../lib/tiers'
+import { getActingContext, logActivity } from '../../../lib/permissions'
 import Link from 'next/link'
 
 const currencies = ['NGN', 'USD', 'GBP', 'EUR', 'GHS']
@@ -24,6 +25,9 @@ export default function NewProductPage() {
   const [productLimit, setProductLimit] = useState<number>(5)
   const [tierName, setTierName] = useState<string>('Free')
   const [checkingLimit, setCheckingLimit] = useState(true)
+  const [ownerId, setOwnerId] = useState<string>('')
+  const [actorName, setActorName] = useState<string>('')
+  const [noAccess, setNoAccess] = useState(false)
 
   useEffect(() => {
     checkProductCount()
@@ -33,12 +37,24 @@ export default function NewProductPage() {
     const { data: userData } = await supabase.auth.getUser()
     if (!userData.user) { window.location.href = '/auth'; return }
 
+    const context = await getActingContext(userData.user.id)
+    if (!context) { window.location.href = '/onboarding'; return }
+
+    if (!context.permissions.products) {
+      setNoAccess(true)
+      setCheckingLimit(false)
+      return
+    }
+
+    setOwnerId(context.ownerId)
+    setActorName(context.employeeName || 'Owner')
+
     const { count } = await supabase
       .from('products')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', userData.user.id)
+      .eq('user_id', context.ownerId)
 
-    const { tierKey, limits } = await getBusinessTier(userData.user.id)
+    const { limits } = await getBusinessTier(context.ownerId)
     setProductLimit(limits.productLimit)
     setTierName(limits.name)
 
@@ -61,11 +77,10 @@ export default function NewProductPage() {
     setGenerating(true)
     setError('')
     try {
-      const { data: userData } = await supabase.auth.getUser()
       const { data: profile } = await supabase
         .from('profiles')
         .select('business_name, business_category, location, phone')
-        .eq('id', userData.user?.id)
+        .eq('id', ownerId)
         .single()
 
       const response = await fetch('/api/generate-seo', {
@@ -103,15 +118,12 @@ export default function NewProductPage() {
     setSaving(true)
     setError('')
 
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
-
     const { count } = await supabase
       .from('products')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', userData.user.id)
+      .eq('user_id', ownerId)
 
-    const { limits } = await getBusinessTier(userData.user.id)
+    const { limits } = await getBusinessTier(ownerId)
 
     if ((count ?? 0) >= limits.productLimit) {
       setSaving(false)
@@ -126,12 +138,12 @@ export default function NewProductPage() {
     const { data: profile } = await supabase
       .from('profiles')
       .select('business_name, location, business_slug')
-      .eq('id', userData.user.id)
+      .eq('id', ownerId)
       .single()
 
     let imageUrl = ''
     if (imageFile) {
-      const fileName = userData.user.id + '/' + Date.now() + '.' + imageFile.name.split('.').pop()
+      const fileName = ownerId + '/' + Date.now() + '.' + imageFile.name.split('.').pop()
       const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(fileName, imageFile, { upsert: true })
@@ -149,7 +161,7 @@ export default function NewProductPage() {
     const seoDescription = description || ('Buy ' + name + (profile?.location ? ' in ' + profile.location : '') + '. Contact us on WhatsApp for orders and inquiries.')
 
     const { error: saveError } = await supabase.from('products').insert({
-      user_id: userData.user.id,
+      user_id: ownerId,
       name,
       slug,
       description,
@@ -165,7 +177,8 @@ export default function NewProductPage() {
     savingLock.current = false
     if (saveError) { setError(saveError.message); return }
 
-    // Fire-and-forget: request indexing for the new product page.
+    await logActivity(ownerId, actorName, 'created', 'product', name)
+
     if (profile?.business_slug) {
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
@@ -187,6 +200,14 @@ export default function NewProductPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (noAccess) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to manage products.</p>
       </div>
     )
   }
