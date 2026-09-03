@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { getBusinessTier } from '../../lib/tiers'
+import { getActingContext, ActingContext, logActivity } from '../../lib/permissions'
 import Link from 'next/link'
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null)
+  const [context, setContext] = useState<ActingContext | null>(null)
   const [profile, setProfile] = useState<any>(null)
   const [products, setProducts] = useState<any[]>([])
   const [leadCount, setLeadCount] = useState(0)
@@ -20,18 +21,21 @@ export default function Dashboard() {
     const { data: userData } = await supabase.auth.getUser()
     const currentUser = userData?.user
     if (!currentUser) { window.location.href = '/auth'; return }
-    setUser(currentUser)
+
+    const ctx = await getActingContext(currentUser.id)
+    if (!ctx) { window.location.href = '/onboarding'; return }
+    setContext(ctx)
 
     const { data: profileData } = await supabase
-      .from('profiles').select('*').eq('id', currentUser.id).single()
+      .from('profiles').select('*').eq('id', ctx.ownerId).single()
     setProfile(profileData)
 
     const { data: productsData } = await supabase
-      .from('products').select('*').eq('user_id', currentUser.id)
+      .from('products').select('*').eq('user_id', ctx.ownerId)
       .order('created_at', { ascending: false })
     setProducts(productsData || [])
 
-    const { limits } = await getBusinessTier(currentUser.id)
+    const { limits } = await getBusinessTier(ctx.ownerId)
     setTierLimits(limits)
 
     if (profileData && profileData.business_slug) {
@@ -52,8 +56,9 @@ export default function Dashboard() {
     window.location.href = '/auth'
   }
 
-  async function togglePublish(id: string, current: boolean) {
+  async function togglePublish(id: string, current: boolean, name: string) {
     await supabase.from('products').update({ is_published: !current }).eq('id', id)
+    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', current ? 'hid' : 'published', 'product', name)
     load()
   }
 
@@ -61,6 +66,7 @@ export default function Dashboard() {
     const confirmed = confirm('Delete "' + name + '"? This cannot be undone.')
     if (!confirmed) return
     await supabase.from('products').delete().eq('id', id)
+    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', 'deleted', 'product', name)
     load()
   }
 
@@ -120,12 +126,24 @@ export default function Dashboard() {
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A' }}>
-        <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>Cloutinet</div>
+        <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>
+          Cloutinet
+          {context && !context.isOwner && (
+            <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 400, marginLeft: '8px' }}>
+              (as {context.employeeName})
+            </span>
+          )}
+        </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          {tierLimits?.customerRecords && (
+          {context?.permissions.customers && (
             <Link href="/dashboard/customers" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textDecoration: 'none', fontWeight: 700 }}>Customers</Link>
           )}
-          <Link href="/dashboard/billing" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textDecoration: 'none', fontWeight: 700 }}>Billing</Link>
+          {context?.permissions.employees && tierLimits?.employees && (
+            <Link href="/dashboard/employees" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textDecoration: 'none', fontWeight: 700 }}>Employees</Link>
+          )}
+          {context?.isOwner && (
+            <Link href="/dashboard/billing" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textDecoration: 'none', fontWeight: 700 }}>Billing</Link>
+          )}
           <button onClick={handleSignOut} style={{ background: 'rgba(255,255,255,0.1)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontFamily: 'inherit' }}>Sign Out</button>
         </div>
       </div>
@@ -148,7 +166,9 @@ export default function Dashboard() {
                   )}
                   <div style={{ color: '#0F172A', fontWeight: 700, fontSize: '15px' }}>{profile.business_name}</div>
                 </div>
-                <Link href="/onboarding" style={{ background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', textDecoration: 'none' }}>Edit</Link>
+                {context?.isOwner && (
+                  <Link href="/onboarding" style={{ background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', textDecoration: 'none' }}>Edit</Link>
+                )}
               </div>
               <div style={{ color: '#64748B', fontSize: '12px', marginBottom: '8px' }}>
                 {profile.location || 'No location set'} {profile.phone ? '· ' + profile.phone : ''}
@@ -158,94 +178,101 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* VISIBILITY SCORE */}
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>Visibility Score</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
-                <div style={{ fontSize: '32px', fontWeight: 800, color: getScoreColor(score) }}>{score}<span style={{ fontSize: '16px', color: '#94A3B8' }}>/100</span></div>
-                {scoreChange !== 0 && previousScore > 0 && (
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: scoreChange > 0 ? '#00aa55' : '#ff4444' }}>
-                    {scoreChange > 0 ? '+' : ''}{scoreChange} this week
+            {context?.isOwner && (
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>Visibility Score</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 800, color: getScoreColor(score) }}>{score}<span style={{ fontSize: '16px', color: '#94A3B8' }}>/100</span></div>
+                  {scoreChange !== 0 && previousScore > 0 && (
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: scoreChange > 0 ? '#00aa55' : '#ff4444' }}>
+                      {scoreChange > 0 ? '+' : ''}{scoreChange} this week
+                    </div>
+                  )}
+                </div>
+                <div style={{ background: '#E2E8F0', borderRadius: '10px', height: '8px', overflow: 'hidden' }}>
+                  <div style={{ background: getScoreColor(score), height: '100%', width: score + '%', borderRadius: '10px' }}></div>
+                </div>
+              </div>
+            )}
+
+            {context?.isOwner && (
+              <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#9A3412', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>This Week's Action</div>
+                <div style={{ fontSize: '14px', color: '#0F172A', fontWeight: 600, marginBottom: '10px' }}>{oneAction.task}</div>
+                <Link href={oneAction.link} style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>Do This Now →</Link>
+              </div>
+            )}
+
+            {context?.isOwner && (
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+                <h3 style={{ color: '#0F172A', fontSize: '14px', marginBottom: '10px' }}>Google Indexing Status</h3>
+                {isIndexingPeriod ? (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }}></div>
+                      <span style={{ color: '#92400E', fontSize: '13px', fontWeight: 700 }}>Pending Indexing</span>
+                    </div>
+                    <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
+                      Your page was created {daysSinceCreated} day{daysSinceCreated !== 1 ? 's' : ''} ago. Google typically indexes new pages within 7-14 days.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00aa55' }}></div>
+                      <span style={{ color: '#166534', fontSize: '13px', fontWeight: 700 }}>Likely Indexed</span>
+                    </div>
+                    <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
+                      Your page has been live for {daysSinceCreated} days. Search "{profile.business_name}" on Google to check if it appears.
+                    </p>
                   </div>
                 )}
               </div>
-              <div style={{ background: '#E2E8F0', borderRadius: '10px', height: '8px', overflow: 'hidden' }}>
-                <div style={{ background: getScoreColor(score), height: '100%', width: score + '%', borderRadius: '10px' }}></div>
-              </div>
-            </div>
+            )}
 
-            {/* ONE ACTION */}
-            <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '11px', color: '#9A3412', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>This Week's Action</div>
-              <div style={{ fontSize: '14px', color: '#0F172A', fontWeight: 600, marginBottom: '10px' }}>{oneAction.task}</div>
-              <Link href={oneAction.link} style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>Do This Now →</Link>
-            </div>
-
-            {/* GOOGLE INDEXING STATUS */}
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-              <h3 style={{ color: '#0F172A', fontSize: '14px', marginBottom: '10px' }}>Google Indexing Status</h3>
-              {isIndexingPeriod ? (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }}></div>
-                    <span style={{ color: '#92400E', fontSize: '13px', fontWeight: 700 }}>Pending Indexing</span>
-                  </div>
-                  <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
-                    Your page was created {daysSinceCreated} day{daysSinceCreated !== 1 ? 's' : ''} ago. Google typically indexes new pages within 7-14 days.
-                  </p>
+            {context?.isOwner && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
+                  <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{leadCount}</div>
+                  <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>WhatsApp Leads</div>
                 </div>
-              ) : (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00aa55' }}></div>
-                    <span style={{ color: '#166534', fontSize: '13px', fontWeight: 700 }}>Likely Indexed</span>
-                  </div>
-                  <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
-                    Your page has been live for {daysSinceCreated} days. Search "{profile.business_name}" on Google to check if it appears.
-                  </p>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
+                  <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{viewCount}</div>
+                  <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>Page Views</div>
                 </div>
-              )}
-            </div>
-
-            {/* STATS */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{leadCount}</div>
-                <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>WhatsApp Leads</div>
               </div>
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
-                <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{viewCount}</div>
-                <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>Page Views</div>
-              </div>
-            </div>
+            )}
 
-            {/* PRODUCTS */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h3 style={{ color: '#0F172A', fontSize: '15px' }}>Your Products ({products.length})</h3>
-              <Link href="/products/new" style={{ background: '#0F172A', color: '#fff', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>+ Add Product</Link>
-            </div>
+            {context?.permissions.products && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h3 style={{ color: '#0F172A', fontSize: '15px' }}>Products ({products.length})</h3>
+                  <Link href="/products/new" style={{ background: '#0F172A', color: '#fff', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>+ Add Product</Link>
+                </div>
 
-            {products.length === 0 ? (
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
-                <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '12px' }}>No products yet</p>
-                <Link href="/products/new" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Add Your First Product</Link>
-              </div>
-            ) : (
-              products.map(p => (
-                <div key={p.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px', marginBottom: '10px', display: 'flex', gap: '12px' }}>
-                  {p.image_url && <img src={p.image_url} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' as const, flexShrink: 0 }} />}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: '#0F172A', fontWeight: 600, fontSize: '13px' }}>{p.name}</div>
-                    {p.price && <div style={{ color: '#475569', fontSize: '12px' }}>{p.currency} {p.price}</div>}
-                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' as const }}>
-                      <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: p.is_published ? '#F0FDF4' : '#F8FAFC', color: p.is_published ? '#166534' : '#94A3B8', border: '1px solid ' + (p.is_published ? '#BBF7D0' : '#E2E8F0') }}>{p.is_published ? 'Live' : 'Hidden'}</span>
-                      <Link href={'/products/edit/' + p.id} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', textDecoration: 'none' }}>Edit</Link>
-                      <button onClick={() => togglePublish(p.id, p.is_published)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#64748B', border: '1px solid #E2E8F0', cursor: 'pointer', fontFamily: 'inherit' }}>{p.is_published ? 'Hide' : 'Publish'}</button>
-                      <button onClick={() => deleteProduct(p.id, p.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: 'transparent', color: '#ff4444', border: '1px solid #ff4444', cursor: 'pointer', fontFamily: 'inherit' }}>Delete</button>
+                {products.length === 0 ? (
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
+                    <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '12px' }}>No products yet</p>
+                    <Link href="/products/new" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Add Your First Product</Link>
+                  </div>
+                ) : (
+                  products.map(p => (
+                    <div key={p.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px', marginBottom: '10px', display: 'flex', gap: '12px' }}>
+                      {p.image_url && <img src={p.image_url} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' as const, flexShrink: 0 }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: '#0F172A', fontWeight: 600, fontSize: '13px' }}>{p.name}</div>
+                        {p.price && <div style={{ color: '#475569', fontSize: '12px' }}>{p.currency} {p.price}</div>}
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' as const }}>
+                          <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: p.is_published ? '#F0FDF4' : '#F8FAFC', color: p.is_published ? '#166534' : '#94A3B8', border: '1px solid ' + (p.is_published ? '#BBF7D0' : '#E2E8F0') }}>{p.is_published ? 'Live' : 'Hidden'}</span>
+                          <Link href={'/products/edit/' + p.id} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', textDecoration: 'none' }}>Edit</Link>
+                          <button onClick={() => togglePublish(p.id, p.is_published, p.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#64748B', border: '1px solid #E2E8F0', cursor: 'pointer', fontFamily: 'inherit' }}>{p.is_published ? 'Hide' : 'Publish'}</button>
+                          <button onClick={() => deleteProduct(p.id, p.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: 'transparent', color: '#ff4444', border: '1px solid #ff4444', cursor: 'pointer', fontFamily: 'inherit' }}>Delete</button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))
+                  ))
+                )}
+              </>
             )}
           </>
         )}
