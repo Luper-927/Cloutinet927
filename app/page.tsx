@@ -66,10 +66,11 @@ const FEATURES = [
       "Showcase your products and services with photos, prices and details.",
   },
   {
-    icon: Star,
+    icon: Search,
     iconBg: "bg-amber-100 text-amber-600",
-    title: "Customer Reviews",
-    description: "Build trust with reviews from happy customers.",
+    title: "Real Product Search",
+    description:
+      "Customers can search for exactly what they need, like 'non-stick pot' or 'Samsung phone in Lagos', and get precise matches.",
   },
   {
     icon: BarChart3,
@@ -93,10 +94,10 @@ const PLANS = [
     period: "",
     description: "For businesses just getting started online.",
     features: [
-      "1 Google-searchable page",
-      "Up to 5 products or services",
+      "5 products or services",
+      "10 AI generations/month",
+      "Google-searchable business page",
       "WhatsApp contact button",
-      "Basic visibility score",
     ],
     cta: "Start Free",
     href: "/auth?plan=free",
@@ -109,9 +110,9 @@ const PLANS = [
     description: "For businesses ready to build real visibility.",
     features: [
       "Everything in Free",
-      "up to 40 products or services",
-      "Full visibility score + tips",
-      "Review management tools",
+      "45 products or services",
+      "70 AI generations/month",
+      "Customer records (CRM)",
     ],
     cta: "Start Essential Plan",
     href: "/auth?plan=essential",
@@ -123,9 +124,10 @@ const PLANS = [
     period: "/month",
     description: "For businesses ready to rank and grow.",
     features: [
-      "up to 120 products or services",
-      "Priority support",
-      "Advanced analytics",
+      "90 products or services",
+      "180 AI generations/month",
+      "Customer tagging & follow-up reminders",
+      "Bulk WhatsApp marketing messages",
     ],
     cta: "Start Growth Plan",
     href: "/auth?plan=growth",
@@ -137,11 +139,12 @@ const PLANS = [
     period: "/month",
     description: "For teams managing multiple locations.",
     features: [
-      "Everything in growth",
-      "up to 250 products or services",
-      "Up to 5 business locations",
-      "Analytics dashboard",
-      "Dedicated account manager",
+      "300 products or services",
+      "600 AI generations/month",
+      "Team accounts with permissions",
+      "Payment tracking & request links",
+      "Document storage",
+      "AI business assistant",
     ],
     cta: "Talk to Sales",
     href: "/contact?topic=business-plan",
@@ -153,10 +156,12 @@ const PLANS = [
     period: "/month",
     description: "Full platform access with priority support.",
     features: [
-    "Everything in Business",
-      "Up to 999 products or services",
+      "Everything in Business",
+      "999 products or services",
+      "2,999 AI generations/month",
+      "API access for your own systems",
+      "Automated weekly AI digest emails",
       "Priority support",
-      "Custom integrations",
     ],
     cta: "Talk to Sales",
     href: "/contact?topic=advanced-plan",
@@ -343,7 +348,29 @@ function Hero() {
             and contact you on WhatsApp.
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
+          <form
+            action="/search"
+            method="GET"
+            className="mx-auto mt-6 flex max-w-md items-center gap-2 sm:mt-7 lg:mx-0"
+          >
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                name="q"
+                placeholder="Search for a product or service..."
+                className="w-full rounded-lg border border-white/20 bg-white/5 py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+            <button
+              type="submit"
+              className="flex items-center justify-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+            >
+              Search
+            </button>
+          </form>
+
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
             <a
               href="/auth"
               className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
