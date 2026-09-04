@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 type Product = {
@@ -14,25 +15,36 @@ type Product = {
   profiles: { business_slug: string; business_name: string; location: string | null }
 }
 
-export default function SearchPage() {
+function SearchPageInner() {
+  const searchParams = useSearchParams()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Product[]>([])
   const [mode, setMode] = useState<'broad' | 'specific' | null>(null)
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
 
-  async function handleSearch() {
-    if (!query.trim()) return
+  async function handleSearch(overrideQuery?: string) {
+    const q = (overrideQuery ?? query).trim()
+    if (!q) return
     setLoading(true)
     setSearched(true)
 
-    const res = await fetch('/api/search-products?q=' + encodeURIComponent(query))
+    const res = await fetch('/api/search-products?q=' + encodeURIComponent(q))
     const data = await res.json()
 
     setResults(data.results || [])
     setMode(data.mode || null)
     setLoading(false)
   }
+
+  useEffect(() => {
+    const urlQuery = searchParams.get('q')
+    if (urlQuery) {
+      setQuery(urlQuery)
+      handleSearch(urlQuery)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
@@ -59,7 +71,7 @@ export default function SearchPage() {
         />
 
         <button
-          onClick={handleSearch}
+          onClick={() => handleSearch()}
           disabled={loading}
           style={{
             width: '100%', background: '#0F172A', color: '#fff', border: 'none',
@@ -115,5 +127,13 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <SearchPageInner />
+    </Suspense>
   )
 }
