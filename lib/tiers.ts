@@ -13,6 +13,7 @@ export const TIER_LIMITS = {
     documentsModule: false,
     advancedAI: false,
     integrations: false,
+    aiAutomation: false,
     prioritySupport: false,
   },
   essential: {
@@ -27,6 +28,7 @@ export const TIER_LIMITS = {
     documentsModule: false,
     advancedAI: false,
     integrations: false,
+    aiAutomation: false,
     prioritySupport: false,
   },
   growth: {
@@ -41,6 +43,7 @@ export const TIER_LIMITS = {
     documentsModule: false,
     advancedAI: false,
     integrations: false,
+    aiAutomation: false,
     prioritySupport: false,
   },
   business: {
@@ -55,6 +58,7 @@ export const TIER_LIMITS = {
     documentsModule: true,
     advancedAI: true,
     integrations: false,
+    aiAutomation: false,
     prioritySupport: false,
   },
   advanced: {
@@ -69,6 +73,7 @@ export const TIER_LIMITS = {
     documentsModule: true,
     advancedAI: true,
     integrations: true,
+    aiAutomation: true,
     prioritySupport: true,
   },
 } as const
