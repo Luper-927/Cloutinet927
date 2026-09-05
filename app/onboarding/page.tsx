@@ -45,9 +45,15 @@ export default function OnboardingPage() {
     setGeneratingTagline(true)
     setError('')
     try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+
       const response = await fetch('/api/generate-seo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
           type: 'tagline',
           businessName,
@@ -72,9 +78,15 @@ export default function OnboardingPage() {
     setGeneratingServices(true)
     setError('')
     try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+
       const response = await fetch('/api/generate-seo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
           type: 'services',
           businessName,
@@ -158,119 +170,3 @@ export default function OnboardingPage() {
         <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px' }}>Fill in your details to create your free Google-searchable business page.</p>
 
         <label style={labelStyle}>Business Name *</label>
-        <input
-          placeholder="e.g. Lax Furniture"
-          value={businessName}
-          onChange={e => setBusinessName(e.target.value)}
-          style={inputStyle}
-        />
-
-        <label style={labelStyle}>Business Category *</label>
-        <select value={category} onChange={e => setCategory(e.target.value)} style={inputStyle}>
-          <option value="">Select your category</option>
-          {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-        </select>
-
-        <label style={labelStyle}>Phone / WhatsApp Number *</label>
-        <input
-          placeholder="e.g. 08012345678"
-          value={phone}
-          onChange={e => setPhone(e.target.value)}
-          style={inputStyle}
-        />
-
-        <label style={labelStyle}>Location (City, State)</label>
-        <input
-          placeholder="e.g. Port Harcourt, Rivers State"
-          value={location}
-          onChange={e => setLocation(e.target.value)}
-          style={inputStyle}
-        />
-
-        <label style={labelStyle}>Tagline</label>
-        <input
-          placeholder="A short description of your business"
-          value={tagline}
-          onChange={e => setTagline(e.target.value)}
-          style={inputStyle}
-        />
-        <button
-          onClick={generateTagline}
-          disabled={generatingTagline}
-          style={aiButtonStyle}
-        >
-          {generatingTagline ? '⏳ Generating...' : '✨ Generate SEO Tagline with AI'}
-        </button>
-
-        <label style={{ ...labelStyle, marginTop: '16px' }}>Business Hours</label>
-        <input
-          placeholder="e.g. Mon-Sat 8am-6pm"
-          value={hours}
-          onChange={e => setHours(e.target.value)}
-          style={inputStyle}
-        />
-
-        <label style={labelStyle}>Services & Products</label>
-        <textarea
-          placeholder="e.g. Rice, Beans, Palm Oil, Garri"
-          value={services}
-          onChange={e => setServices(e.target.value)}
-          style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' as const }}
-        />
-        <button
-          onClick={generateServices}
-          disabled={generatingServices}
-          style={aiButtonStyle}
-        >
-          {generatingServices ? '⏳ Generating...' : '✨ Generate Services with AI'}
-        </button>
-
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginTop: '16px', marginBottom: '20px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginBottom: '12px' }}>Social Media Links (Optional)</div>
-          <input placeholder="Facebook URL" value={facebook} onChange={e => setFacebook(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
-          <input placeholder="Instagram URL" value={instagram} onChange={e => setInstagram(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
-          <input placeholder="YouTube URL" value={youtube} onChange={e => setYoutube(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
-          <input placeholder="TikTok URL" value={tiktok} onChange={e => setTiktok(e.target.value)} style={{ ...inputStyle, marginBottom: '0' }} />
-        </div>
-
-        {error && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-            <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
-          </div>
-        )}
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            width: '100%', background: '#0F172A', color: '#fff', border: 'none',
-            borderRadius: '8px', padding: '14px', cursor: 'pointer',
-            fontSize: '15px', fontWeight: 700, fontFamily: 'inherit',
-            opacity: saving ? 0.7 : 1
-          }}
-        >
-          {saving ? 'Saving...' : 'Save & View My Page'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#475569', fontSize: '12px',
-  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase'
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
-  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
-  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
-  boxSizing: 'border-box'
-}
-
-const aiButtonStyle: React.CSSProperties = {
-  width: '100%', background: '#F0FDF4', color: '#166534',
-  border: '1px solid #BBF7D0', borderRadius: '8px', padding: '11px',
-  fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-  fontFamily: 'inherit', marginBottom: '16px'
-}
