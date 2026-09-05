@@ -1,7 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { getBusinessTier, TIER_LIMITS } from '@/lib/tiers'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Require a logged-in user (this route had no auth check at all before)
+    const authHeader = req.headers.get('authorization') || ''
+    const token = authHeader.replace('Bearer ', '')
+    if (!token) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    const { data: userData, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !userData?.user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    const callerId = userData.user.id
+
+    // 2. Work out which business this generation counts against.
+    //    Either the caller IS the business owner, or they're an active
+    //    employee with "products" permission acting on the owner's behalf.
+    let ownerId: string | null = null
+
+    const { data: ownProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', callerId)
+      .maybeSingle()
+
+    if (ownProfile) {
+      ownerId = callerId
+    } else {
+      const { data: employeeRow } = await supabase
+        .from('employees')
+        .select('owner_id, status, permissions')
+        .eq('user_id', callerId)
+        .eq('status', 'active')
+        .maybeSingle()
+
+      if (employeeRow && employeeRow.permissions?.products) {
+        ownerId = employeeRow.owner_id
+      }
+    }
+
+    if (!ownerId) {
+      return NextResponse.json({ error: 'Not authorized for this business' }, { status: 403 })
+    }
+
+    // 3. Check + increment the monthly AI generation count for this business's tier.
+    const tier = await getBusinessTier(ownerId)
+    const limit = TIER_LIMITS[tier].aiGenerations
+
+    const { data: usageResult, error: usageError } = await supabase.rpc('increment_ai_usage', {
+      p_owner_id: ownerId,
+      p_limit: limit,
+    })
+
+    if (usageError) {
+      return NextResponse.json({ error: 'Could not check AI usage' }, { status: 500 })
+    }
+    if (!usageResult?.allowed) {
+      return NextResponse.json(
+        { error: `Monthly AI generation limit reached (${limit}/month on your plan). Upgrade for more.` },
+        { status: 429 }
+      )
+    }
+
+    // 4. Everything below this line is your original generation logic, unchanged.
     const body = await req.json()
     const { type, businessName, category, location, productName, price, currency } = body
 
