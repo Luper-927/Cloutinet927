@@ -3,6 +3,9 @@ import { supabase } from '../lib/supabase'
 
 const baseUrl = 'https://cloutinet.online'
 
+// Google's hard limit is 50,000 URLs per sitemap file — we stay safely under it
+const CHUNK_SIZE = 45000
+
 const categoryMap: Record<string, string> = {
   'food-groceries': 'Food & Groceries',
   'fashion-clothing': 'Fashion & Clothing',
@@ -90,6 +93,7 @@ function getCategoryPages(): MetadataRoute.Sitemap {
   }))
 }
 
+// Business store pages + product pages — the part that grows without bound
 async function getDynamicPages(): Promise<MetadataRoute.Sitemap> {
   const { data: profiles } = await supabase
     .from('profiles')
@@ -120,7 +124,24 @@ async function getDynamicPages(): Promise<MetadataRoute.Sitemap> {
   return [...storePages, ...productPages]
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+// Tells Next.js how many sitemap files to generate.
+// id 0 = static + category pages (fixed, small, never needs to split)
+// id 1, 2, 3... = chunks of business/product pages, 45,000 URLs each
+export async function generateSitemaps() {
   const dynamicPages = await getDynamicPages()
-  return [...getStaticPages(), ...getCategoryPages(), ...dynamicPages]
+  const dynamicChunkCount = Math.max(1, Math.ceil(dynamicPages.length / CHUNK_SIZE))
+
+  return Array.from({ length: dynamicChunkCount + 1 }, (_, i) => ({ id: i }))
+}
+
+export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+  if (id === 0) {
+    return [...getStaticPages(), ...getCategoryPages()]
+  }
+
+  const dynamicPages = await getDynamicPages()
+  const start = (id - 1) * CHUNK_SIZE
+  const end = start + CHUNK_SIZE
+
+  return dynamicPages.slice(start, end)
 }
