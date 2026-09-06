@@ -1,7 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import Script from 'next/script'
 import { supabase } from '../../lib/supabase'
+
+declare global {
+  interface Window {
+    hcaptcha: any
+    onCaptchaVerify: (token: string) => void
+    onCaptchaExpire: () => void
+  }
+}
+
+const HCAPTCHA_SITE_KEY = '2f8adfd4-cda0-4758-8cdc-8fb4739c69d4'
 
 export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('signup')
@@ -9,26 +20,74 @@ export default function AuthPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [captchaToken, setCaptchaToken] = useState('')
+  const [captchaReady, setCaptchaReady] = useState(false)
+  const widgetIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    window.onCaptchaVerify = (token: string) => {
+      setCaptchaToken(token)
+    }
+    window.onCaptchaExpire = () => {
+      setCaptchaToken('')
+    }
+  }, [])
+
+  function renderCaptchaIfReady() {
+    if (window.hcaptcha && !widgetIdRef.current) {
+      widgetIdRef.current = window.hcaptcha.render('hcaptcha-widget', {
+        sitekey: HCAPTCHA_SITE_KEY,
+        callback: 'onCaptchaVerify',
+        'expired-callback': 'onCaptchaExpire',
+      })
+      setCaptchaReady(true)
+    }
+  }
+
+  function resetCaptcha() {
+    if (window.hcaptcha && widgetIdRef.current !== null) {
+      window.hcaptcha.reset(widgetIdRef.current)
+    }
+    setCaptchaToken('')
+  }
 
   async function handleLogin() {
+    if (!captchaToken) {
+      setError('Please complete the captcha')
+      return
+    }
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken },
+    })
     if (error) {
       setError(error.message)
       setLoading(false)
+      resetCaptcha()
     } else {
       window.location.href = '/dashboard'
     }
   }
 
   async function handleSignup() {
+    if (!captchaToken) {
+      setError('Please complete the captcha')
+      return
+    }
     setLoading(true)
     setError('')
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { captchaToken },
+    })
     if (error) {
       setError(error.message)
       setLoading(false)
+      resetCaptcha()
       return
     }
     if (data.user) {
@@ -62,6 +121,13 @@ export default function AuthPage() {
       alignItems: 'center', justifyContent: 'center',
       padding: '20px', fontFamily: 'Segoe UI, system-ui, sans-serif'
     }}>
+      <Script
+        src="https://js.hcaptcha.com/1/api.js"
+        async
+        defer
+        onLoad={renderCaptchaIfReady}
+      />
+
       <div style={{ marginBottom: '24px', textAlign: 'center' }}>
         <div style={{ fontSize: '28px', fontWeight: 900, color: '#fff' }}>Cloutinet</div>
         <p style={{ color: '#94A3B8', fontSize: '14px', marginTop: '6px' }}>
@@ -112,6 +178,8 @@ export default function AuthPage() {
           onKeyDown={e => e.key === 'Enter' && (mode === 'login' ? handleLogin() : handleSignup())}
           style={inputStyle}
         />
+
+        <div id="hcaptcha-widget" style={{ marginBottom: '16px' }} />
 
         {error && (
           <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px' }}>
