@@ -167,6 +167,9 @@ export async function generateMetadata({ params }: { params: { category: string 
   return {
     title: `Best ${data.categoryName} Businesses in Nigeria | Cloutinet`,
     description: `Find verified ${data.categoryName} businesses in Nigeria. Browse listings, view products and prices, contact directly on WhatsApp. Free on Cloutinet.`,
+    alternates: {
+      canonical: `https://cloutinet.online/businesses/${params.category}`,
+    },
   }
 }
 
