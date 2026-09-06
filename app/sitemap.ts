@@ -3,6 +3,10 @@ import { supabase } from '../lib/supabase'
 
 const baseUrl = 'https://cloutinet.online'
 
+// Fixed date for static pages that don't change often — update this
+// manually only when you actually edit one of these pages.
+const staticLastModified = new Date('2026-08-01')
+
 const categoryMap: Record<string, string> = {
   'food-groceries': 'Food & Groceries',
   'fashion-clothing': 'Fashion & Clothing',
@@ -64,27 +68,27 @@ const categoryMap: Record<string, string> = {
 
 function getStaticPages(): MetadataRoute.Sitemap {
   return [
-    { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
-    { url: baseUrl + '/businesses', lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: baseUrl + '/checker', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
-    { url: baseUrl + '/tools/whatsapp-link', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: baseUrl + '/data', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: baseUrl + '/data/nigerian-sme-report', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: baseUrl + '/data/whatsapp-business-nigeria', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: baseUrl + '/data/how-cloutinet-works', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
-    { url: baseUrl + '/data/nigerian-cities-business-data', lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: baseUrl + '/about', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: baseUrl + '/feedback', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: baseUrl + '/privacy', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
-    { url: baseUrl + '/terms', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
-    { url: baseUrl + '/auth', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: baseUrl, lastModified: staticLastModified, changeFrequency: 'daily', priority: 1 },
+    { url: baseUrl + '/businesses', lastModified: staticLastModified, changeFrequency: 'daily', priority: 0.9 },
+    { url: baseUrl + '/checker', lastModified: staticLastModified, changeFrequency: 'weekly', priority: 0.9 },
+    { url: baseUrl + '/tools/whatsapp-link', lastModified: staticLastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: baseUrl + '/data', lastModified: staticLastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: baseUrl + '/data/nigerian-sme-report', lastModified: staticLastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: baseUrl + '/data/whatsapp-business-nigeria', lastModified: staticLastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: baseUrl + '/data/how-cloutinet-works', lastModified: staticLastModified, changeFrequency: 'weekly', priority: 0.7 },
+    { url: baseUrl + '/data/nigerian-cities-business-data', lastModified: staticLastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: baseUrl + '/about', lastModified: staticLastModified, changeFrequency: 'monthly', priority: 0.6 },
+    { url: baseUrl + '/feedback', lastModified: staticLastModified, changeFrequency: 'monthly', priority: 0.5 },
+    { url: baseUrl + '/privacy', lastModified: staticLastModified, changeFrequency: 'monthly', priority: 0.4 },
+    { url: baseUrl + '/terms', lastModified: staticLastModified, changeFrequency: 'monthly', priority: 0.4 },
+    { url: baseUrl + '/auth', lastModified: staticLastModified, changeFrequency: 'monthly', priority: 0.5 },
   ]
 }
 
 function getCategoryPages(): MetadataRoute.Sitemap {
   return Object.keys(categoryMap).map((slug) => ({
     url: baseUrl + '/businesses/' + slug,
-    lastModified: new Date(),
+    lastModified: staticLastModified,
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   }))
@@ -93,26 +97,26 @@ function getCategoryPages(): MetadataRoute.Sitemap {
 async function getDynamicPages(): Promise<MetadataRoute.Sitemap> {
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('business_slug')
+    .select('business_slug, updated_at')
     .not('business_slug', 'is', null)
 
   const storePages: MetadataRoute.Sitemap = (profiles || []).map((p: any) => ({
     url: baseUrl + '/store/' + p.business_slug,
-    lastModified: new Date(),
+    lastModified: p.updated_at ? new Date(p.updated_at) : staticLastModified,
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   }))
 
   const { data: products } = await supabase
     .from('products')
-    .select('slug, profiles(business_slug)')
+    .select('slug, updated_at, profiles(business_slug)')
     .eq('is_published', true)
 
   const productPages: MetadataRoute.Sitemap = (products || [])
     .filter((p: any) => p.profiles?.business_slug)
     .map((p: any) => ({
       url: baseUrl + '/store/' + p.profiles.business_slug + '/' + p.slug,
-      lastModified: new Date(),
+      lastModified: p.updated_at ? new Date(p.updated_at) : staticLastModified,
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }))
