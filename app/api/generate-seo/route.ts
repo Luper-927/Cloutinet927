@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     // 3. Check + increment the monthly AI generation count for this business's tier.
     const tier = await getBusinessTier(ownerId)
-    const limit = TIER_LIMITS[tier].aiGenerations
+    const limit = TIER_LIMITS[tier.tierKey].aiGenerationsPerMonth
 
     const { data: usageResult, error: usageError } = await supabase.rpc('increment_ai_usage', {
       p_owner_id: ownerId,
@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
     })
 
     if (usageError) {
+      console.error('increment_ai_usage error:', usageError)
       return NextResponse.json({ error: 'Could not check AI usage' }, { status: 500 })
     }
     if (!usageResult?.allowed) {
