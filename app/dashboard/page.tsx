@@ -121,6 +121,7 @@ export default function Dashboard() {
     ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
     : 0
   const isIndexingPeriod = daysSinceCreated < 7
+  const atProductLimit = tierLimits && products.length >= tierLimits.productLimit
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
@@ -212,6 +213,20 @@ export default function Dashboard() {
                 <div style={{ fontSize: '11px', color: '#9A3412', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>This Week's Action</div>
                 <div style={{ fontSize: '14px', color: '#0F172A', fontWeight: 600, marginBottom: '10px' }}>{oneAction.task}</div>
                 <Link href={oneAction.link} style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>Do This Now →</Link>
+              </div>
+            )}
+
+            {atProductLimit && (
+              <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#1D4ED8', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>Plan Limit Reached</div>
+                <div style={{ fontSize: '14px', color: '#0F172A', fontWeight: 600, marginBottom: '10px' }}>
+                  You have {products.length} products, but your current plan covers {tierLimits.productLimit}. Upgrade to add more.
+                </div>
+                {context?.isOwner ? (
+                  <Link href="/dashboard/billing" style={{ display: 'inline-block', background: '#2563EB', color: '#fff', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>View Plans →</Link>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Ask the business owner to upgrade the plan.</p>
+                )}
               </div>
             )}
 
