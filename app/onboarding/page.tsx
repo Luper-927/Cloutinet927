@@ -36,6 +36,7 @@ export default function OnboardingPage() {
   const [generatingTagline, setGeneratingTagline] = useState(false)
   const [generatingServices, setGeneratingServices] = useState(false)
   const [error, setError] = useState('')
+  const [savedSlug, setSavedSlug] = useState<string | null>(null)
 
   async function generateTagline() {
     if (!businessName || !category) {
@@ -155,7 +156,59 @@ export default function OnboardingPage() {
       body: JSON.stringify({ url: 'https://cloutinet.online/store/' + slug }),
     }).catch(() => {})
 
-    window.location.href = '/dashboard' 
+    setSavedSlug(slug)
+  }
+
+  if (savedSlug) {
+    const storeUrl = 'https://cloutinet.online/store/' + savedSlug
+    const shareText = 'My business ' + businessName + ' is now on Google! Check it out: ' + storeUrl
+    const whatsappShareLink = 'https://wa.me/?text=' + encodeURIComponent(shareText)
+
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+        <div style={{ background: '#0F172A', padding: '16px 20px' }}>
+          <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>Cloutinet</div>
+        </div>
+
+        <div style={{ maxWidth: '480px', margin: '0 auto', padding: '40px 16px', textAlign: 'center' as const }}>
+          <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎉</div>
+          <h1 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+            Your page is live!
+          </h1>
+          <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px', lineHeight: 1.5 }}>
+            {businessName} is now searchable on Google. Share it now while it's fresh — customers who see it today could message you today.
+          </p>
+
+          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', marginBottom: '20px', wordBreak: 'break-all' as const }}>
+            <a href={storeUrl} style={{ color: '#0F172A', fontSize: '13px', fontWeight: 600, textDecoration: 'underline' }}>{storeUrl}</a>
+          </div>
+
+          <a
+            href={whatsappShareLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              background: '#16A34A', color: '#fff', padding: '15px',
+              borderRadius: '8px', textDecoration: 'none', fontSize: '15px', fontWeight: 700, marginBottom: '12px'
+            }}
+          >
+            Share to WhatsApp Status
+          </a>
+
+          <button
+            onClick={() => { window.location.href = '/dashboard' }}
+            style={{
+              width: '100%', background: '#fff', color: '#64748B', border: '1px solid #E2E8F0',
+              borderRadius: '8px', padding: '13px', cursor: 'pointer',
+              fontSize: '13px', fontWeight: 600, fontFamily: 'inherit'
+            }}
+          >
+            Skip for now, go to Dashboard
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
