@@ -46,6 +46,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   return {
     title,
     description,
+    alternates: { canonical: '/store/' + params.slug },
     openGraph: { title, description, type: 'website', images: image ? [{ url: image }] : [] },
     twitter: { card: 'summary_large_image' as const, title, description, images: image ? [image] : [] },
   }
