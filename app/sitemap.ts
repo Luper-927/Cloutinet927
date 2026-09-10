@@ -1,7 +1,11 @@
+// app/sitemap.ts
 import { MetadataRoute } from 'next'
 import { supabase } from '../lib/supabase'
 
 const baseUrl = 'https://cloutinet.online'
+
+// Regenerate at most once an hour instead of hitting Supabase on every crawl request.
+export const revalidate = 3600
 
 // Fixed date for static pages that don't change often — update this
 // manually only when you actually edit one of these pages.
@@ -94,28 +98,68 @@ function getCategoryPages(): MetadataRoute.Sitemap {
   }))
 }
 
-async function getDynamicPages(): Promise<MetadataRoute.Sitemap> {
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('business_slug, updated_at')
-    .not('business_slug', 'is', null)
+// Supabase caps unpaginated selects at ~1000 rows by default. This walks the
+// table in pages so growth past that cap can't silently drop URLs, and logs
+// (rather than hides) any query failure.
+const PAGE_SIZE = 1000
 
-  const storePages: MetadataRoute.Sitemap = (profiles || []).map((p: any) => ({
+async function fetchAllRows<T>(
+  runQuery: (from: number, to: number) => Promise<{ data: T[] | null; error: { message: string } | null }>
+): Promise<T[]> {
+  const rows: T[] = []
+  let from = 0
+
+  while (true) {
+    const to = from + PAGE_SIZE - 1
+    const { data, error } = await runQuery(from, to)
+
+    if (error) {
+      console.error('[sitemap] Supabase query failed:', error.message)
+      break
+    }
+    if (!data || data.length === 0) break
+
+    rows.push(...data)
+    if (data.length < PAGE_SIZE) break
+    from += PAGE_SIZE
+  }
+
+  return rows
+}
+
+async function getDynamicPages(): Promise<MetadataRoute.Sitemap> {
+  const profiles = await fetchAllRows<{ business_slug: string; updated_at: string | null }>(
+    (from, to) =>
+      supabase
+        .from('profiles')
+        .select('business_slug, updated_at')
+        .not('business_slug', 'is', null)
+        .range(from, to)
+  )
+
+  const storePages: MetadataRoute.Sitemap = profiles.map((p) => ({
     url: baseUrl + '/store/' + p.business_slug,
     lastModified: p.updated_at ? new Date(p.updated_at) : staticLastModified,
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   }))
 
-  const { data: products } = await supabase
-    .from('products')
-    .select('slug, updated_at, profiles(business_slug)')
-    .eq('is_published', true)
+  const products = await fetchAllRows<{
+    slug: string
+    updated_at: string | null
+    profiles: { business_slug: string } | null
+  }>((from, to) =>
+    supabase
+      .from('products')
+      .select('slug, updated_at, profiles(business_slug)')
+      .eq('is_published', true)
+      .range(from, to)
+  )
 
-  const productPages: MetadataRoute.Sitemap = (products || [])
-    .filter((p: any) => p.profiles?.business_slug)
-    .map((p: any) => ({
-      url: baseUrl + '/store/' + p.profiles.business_slug + '/' + p.slug,
+  const productPages: MetadataRoute.Sitemap = products
+    .filter((p) => p.profiles?.business_slug)
+    .map((p) => ({
+      url: baseUrl + '/store/' + p.profiles!.business_slug + '/' + p.slug,
       lastModified: p.updated_at ? new Date(p.updated_at) : staticLastModified,
       changeFrequency: 'weekly' as const,
       priority: 0.7,
