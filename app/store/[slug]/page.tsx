@@ -3,10 +3,11 @@ import { supabase } from '../../../lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { cache } from 'react'
 
 export const revalidate = 60
 
-async function getStoreData(slug: string) {
+const getStoreData = cache(async (slug: string) => {
   const { data: profiles } = await supabase
     .from('profiles')
     .select('*')
@@ -23,13 +24,16 @@ async function getStoreData(slug: string) {
     .eq('is_published', true)
     .order('created_at', { ascending: false })
 
-  await supabase.from('analytics_events').insert({
+  return { profile, products: products || [] }
+})
+
+function trackPageView(slug: string) {
+  // Fire-and-forget: never block or fail page rendering because of analytics.
+  supabase.from('analytics_events').insert({
     event_type: 'page_view',
     business_slug: slug,
     source: 'store_page',
-  })
-
-  return { profile, products: products || [] }
+  }).then(() => {}, () => {})
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
@@ -56,6 +60,8 @@ export default async function StorePage({ params }: { params: { slug: string } }
   const data = await getStoreData(params.slug)
   if (!data) return notFound()
 
+  trackPageView(params.slug)
+
   const { profile, products } = data
 
   const sameAs: string[] = []
@@ -68,16 +74,18 @@ export default async function StorePage({ params }: { params: { slug: string } }
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: profile.business_name,
-    description: profile.tagline,
-    address: {
+    url: 'https://cloutinet.online/store/' + params.slug,
+  }
+  if (profile.tagline) schema.description = profile.tagline
+  if (profile.location) {
+    schema.address = {
       '@type': 'PostalAddress',
       addressLocality: profile.location,
       addressCountry: 'NG',
-    },
-    telephone: profile.phone,
-    url: 'https://cloutinet.online/store/' + params.slug,
-    openingHours: profile.business_hours || undefined,
+    }
   }
+  if (profile.phone) schema.telephone = profile.phone
+  if (profile.business_hours) schema.openingHours = profile.business_hours
   if (sameAs.length > 0) schema.sameAs = sameAs
 
   const faqSchema = {
