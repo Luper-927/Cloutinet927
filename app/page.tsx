@@ -25,9 +25,9 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cloutinet — Get Found on Google. Get More Customers.",
+  title: "Cloutinet — Get Every Branch Found on Google.",
   description:
-    "Cloutinet creates a Google-searchable page for your business so customers can find and contact you on WhatsApp.",
+    "Cloutinet helps growing companies and multi-branch businesses get found on Google, with a searchable page for every location and direct WhatsApp contact.",
   alternates: {
     canonical: '/',
   },
@@ -49,41 +49,41 @@ const FEATURES = [
   {
     icon: Store,
     iconBg: "bg-emerald-100 text-emerald-600",
-    title: "Google-Searchable Page",
+    title: "Multi-Location Business Page",
     description:
-      "We create an SEO-optimized page for your business that shows up on Google.",
+      "One powerful, Google-searchable page that represents your company and every branch.",
   },
   {
     icon: MessageCircle,
     iconBg: "bg-blue-100 text-blue-600",
     title: "WhatsApp Integration",
-    description: "Customers can chat with you instantly on WhatsApp with one tap.",
+    description: "Let customers reach any branch instantly on WhatsApp with one tap.",
   },
   {
     icon: Package,
     iconBg: "bg-violet-100 text-violet-600",
-    title: "Products & Services",
+    title: "Products & Services Catalog",
     description:
-      "Showcase your products and services with photos, prices and details.",
+      "Showcase your full product and service range with photos, prices and details, managed centrally.",
   },
   {
     icon: Star,
     iconBg: "bg-amber-100 text-amber-600",
     title: "Customer Reviews",
-    description: "Build trust with reviews from happy customers.",
+    description: "Build company-wide trust with reviews collected across every location.",
   },
   {
     icon: BarChart3,
     iconBg: "bg-rose-100 text-rose-600",
     title: "Visibility Score",
     description:
-      "Get a score and actionable tips to improve your visibility on Google.",
+      "Get a company-wide visibility score and see how each branch is performing on Google.",
   },
   {
     icon: TrendingUp,
     iconBg: "bg-teal-100 text-teal-600",
     title: "Analytics Dashboard",
-    description: "Track views, clicks and WhatsApp messages in real-time.",
+    description: "Track views, clicks and WhatsApp inquiries across your entire business, branch by branch.",
   },
 ];
 
@@ -92,7 +92,7 @@ const PLANS = [
     name: "Free",
     price: "₦0",
     period: "",
-    description: "For businesses just getting started online.",
+    description: "A starting point for a single branch or location.",
     features: [
       "1 Google-searchable page",
       "Up to 5 products or services",
@@ -107,7 +107,7 @@ const PLANS = [
     name: "Essential",
     price: "₦5,000",
     period: "/month",
-    description: "For businesses ready to build real visibility.",
+    description: "For growing companies ready to build real visibility.",
     features: [
       "Everything in Free",
       "up to 40 products or services",
@@ -122,7 +122,7 @@ const PLANS = [
     name: "Growth",
     price: "₦8,000",
     period: "/month",
-    description: "For businesses ready to rank and grow.",
+    description: "For established businesses scaling operations and rankings.",
     features: [
       "up to 120 products or services",
       "Priority support",
@@ -136,7 +136,7 @@ const PLANS = [
     name: "Business",
     price: "₦15,000",
     period: "/month",
-    description: "For teams managing multiple locations.",
+    description: "For companies managing multiple branches and locations.",
     features: [
       "Everything in growth",
       "up to 250 products or services",
@@ -152,7 +152,7 @@ const PLANS = [
     name: "Advanced",
     price: "₦22,000",
     period: "/month",
-    description: "Full platform access with priority support.",
+    description: "Enterprise-grade access with priority support for large, multi-branch operations.",
     features: [
     "Everything in Business",
       "Up to 999 products or services",
@@ -172,7 +172,7 @@ const STEPS = [
     iconBg: "bg-blue-50 text-blue-600",
     title: "Create Your Page",
     description:
-      "Tell us about your business and add your products, services and photos.",
+      "Tell us about your company and add your branches, products, services and photos.",
   },
   {
     number: "2",
@@ -180,7 +180,7 @@ const STEPS = [
     iconBg: "bg-blue-50 text-blue-600",
     title: "Get Discovered",
     description:
-      "We create your Google-searchable page and optimize it for visibility.",
+      "We create your Google-searchable page and optimize visibility across every location.",
   },
   {
     number: "3",
@@ -188,28 +188,28 @@ const STEPS = [
     iconBg: "bg-blue-50 text-blue-600",
     title: "Get More Customers",
     description:
-      "Customers find you on Google and contact you on WhatsApp. You grow your business!",
+      "Customers find any of your branches on Google and reach out on WhatsApp. You grow across the board.",
   },
 ];
 
 const TESTIMONIALS = [
   {
     quote:
-      "Cloutinet helped my business show up on Google in days. I now get more customers on WhatsApp daily!",
-    name: "Chioma E.",
-    role: "Fashion Designer, Lagos",
+      "Cloutinet gave every branch of our company a Google-searchable page in days. Leads now come in on WhatsApp from locations we never ranked for before.",
+    name: "Emeka O.",
+    role: "Operations Manager, Retail Chain — Lagos",
   },
   {
     quote:
-      "The best decision I made this year. Setup was super easy and it's helping my business grow consistently.",
-    name: "Ahmed R.",
-    role: "Phone Accessories, Abuja",
+      "Managing visibility across multiple locations used to mean separate tools for each branch. Cloutinet gave us one dashboard for the whole company.",
+    name: "Ngozi A.",
+    role: "Business Development Lead, Logistics Company — Abuja",
   },
   {
     quote:
-      "I love the visibility score feature. It shows me exactly what to fix and how to get more customers.",
-    name: "Blessing O.",
-    role: "Cakes & Pastries, Port Harcourt",
+      "The visibility score across our branches shows us exactly where each location stands, and what to fix. It's changed how we plan expansion.",
+    name: "Tunde F.",
+    role: "Founder, Multi-Branch Pharmacy Group — Port Harcourt",
   },
 ];
 
@@ -329,19 +329,19 @@ function Hero() {
         <div className="text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-medium text-emerald-400 sm:mb-6 sm:px-4 sm:text-xs">
             <span aria-hidden>🇳🇬</span>
-            Proudly built for Nigerian Businesses
+            Built for Nigerian Businesses & Enterprises
           </div>
 
           <h1 className="text-4xl font-extrabold leading-[0.95] tracking-tight text-white xs:text-5xl sm:text-6xl lg:text-7xl xl:text-8xl">
-            Get Found on Google.
+            Get Every Branch
             <br />
-            Get More <span className="text-emerald-400">Customers.</span>
+            Found on <span className="text-emerald-400">Google.</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
-            List your products and services for free. Cloutinet creates a
-            Google-searchable page for your business so customers can find
-            and contact you on WhatsApp.
+            Cloutinet gives medium-sized businesses and companies with multiple
+            branches a Google-searchable presence for every location, so
+            customers can find and reach you on WhatsApp, wherever they are.
           </p>
 
           <SearchBar />
@@ -351,7 +351,7 @@ function Hero() {
               href="/auth"
               className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
             >
-              Create Your Free Page
+              Get Your Business Online
               <ArrowRight className="h-4 w-4" />
             </a>
             <a
@@ -374,7 +374,7 @@ function Hero() {
                 </span>
               ))}
             </span>
-            Trusted by real Nigerian businesses already growing with Cloutinet
+            Trusted by growing Nigerian companies and multi-branch businesses
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
@@ -417,7 +417,7 @@ function PhoneMockup() {
           </p>
           <div className="mt-2.5 flex items-center justify-between rounded-full border border-slate-200 px-3 py-1.5 sm:mt-3 sm:py-2">
             <span className="text-[10px] text-slate-600 sm:text-[12px]">
-              Best cakes in Lagos
+              Best retail chain in Lagos
             </span>
             <Search className="h-3 w-3 text-blue-500 sm:h-3.5 sm:w-3.5" />
           </div>
@@ -434,7 +434,7 @@ function PhoneMockup() {
 
         <div className="px-3 pb-3 pt-1 sm:px-4 sm:pb-4">
           <p className="text-[12px] font-semibold text-slate-900 sm:text-[13px]">
-            Sweet Cravings Cakes
+            Zenith Retail Group
           </p>
           <div className="mt-1 flex items-center gap-1">
             <span className="text-[10px] font-medium text-slate-600 sm:text-[11px]">4.8</span>
@@ -446,7 +446,7 @@ function PhoneMockup() {
             <span className="text-[10px] text-slate-400 sm:text-[11px]">(128)</span>
           </div>
           <p className="mt-0.5 text-[10px] text-slate-500 sm:text-[11px]">
-            Cake Shop in Lagos · <span className="text-emerald-600">Open</span>
+            Retail Chain · Multiple Locations · <span className="text-emerald-600">Open</span>
           </p>
 
           <div className="mt-2 grid grid-cols-3 gap-1.5 sm:mt-2.5">
@@ -472,8 +472,8 @@ function PhoneMockup() {
           </div>
 
           <p className="mt-2.5 text-[10px] leading-relaxed text-slate-500 sm:mt-3 sm:text-[11px]">
-            Delicious cakes for all occasions. Custom cakes, pastries and
-            more. Lagos, Nigeria
+            Multi-branch retail company serving Lagos, Abuja & Port Harcourt.
+            Consistent quality across every location.
           </p>
 
           <div className="mt-2 flex h-12 items-center justify-center rounded-lg bg-slate-100 sm:mt-2.5 sm:h-16">
@@ -489,7 +489,7 @@ function ScoreCard() {
   return (
     <div className="static mx-auto w-32 rounded-xl border border-slate-100 bg-white p-3 shadow-xl sm:absolute sm:-right-4 sm:top-8 sm:mx-0 sm:w-36 sm:rounded-2xl sm:p-4 lg:-right-6 lg:top-10 lg:w-40">
       <p className="text-[10px] font-medium leading-snug text-slate-500 sm:text-[11px]">
-        Your Business Visibility Score
+        Your Company Visibility Score
       </p>
       <div className="relative mt-2 flex items-center justify-center sm:mt-3">
         <svg className="h-16 w-16 -rotate-90 sm:h-20 sm:w-20" viewBox="0 0 80 80">
@@ -538,13 +538,14 @@ function Features() {
               POWERFUL FEATURES
             </span>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-              Everything You Need to Get{" "}
+              Everything Your Company Needs to Get{" "}
               <span className="text-blue-600">Discovered &amp; Grow</span>
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-slate-500 sm:text-base lg:text-right">
-            Cloutinet gives your business the visibility it deserves with
-            tools that help you attract, engage and convert more customers.
+            Cloutinet gives growing businesses and multi-branch companies the
+            visibility they deserve, with tools that help every location
+            attract, engage and convert more customers.
           </p>
         </div>
 
@@ -583,7 +584,7 @@ function Pricing() {
             Plans for every stage of your business
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
-            Start free. Upgrade whenever you're ready for more customers.
+            Start free. Upgrade as your company and your branches grow.
           </p>
         </div>
 
@@ -664,7 +665,7 @@ function Testimonials() {
         <div className="rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
           <div className="mx-auto max-w-xl text-center">
             <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-slate-300 sm:text-xs">
-              BUILT FOR NIGERIAN BUSINESSES
+              BUILT FOR GROWING NIGERIAN COMPANIES
             </span>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:mt-4 sm:text-3xl lg:text-4xl">
               Loved by Nigerian Businesses
@@ -753,17 +754,18 @@ function FinalCta() {
           <div className="relative grid grid-cols-1 items-center gap-8 sm:gap-12 lg:grid-cols-2">
             <div className="text-center lg:text-left">
               <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
-                Ready to Get More Customers?
+                Ready to Grow Every Branch?
               </h2>
               <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 sm:mt-4 sm:text-base lg:mx-0">
-                Join Nigerian businesses already growing with Cloutinet.
+                Join growing Nigerian companies managing multiple locations
+                with Cloutinet.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
                 <a
                   href="/auth"
                   className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
                 >
-                  Create Your Free Page
+                  Get Your Business Online
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
@@ -842,7 +844,7 @@ function Footer() {
               <span className="text-lg font-black text-white">Cloutinet</span>
             </a>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-              Helping Nigerian businesses get found on Google and win more customers, every day.
+              Helping Nigerian businesses and multi-branch companies get found on Google and win more customers, every day.
             </p>
           </div>
 
