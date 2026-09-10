@@ -1,10 +1,11 @@
 import { supabase } from '../../../../lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { cache } from 'react'
 
 export const revalidate = 60
 
-async function getProductData(businessSlug: string, productSlug: string) {
+const getProductData = cache(async (businessSlug: string, productSlug: string) => {
   const { data: profiles } = await supabase
     .from('profiles').select('*').eq('business_slug', businessSlug).limit(1)
 
@@ -22,14 +23,17 @@ async function getProductData(businessSlug: string, productSlug: string) {
     .from('products').select('id, name, slug, price, currency, image_url')
     .eq('user_id', profile.id).eq('is_published', true).neq('id', product.id).limit(4)
 
-  await supabase.from('analytics_events').insert({
+  return { profile, product, otherProducts: otherProducts || [] }
+})
+
+function trackPageView(businessSlug: string, productId: string) {
+  // Fire-and-forget: never block or fail page rendering because of analytics.
+  supabase.from('analytics_events').insert({
     event_type: 'page_view',
     business_slug: businessSlug,
-    product_id: product.id,
+    product_id: productId,
     source: 'product_page',
-  })
-
-  return { profile, product, otherProducts: otherProducts || [] }
+  }).then(() => {}, () => {})
 }
 
 export async function generateMetadata({ params }: { params: { slug: string; product: string } }) {
@@ -38,6 +42,7 @@ export async function generateMetadata({ params }: { params: { slug: string; pro
   return {
     title: data.product.seo_title || (data.product.name + ' | ' + data.profile.business_name),
     description: data.product.seo_description || data.product.description,
+    alternates: { canonical: '/store/' + params.slug + '/' + params.product },
   }
 }
 
@@ -47,20 +52,25 @@ export default async function ProductPage({ params }: { params: { slug: string; 
 
   const { profile, product, otherProducts } = data
 
-  const schema = {
+  trackPageView(params.slug, product.id)
+
+  const schema: any = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    description: product.description || product.seo_description,
-    image: product.image_url,
     offers: {
       '@type': 'Offer',
       price: product.price,
       priceCurrency: product.currency === 'NGN' ? 'NGN' : product.currency === 'USD' ? 'USD' : product.currency === 'GBP' ? 'GBP' : 'NGN',
       availability: 'https://schema.org/InStock',
-      seller: { '@type': 'LocalBusiness', name: profile.business_name, address: profile.location, telephone: profile.phone }
     }
   }
+  if (product.description || product.seo_description) schema.description = product.description || product.seo_description
+  if (product.image_url) schema.image = product.image_url
+  const seller: any = { '@type': 'LocalBusiness', name: profile.business_name }
+  if (profile.location) seller.address = profile.location
+  if (profile.phone) seller.telephone = profile.phone
+  schema.offers.seller = seller
 
   const whatsappLink = profile.phone
     ? 'https://wa.me/' + profile.phone.replace(/[^0-9]/g, '') + '?text=' + encodeURIComponent('Hello, I saw your listing for ' + product.name + ' on Cloutinet and I want to buy it. Is it still available?')
