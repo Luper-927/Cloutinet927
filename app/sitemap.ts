@@ -98,28 +98,60 @@ function getCategoryPages(): MetadataRoute.Sitemap {
   }))
 }
 
-// Supabase caps unpaginated selects at ~1000 rows by default. This walks the
-// table in pages so growth past that cap can't silently drop URLs, and logs
-// (rather than hides) any query failure.
+// Supabase caps unpaginated selects at ~1000 rows by default. These walk
+// each table in pages so growth past that cap can't silently drop URLs,
+// and log (rather than hide) any query failure.
 const PAGE_SIZE = 1000
 
-async function fetchAllRows<T>(
-  runQuery: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: any }>
-): Promise<T[]> {
-  const rows: T[] = []
+type StoreRow = { business_slug: string; updated_at: string | null }
+
+async function fetchAllProfiles(): Promise<StoreRow[]> {
+  const rows: StoreRow[] = []
   let from = 0
 
   while (true) {
     const to = from + PAGE_SIZE - 1
-    const { data, error } = await runQuery(from, to)
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('business_slug, updated_at')
+      .not('business_slug', 'is', null)
+      .range(from, to)
 
     if (error) {
-      console.error('[sitemap] Supabase query failed:', error.message ?? error)
+      console.error('[sitemap] profiles query failed:', error.message)
       break
     }
     if (!data || data.length === 0) break
 
-    rows.push(...data)
+    rows.push(...(data as unknown as StoreRow[]))
+    if (data.length < PAGE_SIZE) break
+    from += PAGE_SIZE
+  }
+
+  return rows
+}
+
+type ProductRow = { slug: string; updated_at: string | null; profiles: { business_slug: string } | null }
+
+async function fetchAllProducts(): Promise<ProductRow[]> {
+  const rows: ProductRow[] = []
+  let from = 0
+
+  while (true) {
+    const to = from + PAGE_SIZE - 1
+    const { data, error } = await supabase
+      .from('products')
+      .select('slug, updated_at, profiles(business_slug)')
+      .eq('is_published', true)
+      .range(from, to)
+
+    if (error) {
+      console.error('[sitemap] products query failed:', error.message)
+      break
+    }
+    if (!data || data.length === 0) break
+
+    rows.push(...(data as unknown as ProductRow[]))
     if (data.length < PAGE_SIZE) break
     from += PAGE_SIZE
   }
@@ -128,14 +160,7 @@ async function fetchAllRows<T>(
 }
 
 async function getDynamicPages(): Promise<MetadataRoute.Sitemap> {
-  const profiles = await fetchAllRows<{ business_slug: string; updated_at: string | null }>(
-    (from, to) =>
-      supabase
-        .from('profiles')
-        .select('business_slug, updated_at')
-        .not('business_slug', 'is', null)
-        .range(from, to)
-  )
+  const profiles = await fetchAllProfiles()
 
   const storePages: MetadataRoute.Sitemap = profiles.map((p) => ({
     url: baseUrl + '/store/' + p.business_slug,
@@ -144,17 +169,7 @@ async function getDynamicPages(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
-  const products = await fetchAllRows<{
-    slug: string
-    updated_at: string | null
-    profiles: { business_slug: string } | null
-  }>((from, to) =>
-    supabase
-      .from('products')
-      .select('slug, updated_at, profiles(business_slug)')
-      .eq('is_published', true)
-      .range(from, to)
-  )
+  const products = await fetchAllProducts()
 
   const productPages: MetadataRoute.Sitemap = products
     .filter((p) => p.profiles?.business_slug)
