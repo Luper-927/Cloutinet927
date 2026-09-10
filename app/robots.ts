@@ -1,33 +1,17 @@
+// app/robots.ts
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
+  const disallow = ['/dashboard', '/auth', '/api']
+
   return {
     rules: [
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: ['/dashboard', '/auth'],
-      },
-      {
-        userAgent: 'GPTBot',
-        allow: '/',
-      },
-      {
-        userAgent: 'Google-Extended',
-        allow: '/',
-      },
-      {
-        userAgent: 'anthropic-ai',
-        allow: '/',
-      },
-      {
-        userAgent: 'ClaudeBot',
-        allow: '/',
-      },
-      {
-        userAgent: 'PerplexityBot',
-        allow: '/',
-      },
+      { userAgent: '*', allow: '/', disallow },
+      { userAgent: 'GPTBot', allow: '/', disallow },
+      { userAgent: 'Google-Extended', allow: '/', disallow },
+      { userAgent: 'anthropic-ai', allow: '/', disallow },
+      { userAgent: 'ClaudeBot', allow: '/', disallow },
+      { userAgent: 'PerplexityBot', allow: '/', disallow },
     ],
     sitemap: 'https://cloutinet.online/sitemap.xml',
   }
