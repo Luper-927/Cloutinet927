@@ -27,7 +27,7 @@ import {
 export const metadata: Metadata = {
   title: "Cloutinet — Get Every Branch Found on Google.",
   description:
-    "Cloutinet helps growing companies and multi-branch businesses get found on Google, with a searchable page for every location and direct WhatsApp contact.",
+    "Cloutinet helps medium enterprises and multi-branch companies get found on Google, with a searchable page for every location and direct WhatsApp contact.",
   alternates: {
     canonical: '/',
   },
@@ -329,7 +329,7 @@ function Hero() {
         <div className="text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-medium text-emerald-400 sm:mb-6 sm:px-4 sm:text-xs">
             <span aria-hidden>🇳🇬</span>
-            Built for Nigerian Businesses & Enterprises
+            Built for Nigerian Enterprises & Companies
           </div>
 
           <h1 className="text-4xl font-extrabold leading-[0.95] tracking-tight text-white xs:text-5xl sm:text-6xl lg:text-7xl xl:text-8xl">
@@ -339,7 +339,7 @@ function Hero() {
           </h1>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
-            Cloutinet gives medium-sized businesses and companies with multiple
+            Cloutinet gives medium enterprises and companies with multiple
             branches a Google-searchable presence for every location, so
             customers can find and reach you on WhatsApp, wherever they are.
           </p>
@@ -374,7 +374,7 @@ function Hero() {
                 </span>
               ))}
             </span>
-            Trusted by growing Nigerian companies and multi-branch businesses
+            Trusted by growing Nigerian enterprises and multi-branch companies
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
@@ -581,7 +581,7 @@ function Pricing() {
             SIMPLE PRICING
           </span>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-            Plans for every stage of your business
+            Plans for every stage of your company
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
             Start free. Upgrade as your company and your branches grow.
@@ -844,7 +844,7 @@ function Footer() {
               <span className="text-lg font-black text-white">Cloutinet</span>
             </a>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-              Helping Nigerian businesses and multi-branch companies get found on Google and win more customers, every day.
+              Helping Nigerian enterprises and multi-branch companies get found on Google and win more customers, every day.
             </p>
           </div>
 
