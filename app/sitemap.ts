@@ -104,7 +104,7 @@ function getCategoryPages(): MetadataRoute.Sitemap {
 const PAGE_SIZE = 1000
 
 async function fetchAllRows<T>(
-  runQuery: (from: number, to: number) => Promise<{ data: T[] | null; error: { message: string } | null }>
+  runQuery: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: any }>
 ): Promise<T[]> {
   const rows: T[] = []
   let from = 0
@@ -114,7 +114,7 @@ async function fetchAllRows<T>(
     const { data, error } = await runQuery(from, to)
 
     if (error) {
-      console.error('[sitemap] Supabase query failed:', error.message)
+      console.error('[sitemap] Supabase query failed:', error.message ?? error)
       break
     }
     if (!data || data.length === 0) break
