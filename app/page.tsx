@@ -339,9 +339,7 @@ function Hero() {
           </h1>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
-            Cloutinet gives medium enterprises and companies with multiple
-            branches a Google-searchable presence for every location, so
-            customers can find and reach you on WhatsApp, wherever they are.
+            Cloutinet gives businesses and companies with multiple branches one platform to manage their digital presence, customers, employees, payments, documents, analytics, and AI-powered automation — while giving every location a Google-searchable presence so customers can find and reach you wherever they are.
           </p>
 
           <SearchBar />
