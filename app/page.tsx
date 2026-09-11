@@ -711,7 +711,27 @@ function Steps() {
           </h2>
         </div>
 
-        <div className="relative mt-8 grid grid-cols-1 gap-8 sm:mt-16 sm:gap-10 md:grid-cols-3 md:gap-6">
+        <div className="mx-auto mt-8 max-w-xs sm:mt-12">
+          <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-lg">
+            <div style={{ position: "relative", paddingBottom: "177.77%" }}>
+              <iframe
+                src="https://www.youtube.com/embed/4dxUEFX1Ewg"
+                title="How Cloutinet Works"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="relative mt-10 grid grid-cols-1 gap-8 sm:mt-16 sm:gap-10 md:grid-cols-3 md:gap-6">
           <div
             aria-hidden
             className="absolute left-0 right-0 top-4 hidden border-t-2 border-dashed border-slate-200 md:block"
