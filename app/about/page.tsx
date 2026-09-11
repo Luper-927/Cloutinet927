@@ -17,16 +17,16 @@ export default function AboutPage() {
         <div style={{ color: '#475569', fontSize: '11px', fontWeight: 700, letterSpacing: '2px', marginBottom: '10px', textTransform: 'uppercase' }}>Our Story</div>
         <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '16px', lineHeight: 1.2, color: '#0F172A' }}>Built So No Business Stays Invisible</h1>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          We built Cloutinet because we believe businesses shouldn't stay invisible just because they lack money, technical skill, or access to expensive marketing tools. A business owner's ability to be found online shouldn't depend on whether they can afford an agency or a developer.
+          We built Cloutinet because we believe businesses shouldn't stay invisible just because they lack the budget for an agency or a full marketing team. A business's ability to be found online shouldn't depend on how big it is — from a single-owner startup to an established enterprise, everyone deserves real digital visibility.
         </p>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          Our vision for Cloutinet goes beyond a simple directory — we want it to become a complete business visibility operating system. A place where any business can establish a real digital presence, become discoverable on Google, showcase what they sell, reach customers directly, and grow through tools that work automatically in the background.
+          Our vision for Cloutinet goes beyond a simple directory — we want it to become a complete business visibility operating system. A place where any business, at any scale, can establish a real digital presence, become discoverable on Google, showcase what they sell, reach customers directly, and grow through tools that work automatically in the background.
         </p>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          That means building Cloutinet to be fast, lightweight, affordable, and built to scale — especially for SMEs across Nigeria and other emerging markets, where data is expensive and every second of load time matters.
+          That means building Cloutinet to be fast, lightweight, and built to scale — from independent shops and service providers to retail chains, distributors, manufacturers, and enterprises across Nigeria and other emerging markets, where data is expensive and every second of load time matters.
         </p>
         <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '32px' }}>
-          At its core, Cloutinet is infrastructure. The technology should do the complicated work — visibility, discoverability, automation — so business owners can spend their time on what actually matters: serving their customers.
+          At its core, Cloutinet is infrastructure. The technology should do the complicated work — visibility, discoverability, automation — so businesses can spend their time on what actually matters: serving their customers.
         </p>
 
         <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '24px', marginBottom: '32px' }}>
@@ -36,7 +36,7 @@ export default function AboutPage() {
             'Lists your products and services with photos and prices',
             'Connects customers directly to you via WhatsApp',
             'Tracks how many people view your page and contact you',
-            'Built specifically for African small businesses, with global reach',
+            'Built for African businesses of every size — from independent startups to established enterprises',
           ].map(item => (
             <div key={item} style={{ display: 'flex', gap: '10px', marginBottom: '12px', alignItems: 'flex-start' }}>
               <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#0F172A', marginTop: '9px', flexShrink: 0 }}></div>
@@ -47,7 +47,7 @@ export default function AboutPage() {
 
         <div style={{ textAlign: 'center' }}>
           <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: '#0F172A' }}>Ready to grow your business?</h3>
-          <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '16px' }}>Join business owners already getting found on Google with Cloutinet.</p>
+          <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '16px' }}>Join businesses of every size already getting found on Google with Cloutinet.</p>
           <Link href="/auth" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>Create Your Free Page →</Link>
         </div>
 
