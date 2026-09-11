@@ -1,5 +1,6 @@
-// app/sitemap.ts — static + category pages only now (small, fixed, never near the 50k cap)
+// app/sitemap.ts
 import { MetadataRoute } from 'next'
+import { supabase } from '../lib/supabase'
 
 const baseUrl = 'https://cloutinet.online'
 const staticLastModified = new Date('2026-08-01')
@@ -37,8 +38,8 @@ const categoryMap: Record<string, string> = {
   'security-services': 'Security Services',
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPages: MetadataRoute.Sitemap = [
+function getStaticPages(): MetadataRoute.Sitemap {
+  return [
     { url: baseUrl, lastModified: staticLastModified, changeFrequency: 'daily', priority: 1 },
     { url: baseUrl + '/businesses', lastModified: staticLastModified, changeFrequency: 'daily', priority: 0.9 },
     { url: baseUrl + '/checker', lastModified: staticLastModified, changeFrequency: 'weekly', priority: 0.9 },
@@ -55,13 +56,48 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: baseUrl + '/terms', lastModified: staticLastModified, changeFrequency: 'monthly', priority: 0.4 },
     { url: baseUrl + '/auth', lastModified: staticLastModified, changeFrequency: 'monthly', priority: 0.5 },
   ]
+}
 
-  const categoryPages: MetadataRoute.Sitemap = Object.keys(categoryMap).map((slug) => ({
+function getCategoryPages(): MetadataRoute.Sitemap {
+  return Object.keys(categoryMap).map((slug) => ({
     url: baseUrl + '/businesses/' + slug,
     lastModified: staticLastModified,
     changeFrequency: 'weekly' as const,
     priority: 0.8,
   }))
+}
 
-  return [...staticPages, ...categoryPages]
+async function getDynamicPages(): Promise<MetadataRoute.Sitemap> {
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('business_slug, created_at')
+    .not('business_slug', 'is', null)
+
+  const storePages: MetadataRoute.Sitemap = (profiles || []).map((p: any) => ({
+    url: baseUrl + '/store/' + p.business_slug,
+    lastModified: p.created_at ? new Date(p.created_at) : staticLastModified,
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }))
+
+  const { data: products } = await supabase
+    .from('products')
+    .select('slug, created_at, profiles(business_slug)')
+    .eq('is_published', true)
+
+  const productPages: MetadataRoute.Sitemap = (products || [])
+    .filter((p: any) => p.profiles?.business_slug)
+    .map((p: any) => ({
+      url: baseUrl + '/store/' + p.profiles.business_slug + '/' + p.slug,
+      lastModified: p.created_at ? new Date(p.created_at) : staticLastModified,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }))
+
+  return [...storePages, ...productPages]
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const dynamicPages = await getDynamicPages()
+  return [...getStaticPages(), ...getCategoryPages(), ...dynamicPages]
 }
