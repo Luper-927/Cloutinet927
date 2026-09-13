@@ -8,7 +8,7 @@ const SUPABASE_PAGE_SIZE = 1000
 const SUBPAGES_PER_CHUNK = SITEMAP_CHUNK_SIZE / SUPABASE_PAGE_SIZE // 50
 
 export type StoreRow = { business_slug: string; created_at: string | null }
-export type ProductRow = { slug: string; updated_at: string | null; profiles: { business_slug: string } | null }
+export type ProductRow = { slug: string; created_at: string | null; profiles: { business_slug: string } | null }
 
 export async function getProfileCount(): Promise<number> {
   const { count, error } = await supabase
@@ -68,7 +68,7 @@ export async function fetchProductsChunk(chunkId: number): Promise<ProductRow[]>
     const to = from + SUPABASE_PAGE_SIZE - 1
     return supabase
       .from('products')
-      .select('slug, updated_at, profiles(business_slug)')
+      .select('slug, created_at, profiles(business_slug)')
       .eq('is_published', true)
       .range(from, to)
   })
