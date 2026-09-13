@@ -1,314 +1,322 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabase'
-import { getBusinessTier } from '../../lib/tiers'
-import { getActingContext, ActingContext, logActivity } from '../../lib/permissions'
-import Link from 'next/link'
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
+
+type Business = {
+  id: string;
+  business_name: string;
+  country: string;
+  email: string;
+  created_at: string;
+};
+
+type Trade = {
+  id: string;
+  counterparty_email: string;
+  description: string;
+  amount: number;
+  escrow_fee: number | null;
+  currency: string;
+  status: string;
+  created_at: string;
+  accepted_at: string | null;
+  completed_at: string | null;
+  buyer_confirmed: boolean;
+  seller_confirmed: boolean;
+  dispute_opened_at: string | null;
+  dispute_opened_by: string | null;
+  fee_responsibility: string | null;
+  funded: boolean;
+};
 
 export default function Dashboard() {
-  const [context, setContext] = useState<ActingContext | null>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [products, setProducts] = useState<any[]>([])
-  const [leadCount, setLeadCount] = useState(0)
-  const [viewCount, setViewCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [tierLimits, setTierLimits] = useState<any>(null)
+  const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [incomingCount, setIncomingCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [fundingId, setFundingId] = useState<string | null>(null);
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    const loadData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/');
+        return;
+      }
+      setUserId(session.user.id);
 
-  async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    const currentUser = userData?.user
-    if (!currentUser) { window.location.href = '/auth'; return }
+      const { data: businessData, error: businessError } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('auth_user_id', session.user.id)
+        .single();
+      if (!businessError && businessData) setBusiness(businessData);
 
-    const ctx = await getActingContext(currentUser.id)
-    if (!ctx) { window.location.href = '/onboarding'; return }
-    setContext(ctx)
+      const { data: tradeData, error: tradeError } = await supabase
+        .from('trades')
+        .select('*')
+        .eq('buyer_id', session.user.id)
+        .order('created_at', { ascending: false });
+      if (!tradeError && tradeData) setTrades(tradeData);
 
-    const { data: profileData } = await supabase
-      .from('profiles').select('*').eq('id', ctx.ownerId).single()
-    setProfile(profileData)
+      const { count } = await supabase
+        .from('trades')
+        .select('*', { count: 'exact', head: true })
+        .eq('counterparty_id', session.user.id)
+        .eq('status', 'pending');
+      setIncomingCount(count || 0);
+      setLoading(false);
+    };
+    loadData();
+  }, [router]);
 
-    const { data: productsData } = await supabase
-      .from('products').select('*').eq('user_id', ctx.ownerId)
-      .order('created_at', { ascending: false })
-    setProducts(productsData || [])
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
-    const { limits } = await getBusinessTier(ctx.ownerId)
-    setTierLimits(limits)
-
-    if (profileData && profileData.business_slug) {
-      const { count: leadC } = await supabase
-        .from('analytics_events').select('*', { count: 'exact', head: true })
-        .eq('business_slug', profileData.business_slug).eq('event_type', 'whatsapp_click')
-      const { count: viewC } = await supabase
-        .from('analytics_events').select('*', { count: 'exact', head: true })
-        .eq('business_slug', profileData.business_slug).eq('event_type', 'page_view')
-      setLeadCount(leadC || 0)
-      setViewCount(viewC || 0)
+  const handleBuyerConfirm = async (tradeId: string) => {
+    setUpdatingId(tradeId);
+    const trade = trades.find((t) => t.id === tradeId);
+    if (!trade) { setUpdatingId(null); return; }
+    const bothWillBeConfirmed = trade.seller_confirmed === true;
+    const updates: Record<string, string | boolean> = { buyer_confirmed: true };
+    if (bothWillBeConfirmed) {
+      updates.status = 'completed';
+      updates.completed_at = new Date().toISOString();
     }
-    setLoading(false)
-  }
+    const { error } = await supabase.from('trades').update(updates).eq('id', tradeId);
+    if (!error) setTrades((prev) => prev.map((t) => (t.id === tradeId ? { ...t, ...updates } : t)));
+    setUpdatingId(null);
+  };
 
-  async function handleSignOut() {
-    await supabase.auth.signOut()
-    window.location.href = '/auth'
-  }
+  const handleOpenDispute = async (tradeId: string) => {
+    setUpdatingId(tradeId);
+    const updates = {
+      status: 'disputed',
+      dispute_opened_at: new Date().toISOString(),
+      dispute_opened_by: userId,
+    };
+    const { error } = await supabase.from('trades').update(updates).eq('id', tradeId);
+    if (!error) setTrades((prev) => prev.map((t) => (t.id === tradeId ? { ...t, ...updates } : t)));
+    setUpdatingId(null);
+  };
 
-  async function togglePublish(id: string, current: boolean, name: string) {
-    await supabase.from('products').update({ is_published: !current }).eq('id', id)
-    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', current ? 'hid' : 'published', 'product', name)
-    load()
-  }
+  const handleResolveDispute = async (tradeId: string, outcome: 'completed' | 'declined') => {
+    setUpdatingId(tradeId);
+    const updates: Record<string, string> = { status: outcome };
+    if (outcome === 'completed') updates.completed_at = new Date().toISOString();
+    const { error } = await supabase.from('trades').update(updates).eq('id', tradeId);
+    if (!error) setTrades((prev) => prev.map((t) => (t.id === tradeId ? { ...t, ...updates } : t)));
+    setUpdatingId(null);
+  };
 
-  async function deleteProduct(id: string, name: string) {
-    const confirmed = confirm('Delete "' + name + '"? This cannot be undone.')
-    if (!confirmed) return
-    await supabase.from('products').delete().eq('id', id)
-    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', 'deleted', 'product', name)
-    load()
-  }
+  const handleBuyerCancel = async (tradeId: string) => {
+    setUpdatingId(tradeId);
+    const updates = {
+      status: 'declined',
+      cancelled_by: userId,
+      fee_responsibility: 'buyer',
+    };
+    const { error } = await supabase.from('trades').update(updates).eq('id', tradeId);
+    if (!error) setTrades((prev) => prev.map((t) => (t.id === tradeId ? { ...t, ...updates } : t)));
+    setUpdatingId(null);
+  };
 
-  function calculateVisibilityScore() {
-    if (!profile) return 0
-    let score = 0
-    if (profile.business_name) score += 20
-    if (profile.location) score += 15
-    if (profile.phone) score += 15
-    if (profile.business_category) score += 10
-    if (profile.tagline) score += 10
-    if (profile.business_hours) score += 5
-    if (profile.services) score += 5
-    if (products.length > 0) score += 10
-    if (products.length >= 5) score += 5
-    if (profile.facebook_url || profile.instagram_url) score += 5
-    return Math.min(100, score)
-  }
+  const handleFundEscrow = async (trade: Trade) => {
+    setFundingId(trade.id);
+    try {
+      const response = await fetch('/api/paystack/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: business?.email,
+          amount: trade.amount + (trade.escrow_fee || 0),
+          tradeId: trade.id,
+        }),
+      });
+      const data = await response.json();
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url;
+      } else {
+        alert(data.error || 'Failed to start payment');
+      }
+    } catch (err) {
+      alert('Something went wrong starting payment');
+    } finally {
+      setFundingId(null);
+    }
+  };
 
-  function getScoreColor(score: number) {
-    if (score >= 80) return '#00aa55'
-    if (score >= 50) return '#FF6B35'
-    return '#ff4444'
-  }
+  const daysRemaining = (disputeOpenedAt: string) => {
+    const opened = new Date(disputeOpenedAt).getTime();
+    const elapsed = (Date.now() - opened) / (1000 * 60 * 60 * 24);
+    return Math.ceil(Math.max(0, 14 - elapsed));
+  };
 
-  function getOneAction() {
-    if (!profile) return { task: 'Set up your business profile', link: '/onboarding' }
-    if (!profile.location) return { task: 'Add your business location', link: '/onboarding' }
-    if (!profile.tagline) return { task: 'Add a business tagline', link: '/onboarding' }
-    if (!profile.business_hours) return { task: 'Add your business hours', link: '/onboarding' }
-    if (!profile.services) return { task: 'List your services or products offered', link: '/onboarding' }
-    if (products.length === 0) return { task: 'Add your first product', link: '/products/new' }
-    if (products.length < 5) return { task: 'Add one more product to reach 5+', link: '/products/new' }
-    if (!profile.facebook_url && !profile.instagram_url) return { task: 'Add a social media link', link: '/onboarding' }
-    return { task: 'Share your store link on WhatsApp Status today', link: '/dashboard' }
-  }
+  const activeTrades = trades.filter((t) => ['pending', 'accepted', 'disputed'].includes(t.status));
+  const finishedTrades = trades.filter((t) => t.status === 'completed' || t.status === 'declined');
+  const formatDate = (iso: string) => new Date(iso).toLocaleString();
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#0F172A', fontSize: '14px' }}>Loading...</div>
-      </div>
-    )
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-body">Loading...</p>
+      </main>
+    );
   }
 
-  const hasProfile = profile && profile.business_name
-  const score = calculateVisibilityScore()
-  const previousScore = profile?.last_visibility_score || 0
-  const scoreChange = score - previousScore
-  const oneAction = getOneAction()
-  const daysSinceCreated = profile?.created_at
-    ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
-    : 0
-  const isIndexingPeriod = daysSinceCreated < 7
-  const atProductLimit = tierLimits && products.length >= tierLimits.productLimit
-
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A', flexWrap: 'wrap' as const, gap: '8px' }}>
-        <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>
-          Cloutinet
-          {context && !context.isOwner && (
-            <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 400, marginLeft: '8px' }}>
-              (as {context.employeeName})
-            </span>
-          )}
+    <main className="min-h-screen bg-background px-6 py-16">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex justify-between items-center mb-10">
+          <p className="text-accent text-sm tracking-widest uppercase">Canesson</p>
+          <button onClick={handleLogout} className="text-sm text-body hover:text-heading">Log out</button>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' as const }}>
-          {context?.permissions.customers && (
-            <Link href="/dashboard/customers" style={navLinkStyle}>Customers</Link>
+
+        <h1 className="text-3xl font-bold text-heading mb-2">Welcome, {business?.business_name || 'there'}</h1>
+        <p className="text-body mb-6">{business?.country}</p>
+
+        <Link href="/trades/incoming" className="inline-block border border-border rounded-lg px-4 py-3 bg-surface mb-10 hover:border-accent">
+          <span className="text-heading font-bold">Trades sent to you</span>
+          {incomingCount > 0 && (
+            <span className="ml-2 text-xs bg-accent text-white px-2 py-1 rounded-full">{incomingCount} pending</span>
           )}
-          {context?.permissions.payments && tierLimits?.paymentsModule && (
-            <Link href="/dashboard/payments" style={navLinkStyle}>Payments</Link>
-          )}
-          {context?.permissions.documents && tierLimits?.documentsModule && (
-            <Link href="/dashboard/documents" style={navLinkStyle}>Documents</Link>
-          )}
-          {tierLimits?.advancedAI && (
-            <Link href="/dashboard/ai" style={navLinkStyle}>AI</Link>
-          )}
-          {context?.permissions.employees && tierLimits?.employees && (
-            <Link href="/dashboard/employees" style={navLinkStyle}>Employees</Link>
-          )}
-          {context?.isOwner && (
-            <Link href="/dashboard/activity" style={navLinkStyle}>Activity</Link>
-          )}
-          {context?.isOwner && (
-            <Link href="/dashboard/billing" style={navLinkStyle}>Billing</Link>
-          )}
-          <button onClick={handleSignOut} style={{ background: 'rgba(255,255,255,0.1)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontFamily: 'inherit' }}>Sign Out</button>
+        </Link>
+
+        <div className="border border-border rounded-lg p-6 bg-surface mb-6">
+          <h2 className="text-sm uppercase tracking-wide text-body mb-4">Account details</h2>
+          <div className="flex flex-col gap-2 text-heading">
+            <p><span className="text-body">Email:</span> {business?.email}</p>
+            <p><span className="text-body">Joined:</span> {business?.created_at ? new Date(business.created_at).toLocaleDateString() : ''}</p>
+          </div>
         </div>
-      </div>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px' }}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-sm uppercase tracking-wide text-body">Active trades</h2>
+          <Link href="/trade/new" className="bg-accent hover:bg-accent-hover text-white font-bold py-2 px-4 rounded text-sm">
+            + New trade
+          </Link>
+        </div>
 
-        {!hasProfile ? (
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '24px', textAlign: 'center', marginBottom: '20px' }}>
-            <h2 style={{ color: '#0F172A', fontSize: '16px', marginBottom: '8px' }}>Welcome to Cloutinet</h2>
-            <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '16px' }}>Set up your business profile to get started.</p>
-            <Link href="/onboarding" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>Set Up Business Profile</Link>
+        {activeTrades.length === 0 ? (
+          <div className="border border-border rounded-lg p-6 bg-surface mb-10">
+            <p className="text-body">No active trades. Start one above.</p>
           </div>
         ) : (
-          <>
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                <div>
-                  {profile.business_id && (
-                    <div style={{ display: 'inline-block', background: '#0F172A', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '2px 10px', borderRadius: '4px', marginBottom: '6px' }}>{profile.business_id}</div>
-                  )}
-                  <div style={{ color: '#0F172A', fontWeight: 700, fontSize: '15px' }}>{profile.business_name}</div>
+          <div className="flex flex-col gap-3 mb-10">
+            {activeTrades.map((trade) => (
+              <div key={trade.id} className="border border-border rounded-lg p-4 bg-surface">
+                <div className="flex justify-between items-start mb-2">
+                  <p className="text-heading font-bold">{trade.amount.toLocaleString()} {trade.currency}</p>
+                  <span className="text-xs uppercase text-accent bg-accent/10 px-2 py-1 rounded">{trade.status}</span>
                 </div>
-                {context?.isOwner && (
-                  <Link href="/onboarding" style={{ background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', textDecoration: 'none' }}>Edit</Link>
+                <p className="text-body text-sm mb-1">{trade.description}</p>
+                <p className="text-body text-xs">With: {trade.counterparty_email}</p>
+                {trade.escrow_fee != null && (
+                  <p className="text-body text-xs">
+                    Escrow fee: {trade.escrow_fee.toLocaleString()} {trade.currency} · Total held: {(trade.amount + trade.escrow_fee).toLocaleString()} {trade.currency}
+                  </p>
                 )}
-              </div>
-              <div style={{ color: '#64748B', fontSize: '12px', marginBottom: '8px' }}>
-                {profile.location || 'No location set'} {profile.phone ? '· ' + profile.phone : ''}
-              </div>
-              {profile.business_slug && (
-                <a href={'/store/' + profile.business_slug} style={{ color: '#0F172A', fontSize: '12px', textDecoration: 'underline', fontWeight: 600 }}>View your live store page →</a>
-              )}
-            </div>
+                <p className="text-body text-xs mb-3">
+                  Created: {formatDate(trade.created_at)}
+                  {trade.accepted_at && <> · Accepted: {formatDate(trade.accepted_at)}</>}
+                </p>
 
-            {context?.isOwner && (
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>Visibility Score</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
-                  <div style={{ fontSize: '32px', fontWeight: 800, color: getScoreColor(score) }}>{score}<span style={{ fontSize: '16px', color: '#94A3B8' }}>/100</span></div>
-                  {scoreChange !== 0 && previousScore > 0 && (
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: scoreChange > 0 ? '#00aa55' : '#ff4444' }}>
-                      {scoreChange > 0 ? '+' : ''}{scoreChange} this week
-                    </div>
-                  )}
-                </div>
-                <div style={{ background: '#E2E8F0', borderRadius: '10px', height: '8px', overflow: 'hidden' }}>
-                  <div style={{ background: getScoreColor(score), height: '100%', width: score + '%', borderRadius: '10px' }}></div>
-                </div>
-              </div>
-            )}
-
-            {context?.isOwner && (
-              <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '11px', color: '#9A3412', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>This Week's Action</div>
-                <div style={{ fontSize: '14px', color: '#0F172A', fontWeight: 600, marginBottom: '10px' }}>{oneAction.task}</div>
-                <Link href={oneAction.link} style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>Do This Now →</Link>
-              </div>
-            )}
-
-            {atProductLimit && (
-              <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '11px', color: '#1D4ED8', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>Plan Limit Reached</div>
-                <div style={{ fontSize: '14px', color: '#0F172A', fontWeight: 600, marginBottom: '10px' }}>
-                  You have {products.length} products, but your current plan covers {tierLimits.productLimit}. Upgrade to add more.
-                </div>
-                {context?.isOwner ? (
-                  <Link href="/dashboard/billing" style={{ display: 'inline-block', background: '#2563EB', color: '#fff', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>View Plans →</Link>
-                ) : (
-                  <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Ask the business owner to upgrade the plan.</p>
+                {trade.status === 'accepted' && !trade.funded && (
+                  <div className="mb-3">
+                    <button
+                      onClick={() => handleFundEscrow(trade)}
+                      disabled={fundingId === trade.id}
+                      className="bg-accent hover:bg-accent-hover text-white text-sm font-bold py-2 px-4 rounded disabled:opacity-50"
+                    >
+                      {fundingId === trade.id ? 'Starting payment...' : 'Fund escrow (test payment)'}
+                    </button>
+                  </div>
                 )}
-              </div>
-            )}
 
-            {context?.isOwner && (
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-                <h3 style={{ color: '#0F172A', fontSize: '14px', marginBottom: '10px' }}>Google Indexing Status</h3>
-                {isIndexingPeriod ? (
+                {trade.status === 'accepted' && trade.funded && (
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }}></div>
-                      <span style={{ color: '#92400E', fontSize: '13px', fontWeight: 700 }}>Pending Indexing</span>
-                    </div>
-                    <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
-                      Your page was created {daysSinceCreated} day{daysSinceCreated !== 1 ? 's' : ''} ago. Google typically indexes new pages within 7-14 days.
+                    <p className="text-body text-xs mb-2">
+                      ✓ Escrow funded ·{' '}
+                      {trade.buyer_confirmed ? '✓ You confirmed' : 'Waiting for your confirmation'}
+                      {' · '}
+                      {trade.seller_confirmed ? '✓ Counterparty confirmed' : 'Waiting for counterparty'}
                     </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {!trade.buyer_confirmed && (
+                        <button onClick={() => handleBuyerConfirm(trade.id)} disabled={updatingId === trade.id}
+                          className="bg-accent hover:bg-accent-hover text-white text-sm font-bold py-2 px-4 rounded disabled:opacity-50">
+                          Confirm trade complete
+                        </button>
+                      )}
+                      <button onClick={() => handleOpenDispute(trade.id)} disabled={updatingId === trade.id}
+                        className="border border-border text-body text-sm font-bold py-2 px-4 rounded disabled:opacity-50">
+                        Raise a dispute
+                      </button>
+                      <button onClick={() => handleBuyerCancel(trade.id)} disabled={updatingId === trade.id}
+                        className="text-body text-xs underline disabled:opacity-50">
+                        Cancel trade (you&apos;ll pay the full escrow fee)
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00aa55' }}></div>
-                      <span style={{ color: '#166534', fontSize: '13px', fontWeight: 700 }}>Likely Indexed</span>
-                    </div>
-                    <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
-                      Your page has been live for {daysSinceCreated} days. Search "{profile.business_name}" on Google to check if it appears.
+                )}
+
+                {trade.status === 'disputed' && trade.dispute_opened_at && (
+                  <div className="bg-accent/10 border border-accent rounded p-3">
+                    <p className="text-heading text-sm font-bold mb-1">Dispute in progress</p>
+                    <p className="text-body text-xs mb-1">Opened: {formatDate(trade.dispute_opened_at)}</p>
+                    <p className="text-body text-xs mb-3">
+                      {daysRemaining(trade.dispute_opened_at)} days left to resolve directly with the other party.
                     </p>
+                    <p className="text-body text-xs mb-2">Once you've agreed with the other party, mark the outcome:</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleResolveDispute(trade.id, 'completed')} disabled={updatingId === trade.id}
+                        className="bg-accent hover:bg-accent-hover text-white text-sm font-bold py-2 px-4 rounded disabled:opacity-50">
+                        Resolved — release funds
+                      </button>
+                      <button onClick={() => handleResolveDispute(trade.id, 'declined')} disabled={updatingId === trade.id}
+                        className="border border-border text-body text-sm font-bold py-2 px-4 rounded disabled:opacity-50">
+                        Resolved — refund buyer
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
-            )}
+            ))}
+          </div>
+        )}
 
-            {context?.isOwner && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
-                  <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{leadCount}</div>
-                  <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>WhatsApp Leads</div>
+        <h2 className="text-sm uppercase tracking-wide text-body mb-4">History</h2>
+        {finishedTrades.length === 0 ? (
+          <div className="border border-border rounded-lg p-6 bg-surface">
+            <p className="text-body">No finished trades yet.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {finishedTrades.map((trade) => (
+              <div key={trade.id} className="border border-border rounded-lg p-4 bg-surface opacity-75">
+                <div className="flex justify-between items-start mb-2">
+                  <p className="text-heading font-bold">{trade.amount.toLocaleString()} {trade.currency}</p>
+                  <span className="text-xs uppercase text-body bg-border px-2 py-1 rounded">{trade.status}</span>
                 </div>
-                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
-                  <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{viewCount}</div>
-                  <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>Page Views</div>
-                </div>
-              </div>
-            )}
-
-            {context?.permissions.products && (
-              <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <h3 style={{ color: '#0F172A', fontSize: '15px' }}>Products ({products.length})</h3>
-                  <Link href="/products/new" style={{ background: '#0F172A', color: '#fff', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>+ Add Product</Link>
-                </div>
-
-                {products.length === 0 ? (
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
-                    <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '12px' }}>No products yet</p>
-                    <Link href="/products/new" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Add Your First Product</Link>
-                  </div>
-                ) : (
-                  products.map(p => (
-                    <div key={p.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px', marginBottom: '10px', display: 'flex', gap: '12px' }}>
-                      {p.image_url && <img src={p.image_url} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' as const, flexShrink: 0 }} />}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ color: '#0F172A', fontWeight: 600, fontSize: '13px' }}>{p.name}</div>
-                        {p.price && <div style={{ color: '#475569', fontSize: '12px' }}>{p.currency} {p.price}</div>}
-                        <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' as const }}>
-                          <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: p.is_published ? '#F0FDF4' : '#F8FAFC', color: p.is_published ? '#166534' : '#94A3B8', border: '1px solid ' + (p.is_published ? '#BBF7D0' : '#E2E8F0') }}>{p.is_published ? 'Live' : 'Hidden'}</span>
-                          <Link href={'/products/edit/' + p.id} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', textDecoration: 'none' }}>Edit</Link>
-                          <button onClick={() => togglePublish(p.id, p.is_published, p.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#64748B', border: '1px solid #E2E8F0', cursor: 'pointer', fontFamily: 'inherit' }}>{p.is_published ? 'Hide' : 'Publish'}</button>
-                          <button onClick={() => deleteProduct(p.id, p.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: 'transparent', color: '#ff4444', border: '1px solid #ff4444', cursor: 'pointer', fontFamily: 'inherit' }}>Delete</button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
+                <p className="text-body text-sm mb-1">{trade.description}</p>
+                <p className="text-body text-xs">With: {trade.counterparty_email}</p>
+                {trade.fee_responsibility === 'buyer' && (
+                  <p className="text-body text-xs">Cancelled by buyer — full escrow fee charged to buyer</p>
                 )}
-              </>
-            )}
-          </>
+                {trade.completed_at && <p className="text-body text-xs">Completed: {formatDate(trade.completed_at)}</p>}
+              </div>
+            ))}
+          </div>
         )}
       </div>
-    </div>
-  )
-}
-
-const navLinkStyle: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)',
-  borderRadius: '8px', padding: '6px 12px', fontSize: '12px', textDecoration: 'none', fontWeight: 700
+    </main>
+  );
 }
