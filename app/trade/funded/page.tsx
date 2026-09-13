@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
-export default function TradeFunded() {
+function TradeFundedContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
@@ -80,3 +80,11 @@ export default function TradeFunded() {
     </main>
   );
 }
+
+export default function TradeFunded() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-background flex items-center justify-center"><p className="text-body">Loading...</p></main>}>
+      <TradeFundedContent />
+    </Suspense>
+  );
+                                     }
