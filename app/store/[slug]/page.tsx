@@ -10,7 +10,7 @@ export const revalidate = 60
 const getStoreData = cache(async (slug: string) => {
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, business_name, business_slug, business_category, phone, location, tagline, logo_url, business_hours, services, facebook_url, instagram_url, youtube_url, tiktok_url, business_id, created_at')
     .eq('business_slug', slug)
     .limit(1)
 
