@@ -20,7 +20,7 @@ export default async function sitemap({ id }: { id: number }): Promise<MetadataR
     .filter((p) => p.profiles?.business_slug)
     .map((p) => ({
       url: baseUrl + '/store/' + p.profiles!.business_slug + '/' + p.slug,
-      lastModified: p.updated_at ? new Date(p.updated_at) : staticLastModified,
+      lastModified: p.created_at ? new Date(p.created_at) : staticLastModified,
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }))
