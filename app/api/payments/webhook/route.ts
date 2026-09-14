@@ -1,20 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(req: NextRequest) {
   try {
     const rawBody = await req.text()
 
-    // CRITICAL: verify this request genuinely came from Paystack, not
-    // an attacker pretending a payment succeeded. Paystack signs every
-    // webhook with your secret key — we recompute that signature and
-    // compare it. If it doesn't match, we reject the request entirely.
     const signature = req.headers.get('x-paystack-signature')
     const expectedSignature = crypto
       .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY!)
@@ -30,9 +21,6 @@ export async function POST(req: NextRequest) {
     if (event.event === 'charge.success') {
       const { reference, metadata, amount, status } = event.data
 
-      // Look up our own record of this transaction — never trust the
-      // webhook's claimed amount/plan blindly, cross-check against what
-      // we already recorded when the payment was initialized.
       const { data: transaction } = await supabaseAdmin
         .from('transactions')
         .select('*')
@@ -40,16 +28,13 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (!transaction) {
-        // Unknown transaction — log but don't act on it.
         return NextResponse.json({ received: true })
       }
 
-      // Guard against duplicate webhook deliveries (Paystack may retry).
       if (transaction.status === 'success') {
         return NextResponse.json({ received: true })
       }
 
-      // Verify the amount actually paid matches what we expected.
       const expectedAmountKobo = transaction.amount_ngn * 100
       if (amount !== expectedAmountKobo) {
         await supabaseAdmin
@@ -60,8 +45,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true })
       }
 
-      // Everything checks out — mark the transaction successful and
-      // activate the subscription.
       await supabaseAdmin
         .from('transactions')
         .update({ status: 'success' })
