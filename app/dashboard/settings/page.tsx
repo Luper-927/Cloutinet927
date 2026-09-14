@@ -142,4 +142,61 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as
+        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Password</h2>
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginBottom: '24px' }}>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="New password"
+            style={{ ...inputStyle, marginBottom: '8px' }}
+          />
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm new password"
+            style={inputStyle}
+          />
+          {passwordStatus && (
+            <p style={{ fontSize: '12px', marginTop: '8px', marginBottom: 0, color: passwordStatus.type === 'success' ? '#166534' : '#dc2626' }}>{passwordStatus.message}</p>
+          )}
+          <button onClick={handleChangePassword} disabled={passwordSubmitting} style={buttonStyle(passwordSubmitting)}>
+            {passwordSubmitting ? 'Updating...' : 'Update Password'}
+          </button>
+        </div>
+
+        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Account</h2>
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '4px', marginBottom: '24px' }}>
+          <button onClick={handleSignOut} style={rowButtonStyle('#0F172A')}>
+            Sign Out
+          </button>
+          <a href="mailto:cloutinet.hello@gmail.com?subject=Account%20deletion%20request" style={{ ...rowButtonStyle('#dc2626'), textDecoration: 'none', display: 'block' }}>
+            Request Account Deletion
+          </a>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', boxSizing: 'border-box' as const, padding: '11px 14px',
+  borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '13px', fontFamily: 'inherit'
+}
+
+function buttonStyle(disabled: boolean): React.CSSProperties {
+  return {
+    marginTop: '10px', width: '100%', padding: '11px', background: disabled ? '#93C5FD' : '#0F172A',
+    color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+    cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit'
+  }
+}
+
+function rowButtonStyle(color: string): React.CSSProperties {
+  return {
+    width: '100%', textAlign: 'left' as const, background: 'transparent', border: 'none',
+    padding: '12px', fontSize: '13px', fontWeight: 600, color, cursor: 'pointer', fontFamily: 'inherit'
+  }
+}
