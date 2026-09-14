@@ -18,7 +18,7 @@ export const TIER_LIMITS = {
   },
   essential: {
     name: 'Essential',
-    productLimit: 45,
+    productLimit: 40,
     aiGenerationsPerMonth: 70,
     customerRecords: true,
     advancedCustomers: false,
@@ -33,7 +33,7 @@ export const TIER_LIMITS = {
   },
   growth: {
     name: 'Growth',
-    productLimit: 90,
+    productLimit: 120,
     aiGenerationsPerMonth: 180,
     customerRecords: true,
     advancedCustomers: true,
@@ -48,7 +48,7 @@ export const TIER_LIMITS = {
   },
   business: {
     name: 'Business',
-    productLimit: 300,
+    productLimit: 250,
     aiGenerationsPerMonth: 600,
     customerRecords: true,
     advancedCustomers: true,
