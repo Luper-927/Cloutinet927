@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { getBusinessTier } from '../../lib/tiers'
 import { getActingContext, ActingContext, logActivity } from '../../lib/permissions'
 import Link from 'next/link'
-import { Menu, X, Users, CreditCard, FileText, Sparkles, UserCog, Activity as ActivityIcon, Wallet, LogOut } from 'lucide-react'
+import { Menu, X, Users, CreditCard, FileText, Sparkles, UserCog, Activity as ActivityIcon, Wallet, LogOut, Settings as SettingsIcon } from 'lucide-react'
 
 export default function Dashboard() {
   const [context, setContext] = useState<ActingContext | null>(null)
@@ -132,6 +132,7 @@ export default function Dashboard() {
     context?.permissions.employees && tierLimits?.employees && { href: '/dashboard/employees', label: 'Employees', icon: UserCog },
     context?.isOwner && { href: '/dashboard/activity', label: 'Activity', icon: ActivityIcon },
     context?.isOwner && { href: '/dashboard/billing', label: 'Billing', icon: Wallet },
+    context?.isOwner && { href: '/dashboard/settings', label: 'Settings', icon: SettingsIcon },
   ].filter(Boolean) as { href: string; label: string; icon: any }[]
 
   return (
