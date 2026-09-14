@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
+// Used only to validate the caller's session token -- the anon key is the
+// correct choice for this one specific call, since it's just checking who's
+// asking, not performing any database read/write.
+const supabaseAuth = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
@@ -14,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token)
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token)
     if (userError || !userData.user) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
     }
@@ -42,13 +46,17 @@ export async function POST(req: NextRequest) {
 
     const reference = 'cloutinet_' + user.id.slice(0, 8) + '_' + Date.now()
 
-    await supabaseAdmin.from('transactions').insert({
+    const { error: insertError } = await supabaseAdmin.from('transactions').insert({
       user_id: user.id,
       plan_id: plan.id,
       paystack_reference: reference,
       amount_ngn: plan.price_ngn,
       status: 'pending',
     })
+
+    if (insertError) {
+      return NextResponse.json({ error: 'Could not start payment. Please try again.' }, { status: 500 })
+    }
 
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
@@ -60,7 +68,7 @@ export async function POST(req: NextRequest) {
         email: user.email,
         amount: plan.price_ngn * 100,
         reference,
-        callback_url: 'https://cloutinet.online/dashboard?payment=processing',
+        callback_url: 'https://cloutinet.online/dashboard/billing',
         metadata: {
           user_id: user.id,
           plan_id: plan.id,
