@@ -6,10 +6,10 @@ const baseUrl = 'https://cloutinet.online'
 
 export async function POST(req: NextRequest) {
   try {
-    const { token, email } = await req.json()
+    const { token } = await req.json()
 
-    if (!token || !email || typeof email !== 'string' || !email.includes('@')) {
-      return NextResponse.json({ error: 'A valid email address is required.' }, { status: 400 })
+    if (!token) {
+      return NextResponse.json({ error: 'Missing payment request.' }, { status: 400 })
     }
 
     const { data: request, error } = await supabaseAdmin
@@ -26,6 +26,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'This payment request is no longer awaiting payment.' }, { status: 409 })
     }
 
+    // Paystack requires an email to start a transaction, but the payer isn't
+    // asked for one -- we generate a placeholder tied to this specific request.
+    // No receipt email will be sent by Paystack as a result; that's an accepted
+    // trade-off for a faster checkout on links mostly shared via WhatsApp.
+    const placeholderEmail = `payer+${token}@cloutinet.online`
+
     const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
@@ -33,7 +39,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email,
+        email: placeholderEmail,
         amount: Math.round(Number(request.amount) * 100),
         currency: request.currency,
         callback_url: `${baseUrl}/pay/${token}/complete`,
