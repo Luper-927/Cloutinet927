@@ -60,4 +60,56 @@ export default function Dashboard() {
 
   async function togglePublish(id: string, current: boolean, name: string) {
     await supabase.from('products').update({ is_published: !current }).eq('id', id)
-    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', current
+    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', current ? 'hid' : 'published', 'product', name)
+    load()
+  }
+
+  async function deleteProduct(id: string, name: string) {
+    const confirmed = confirm('Delete "' + name + '"? This cannot be undone.')
+    if (!confirmed) return
+    await supabase.from('products').delete().eq('id', id)
+    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', 'deleted', 'product', name)
+    load()
+  }
+
+  function calculateVisibilityScore() {
+    if (!profile) return 0
+    let score = 0
+    if (profile.business_name) score += 20
+    if (profile.location) score += 15
+    if (profile.phone) score += 15
+    if (profile.business_category) score += 10
+    if (profile.tagline) score += 10
+    if (profile.business_hours) score += 5
+    if (profile.services) score += 5
+    if (products.length > 0) score += 10
+    if (products.length >= 5) score += 5
+    if (profile.facebook_url || profile.instagram_url) score += 5
+    return Math.min(100, score)
+  }
+
+  function getScoreColor(score: number) {
+    if (score >= 80) return '#00aa55'
+    if (score >= 50) return '#FF6B35'
+    return '#ff4444'
+  }
+
+  function getOneAction() {
+    if (!profile) return { task: 'Set up your business profile', link: '/onboarding' }
+    if (!profile.location) return { task: 'Add your business location', link: '/onboarding' }
+    if (!profile.tagline) return { task: 'Add a business tagline', link: '/onboarding' }
+    if (!profile.business_hours) return { task: 'Add your business hours', link: '/onboarding' }
+    if (!profile.services) return { task: 'List your services or products offered', link: '/onboarding' }
+    if (products.length === 0) return { task: 'Add your first product', link: '/products/new' }
+    if (products.length < 5) return { task: 'Add one more product to reach 5+', link: '/products/new' }
+    if (!profile.facebook_url && !profile.instagram_url) return { task: 'Add a social media link', link: '/onboarding' }
+    return { task: 'Share your store link on WhatsApp Status today', link: '/dashboard' }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#0F172A', fontSize: '14px' }}>Loading...</div>
+      </div>
+    )
+  }
