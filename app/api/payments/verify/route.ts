@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
-const supabaseAdmin = createClient(
+const supabaseAuth = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token)
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token)
     if (userError || !userData.user) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
     }
@@ -27,7 +28,8 @@ export async function POST(req: NextRequest) {
 
     // Confirm this transaction actually belongs to the logged-in user —
     // never let someone check the status of a payment reference that
-    // isn't theirs.
+    // isn't theirs. This check is done explicitly here in the query itself,
+    // since the service-role client bypasses RLS entirely.
     const { data: transaction } = await supabaseAdmin
       .from('transactions')
       .select('*')
