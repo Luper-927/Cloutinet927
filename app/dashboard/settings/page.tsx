@@ -1,81 +1,56 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '../../../lib/supabase'
-import { getBusinessTier } from '../../../lib/tiers'
-import { getActingContext, ActingContext } from '../../../lib/permissions'
+import { supabase } from '../../lib/supabase'
+import { getBusinessTier } from '../../lib/tiers'
+import { getActingContext, ActingContext, logActivity } from '../../lib/permissions'
 import Link from 'next/link'
+import { Menu, X, Users, CreditCard, FileText, Sparkles, UserCog, Activity as ActivityIcon, Wallet, LogOut } from 'lucide-react'
 
-export default function SettingsPage() {
+export default function Dashboard() {
   const [context, setContext] = useState<ActingContext | null>(null)
-  const [email, setEmail] = useState('')
-  const [newEmail, setNewEmail] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [planName, setPlanName] = useState('Free')
+  const [profile, setProfile] = useState<any>(null)
+  const [products, setProducts] = useState<any[]>([])
+  const [leadCount, setLeadCount] = useState(0)
+  const [viewCount, setViewCount] = useState(0)
   const [loading, setLoading] = useState(true)
-
-  const [emailStatus, setEmailStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-  const [emailSubmitting, setEmailSubmitting] = useState(false)
-  const [passwordStatus, setPasswordStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-  const [passwordSubmitting, setPasswordSubmitting] = useState(false)
+  const [tierLimits, setTierLimits] = useState<any>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => { load() }, [])
 
   async function load() {
     const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
-    setEmail(userData.user.email || '')
+    const currentUser = userData?.user
+    if (!currentUser) { window.location.href = '/auth'; return }
 
-    const ctx = await getActingContext(userData.user.id)
+    const ctx = await getActingContext(currentUser.id)
     if (!ctx) { window.location.href = '/onboarding'; return }
     setContext(ctx)
 
-    if (ctx.isOwner) {
-      const { tierKey } = await getBusinessTier(ctx.ownerId)
-      setPlanName(tierKey.charAt(0).toUpperCase() + tierKey.slice(1))
-    }
+    const { data: profileData } = await supabase
+      .from('profiles').select('*').eq('id', ctx.ownerId).single()
+    setProfile(profileData)
 
+    const { data: productsData } = await supabase
+      .from('products').select('*').eq('user_id', ctx.ownerId)
+      .order('created_at', { ascending: false })
+    setProducts(productsData || [])
+
+    const { limits } = await getBusinessTier(ctx.ownerId)
+    setTierLimits(limits)
+
+    if (profileData && profileData.business_slug) {
+      const { count: leadC } = await supabase
+        .from('analytics_events').select('*', { count: 'exact', head: true })
+        .eq('business_slug', profileData.business_slug).eq('event_type', 'whatsapp_click')
+      const { count: viewC } = await supabase
+        .from('analytics_events').select('*', { count: 'exact', head: true })
+        .eq('business_slug', profileData.business_slug).eq('event_type', 'page_view')
+      setLeadCount(leadC || 0)
+      setViewCount(viewC || 0)
+    }
     setLoading(false)
-  }
-
-  async function handleChangeEmail() {
-    setEmailStatus(null)
-    if (!newEmail.includes('@')) {
-      setEmailStatus({ type: 'error', message: 'Please enter a valid email address.' })
-      return
-    }
-    setEmailSubmitting(true)
-    const { error } = await supabase.auth.updateUser({ email: newEmail })
-    if (error) {
-      setEmailStatus({ type: 'error', message: error.message })
-    } else {
-      setEmailStatus({ type: 'success', message: 'Check both your old and new email for a confirmation link to complete the change.' })
-      setNewEmail('')
-    }
-    setEmailSubmitting(false)
-  }
-
-  async function handleChangePassword() {
-    setPasswordStatus(null)
-    if (newPassword.length < 6) {
-      setPasswordStatus({ type: 'error', message: 'Password must be at least 6 characters.' })
-      return
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordStatus({ type: 'error', message: 'Passwords do not match.' })
-      return
-    }
-    setPasswordSubmitting(true)
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
-    if (error) {
-      setPasswordStatus({ type: 'error', message: error.message })
-    } else {
-      setPasswordStatus({ type: 'success', message: 'Password updated.' })
-      setNewPassword('')
-      setConfirmPassword('')
-    }
-    setPasswordSubmitting(false)
   }
 
   async function handleSignOut() {
@@ -83,120 +58,297 @@ export default function SettingsPage() {
     window.location.href = '/auth'
   }
 
+  async function togglePublish(id: string, current: boolean, name: string) {
+    await supabase.from('products').update({ is_published: !current }).eq('id', id)
+    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', current ? 'hid' : 'published', 'product', name)
+    load()
+  }
+
+  async function deleteProduct(id: string, name: string) {
+    const confirmed = confirm('Delete "' + name + '"? This cannot be undone.')
+    if (!confirmed) return
+    await supabase.from('products').delete().eq('id', id)
+    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', 'deleted', 'product', name)
+    load()
+  }
+
+  function calculateVisibilityScore() {
+    if (!profile) return 0
+    let score = 0
+    if (profile.business_name) score += 20
+    if (profile.location) score += 15
+    if (profile.phone) score += 15
+    if (profile.business_category) score += 10
+    if (profile.tagline) score += 10
+    if (profile.business_hours) score += 5
+    if (profile.services) score += 5
+    if (products.length > 0) score += 10
+    if (products.length >= 5) score += 5
+    if (profile.facebook_url || profile.instagram_url) score += 5
+    return Math.min(100, score)
+  }
+
+  function getScoreColor(score: number) {
+    if (score >= 80) return '#00aa55'
+    if (score >= 50) return '#FF6B35'
+    return '#ff4444'
+  }
+
+  function getOneAction() {
+    if (!profile) return { task: 'Set up your business profile', link: '/onboarding' }
+    if (!profile.location) return { task: 'Add your business location', link: '/onboarding' }
+    if (!profile.tagline) return { task: 'Add a business tagline', link: '/onboarding' }
+    if (!profile.business_hours) return { task: 'Add your business hours', link: '/onboarding' }
+    if (!profile.services) return { task: 'List your services or products offered', link: '/onboarding' }
+    if (products.length === 0) return { task: 'Add your first product', link: '/products/new' }
+    if (products.length < 5) return { task: 'Add one more product to reach 5+', link: '/products/new' }
+    if (!profile.facebook_url && !profile.instagram_url) return { task: 'Add a social media link', link: '/onboarding' }
+    return { task: 'Share your store link on WhatsApp Status today', link: '/dashboard' }
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+        <div style={{ color: '#0F172A', fontSize: '14px' }}>Loading...</div>
       </div>
     )
   }
 
+  const hasProfile = profile && profile.business_name
+  const score = calculateVisibilityScore()
+  const previousScore = profile?.last_visibility_score || 0
+  const scoreChange = score - previousScore
+  const oneAction = getOneAction()
+  const daysSinceCreated = profile?.created_at
+    ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
+    : 0
+  const isIndexingPeriod = daysSinceCreated < 7
+
+  const navItems = [
+    context?.permissions.customers && { href: '/dashboard/customers', label: 'Customers', icon: Users },
+    context?.permissions.payments && tierLimits?.paymentsModule && { href: '/dashboard/payments', label: 'Payments', icon: CreditCard },
+    context?.permissions.documents && tierLimits?.documentsModule && { href: '/dashboard/documents', label: 'Documents', icon: FileText },
+    tierLimits?.advancedAI && { href: '/dashboard/ai', label: 'AI', icon: Sparkles },
+    context?.permissions.employees && tierLimits?.employees && { href: '/dashboard/employees', label: 'Employees', icon: UserCog },
+    context?.isOwner && { href: '/dashboard/activity', label: 'Activity', icon: ActivityIcon },
+    context?.isOwner && { href: '/dashboard/billing', label: 'Billing', icon: Wallet },
+  ].filter(Boolean) as { href: string; label: string; icon: any }[]
+
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Settings</div>
-        <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</Link>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A' }}>
+        <button
+          onClick={() => setMenuOpen(true)}
+          aria-label="Open menu"
+          style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+        >
+          <Menu size={18} color="#fff" />
+        </button>
+        <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>
+          Cloutinet
+          {context && !context.isOwner && (
+            <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 400, marginLeft: '8px' }}>
+              (as {context.employeeName})
+            </span>
+          )}
+        </div>
+        <div style={{ width: '36px' }} />
       </div>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
-
-        {context?.isOwner && (
-          <div style={{
-            background: 'linear-gradient(135deg, #0F172A 0%, #0F766E 100%)',
-            borderRadius: '14px', padding: '18px', marginBottom: '24px',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-          }}>
-            <div>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', fontWeight: 700, marginBottom: '4px' }}>Current plan</div>
-              <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>{planName}</div>
+      {menuOpen && (
+        <div
+          onClick={() => setMenuOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 50 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'fixed', top: 0, left: 0, bottom: 0, width: '260px', maxWidth: '80vw',
+              background: '#0F172A', boxShadow: '4px 0 24px rgba(0,0,0,0.2)',
+              display: 'flex', flexDirection: 'column', padding: '16px'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Cloutinet</div>
+              <button
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}
+              >
+                <X size={20} color="#94A3B8" />
+              </button>
             </div>
-            <Link href="/dashboard/billing" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '12px', fontWeight: 700, padding: '8px 14px', borderRadius: '8px', textDecoration: 'none' }}>
-              Manage →
-            </Link>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+              <Link
+                href="/dashboard"
+                onClick={() => setMenuOpen(false)}
+                style={sidebarLinkStyle}
+              >
+                Dashboard
+              </Link>
+              {navItems.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={sidebarLinkStyle}
+                >
+                  <item.icon size={16} />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
+              <button
+                onClick={handleSignOut}
+                style={{ ...sidebarLinkStyle, width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', color: '#F87171', fontFamily: 'inherit' }}
+              >
+                <LogOut size={16} />
+                Sign Out
+              </button>
+            </div>
           </div>
+        </div>
+      )}
+
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px' }}>
+
+        {!hasProfile ? (
+          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '24px', textAlign: 'center', marginBottom: '20px' }}>
+            <h2 style={{ color: '#0F172A', fontSize: '16px', marginBottom: '8px' }}>Welcome to Cloutinet</h2>
+            <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '16px' }}>Set up your business profile to get started.</p>
+            <Link href="/onboarding" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>Set Up Business Profile</Link>
+          </div>
+        ) : (
+          <>
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div>
+                  {profile.business_id && (
+                    <div style={{ display: 'inline-block', background: '#0F172A', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '2px 10px', borderRadius: '4px', marginBottom: '6px' }}>{profile.business_id}</div>
+                  )}
+                  <div style={{ color: '#0F172A', fontWeight: 700, fontSize: '15px' }}>{profile.business_name}</div>
+                </div>
+                {context?.isOwner && (
+                  <Link href="/onboarding" style={{ background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', textDecoration: 'none' }}>Edit</Link>
+                )}
+              </div>
+              <div style={{ color: '#64748B', fontSize: '12px', marginBottom: '8px' }}>
+                {profile.location || 'No location set'} {profile.phone ? '· ' + profile.phone : ''}
+              </div>
+              {profile.business_slug && (
+                <a href={'/store/' + profile.business_slug} style={{ color: '#0F172A', fontSize: '12px', textDecoration: 'underline', fontWeight: 600 }}>View your live store page →</a>
+              )}
+            </div>
+
+            {context?.isOwner && (
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>Visibility Score</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 800, color: getScoreColor(score) }}>{score}<span style={{ fontSize: '16px', color: '#94A3B8' }}>/100</span></div>
+                  {scoreChange !== 0 && previousScore > 0 && (
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: scoreChange > 0 ? '#00aa55' : '#ff4444' }}>
+                      {scoreChange > 0 ? '+' : ''}{scoreChange} this week
+                    </div>
+                  )}
+                </div>
+                <div style={{ background: '#E2E8F0', borderRadius: '10px', height: '8px', overflow: 'hidden' }}>
+                  <div style={{ background: getScoreColor(score), height: '100%', width: score + '%', borderRadius: '10px' }}></div>
+                </div>
+              </div>
+            )}
+
+            {context?.isOwner && (
+              <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#9A3412', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '6px' }}>This Week's Action</div>
+                <div style={{ fontSize: '14px', color: '#0F172A', fontWeight: 600, marginBottom: '10px' }}>{oneAction.task}</div>
+                <Link href={oneAction.link} style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '8px 18px', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>Do This Now →</Link>
+              </div>
+            )}
+
+            {context?.isOwner && (
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+                <h3 style={{ color: '#0F172A', fontSize: '14px', marginBottom: '10px' }}>Google Indexing Status</h3>
+                {isIndexingPeriod ? (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }}></div>
+                      <span style={{ color: '#92400E', fontSize: '13px', fontWeight: 700 }}>Pending Indexing</span>
+                    </div>
+                    <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
+                      Your page was created {daysSinceCreated} day{daysSinceCreated !== 1 ? 's' : ''} ago. Google typically indexes new pages within 7-14 days.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00aa55' }}></div>
+                      <span style={{ color: '#166534', fontSize: '13px', fontWeight: 700 }}>Likely Indexed</span>
+                    </div>
+                    <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.5 }}>
+                      Your page has been live for {daysSinceCreated} days. Search "{profile.business_name}" on Google to check if it appears.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {context?.isOwner && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
+                  <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{leadCount}</div>
+                  <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>WhatsApp Leads</div>
+                </div>
+                <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px' }}>
+                  <div style={{ color: '#0F172A', fontSize: '24px', fontWeight: 800 }}>{viewCount}</div>
+                  <div style={{ color: '#64748B', fontSize: '12px', marginTop: '4px' }}>Page Views</div>
+                </div>
+              </div>
+            )}
+
+            {context?.permissions.products && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h3 style={{ color: '#0F172A', fontSize: '15px' }}>Products ({products.length})</h3>
+                  <Link href="/products/new" style={{ background: '#0F172A', color: '#fff', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>+ Add Product</Link>
+                </div>
+
+                {products.length === 0 ? (
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
+                    <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '12px' }}>No products yet</p>
+                    <Link href="/products/new" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Add Your First Product</Link>
+                  </div>
+                ) : (
+                  products.map(p => (
+                    <div key={p.id} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px', marginBottom: '10px', display: 'flex', gap: '12px' }}>
+                      {p.image_url && <img src={p.image_url} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' as const, flexShrink: 0 }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: '#0F172A', fontWeight: 600, fontSize: '13px' }}>{p.name}</div>
+                        {p.price && <div style={{ color: '#475569', fontSize: '12px' }}>{p.currency} {p.price}</div>}
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' as const }}>
+                          <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: p.is_published ? '#F0FDF4' : '#F8FAFC', color: p.is_published ? '#166534' : '#94A3B8', border: '1px solid ' + (p.is_published ? '#BBF7D0' : '#E2E8F0') }}>{p.is_published ? 'Live' : 'Hidden'}</span>
+                          <Link href={'/products/edit/' + p.id} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', textDecoration: 'none' }}>Edit</Link>
+                          <button onClick={() => togglePublish(p.id, p.is_published, p.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#fff', color: '#64748B', border: '1px solid #E2E8F0', cursor: 'pointer', fontFamily: 'inherit' }}>{p.is_published ? 'Hide' : 'Publish'}</button>
+                          <button onClick={() => deleteProduct(p.id, p.name)} style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: 'transparent', color: '#ff4444', border: '1px solid #ff4444', cursor: 'pointer', fontFamily: 'inherit' }}>Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </>
+            )}
+          </>
         )}
-
-        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Business Profile</h2>
-        <Link href="/onboarding" style={{
-          display: 'block', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px',
-          padding: '14px 16px', marginBottom: '24px', textDecoration: 'none', color: '#0F172A', fontSize: '13px', fontWeight: 600
-        }}>
-          Edit business info, location, hours & links →
-        </Link>
-
-        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Account Email</h2>
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginBottom: '24px' }}>
-          <p style={{ fontSize: '12px', color: '#64748B', marginBottom: '10px' }}>Current: <strong style={{ color: '#0F172A' }}>{email}</strong></p>
-          <input
-            type="email"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            placeholder="New email address"
-            style={inputStyle}
-          />
-          {emailStatus && (
-            <p style={{ fontSize: '12px', marginTop: '8px', marginBottom: 0, color: emailStatus.type === 'success' ? '#166534' : '#dc2626' }}>{emailStatus.message}</p>
-          )}
-          <button onClick={handleChangeEmail} disabled={emailSubmitting} style={buttonStyle(emailSubmitting)}>
-            {emailSubmitting ? 'Updating...' : 'Update Email'}
-          </button>
-        </div>
-
-        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Password</h2>
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginBottom: '24px' }}>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="New password"
-            style={{ ...inputStyle, marginBottom: '8px' }}
-          />
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm new password"
-            style={inputStyle}
-          />
-          {passwordStatus && (
-            <p style={{ fontSize: '12px', marginTop: '8px', marginBottom: 0, color: passwordStatus.type === 'success' ? '#166534' : '#dc2626' }}>{passwordStatus.message}</p>
-          )}
-          <button onClick={handleChangePassword} disabled={passwordSubmitting} style={buttonStyle(passwordSubmitting)}>
-            {passwordSubmitting ? 'Updating...' : 'Update Password'}
-          </button>
-        </div>
-
-        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Account</h2>
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '4px', marginBottom: '24px' }}>
-          <button onClick={handleSignOut} style={rowButtonStyle('#0F172A')}>
-            Sign Out
-          </button>
-          <a href="mailto:cloutinet.hello@gmail.com?subject=Account%20deletion%20request" style={{ ...rowButtonStyle('#dc2626'), textDecoration: 'none', display: 'block' }}>
-            Request Account Deletion
-          </a>
-        </div>
-
       </div>
     </div>
   )
 }
 
-const inputStyle: React.CSSProperties = {
-  width: '100%', boxSizing: 'border-box' as const, padding: '11px 14px',
-  borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '13px', fontFamily: 'inherit'
-}
-
-function buttonStyle(disabled: boolean): React.CSSProperties {
-  return {
-    marginTop: '10px', width: '100%', padding: '11px', background: disabled ? '#93C5FD' : '#0F172A',
-    color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
-    cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit'
-  }
-}
-
-function rowButtonStyle(color: string): React.CSSProperties {
-  return {
-    width: '100%', textAlign: 'left' as const, background: 'transparent', border: 'none',
-    padding: '12px', fontSize: '13px', fontWeight: 600, color, cursor: 'pointer', fontFamily: 'inherit'
-  }
+const sidebarLinkStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: '10px',
+  color: '#E2E8F0', textDecoration: 'none', fontSize: '14px', fontWeight: 600,
+  padding: '10px 12px', borderRadius: '8px'
 }
