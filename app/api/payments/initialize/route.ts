@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-// Used only to validate the caller's session token -- the anon key is the
-// correct choice for this one specific call, since it's just checking who's
-// asking, not performing any database read/write.
 const supabaseAuth = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -44,6 +41,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Free plan does not require payment' }, { status: 400 })
     }
 
+    // Recurring billing requires a real Paystack Plan to be configured for
+    // this tier. Rather than silently falling back to a one-time charge
+    // (which would quietly break the "no repeated manual payment" goal),
+    // this blocks clearly so it's never accidentally half-configured.
+    if (!plan.paystack_plan_code) {
+      return NextResponse.json({ error: 'This plan is not yet set up for billing. Please try again shortly.' }, { status: 400 })
+    }
+
     const reference = 'cloutinet_' + user.id.slice(0, 8) + '_' + Date.now()
 
     const { error: insertError } = await supabaseAdmin.from('transactions').insert({
@@ -66,8 +71,8 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         email: user.email,
-        amount: plan.price_ngn * 100,
         reference,
+        plan: plan.paystack_plan_code,
         callback_url: 'https://cloutinet.online/dashboard/billing',
         metadata: {
           user_id: user.id,
