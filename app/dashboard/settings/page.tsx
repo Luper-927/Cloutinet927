@@ -3,54 +3,79 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { getBusinessTier } from '../../../lib/tiers'
-import { getActingContext, ActingContext, logActivity } from '../../../lib/permissions'
+import { getActingContext, ActingContext } from '../../../lib/permissions'
 import Link from 'next/link'
-import { Menu, X, Users, CreditCard, FileText, Sparkles, UserCog, Activity as ActivityIcon, Wallet, LogOut } from 'lucide-react'
 
-export default function Dashboard() {
+export default function SettingsPage() {
   const [context, setContext] = useState<ActingContext | null>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [products, setProducts] = useState<any[]>([])
-  const [leadCount, setLeadCount] = useState(0)
-  const [viewCount, setViewCount] = useState(0)
+  const [email, setEmail] = useState('')
+  const [newEmail, setNewEmail] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [planName, setPlanName] = useState('Free')
   const [loading, setLoading] = useState(true)
-  const [tierLimits, setTierLimits] = useState<any>(null)
-  const [menuOpen, setMenuOpen] = useState(false)
+
+  const [emailStatus, setEmailStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [emailSubmitting, setEmailSubmitting] = useState(false)
+  const [passwordStatus, setPasswordStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false)
 
   useEffect(() => { load() }, [])
 
   async function load() {
     const { data: userData } = await supabase.auth.getUser()
-    const currentUser = userData?.user
-    if (!currentUser) { window.location.href = '/auth'; return }
+    if (!userData.user) { window.location.href = '/auth'; return }
+    setEmail(userData.user.email || '')
 
-    const ctx = await getActingContext(currentUser.id)
+    const ctx = await getActingContext(userData.user.id)
     if (!ctx) { window.location.href = '/onboarding'; return }
     setContext(ctx)
 
-    const { data: profileData } = await supabase
-      .from('profiles').select('*').eq('id', ctx.ownerId).single()
-    setProfile(profileData)
-
-    const { data: productsData } = await supabase
-      .from('products').select('*').eq('user_id', ctx.ownerId)
-      .order('created_at', { ascending: false })
-    setProducts(productsData || [])
-
-    const { limits } = await getBusinessTier(ctx.ownerId)
-    setTierLimits(limits)
-
-    if (profileData && profileData.business_slug) {
-      const { count: leadC } = await supabase
-        .from('analytics_events').select('*', { count: 'exact', head: true })
-        .eq('business_slug', profileData.business_slug).eq('event_type', 'whatsapp_click')
-      const { count: viewC } = await supabase
-        .from('analytics_events').select('*', { count: 'exact', head: true })
-        .eq('business_slug', profileData.business_slug).eq('event_type', 'page_view')
-      setLeadCount(leadC || 0)
-      setViewCount(viewC || 0)
+    if (ctx.isOwner) {
+      const { tierKey } = await getBusinessTier(ctx.ownerId)
+      setPlanName(tierKey.charAt(0).toUpperCase() + tierKey.slice(1))
     }
+
     setLoading(false)
+  }
+
+  async function handleChangeEmail() {
+    setEmailStatus(null)
+    if (!newEmail.includes('@')) {
+      setEmailStatus({ type: 'error', message: 'Please enter a valid email address.' })
+      return
+    }
+    setEmailSubmitting(true)
+    const { error } = await supabase.auth.updateUser({ email: newEmail })
+    if (error) {
+      setEmailStatus({ type: 'error', message: error.message })
+    } else {
+      setEmailStatus({ type: 'success', message: 'Check both your old and new email for a confirmation link to complete the change.' })
+      setNewEmail('')
+    }
+    setEmailSubmitting(false)
+  }
+
+  async function handleChangePassword() {
+    setPasswordStatus(null)
+    if (newPassword.length < 6) {
+      setPasswordStatus({ type: 'error', message: 'Password must be at least 6 characters.' })
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordStatus({ type: 'error', message: 'Passwords do not match.' })
+      return
+    }
+    setPasswordSubmitting(true)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) {
+      setPasswordStatus({ type: 'error', message: error.message })
+    } else {
+      setPasswordStatus({ type: 'success', message: 'Password updated.' })
+      setNewPassword('')
+      setConfirmPassword('')
+    }
+    setPasswordSubmitting(false)
   }
 
   async function handleSignOut() {
@@ -58,157 +83,120 @@ export default function Dashboard() {
     window.location.href = '/auth'
   }
 
-  async function togglePublish(id: string, current: boolean, name: string) {
-    await supabase.from('products').update({ is_published: !current }).eq('id', id)
-    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', current ? 'hid' : 'published', 'product', name)
-    load()
-  }
-
-  async function deleteProduct(id: string, name: string) {
-    const confirmed = confirm('Delete "' + name + '"? This cannot be undone.')
-    if (!confirmed) return
-    await supabase.from('products').delete().eq('id', id)
-    if (context) await logActivity(context.ownerId, context.employeeName || 'Owner', 'deleted', 'product', name)
-    load()
-  }
-
-  function calculateVisibilityScore() {
-    if (!profile) return 0
-    let score = 0
-    if (profile.business_name) score += 20
-    if (profile.location) score += 15
-    if (profile.phone) score += 15
-    if (profile.business_category) score += 10
-    if (profile.tagline) score += 10
-    if (profile.business_hours) score += 5
-    if (profile.services) score += 5
-    if (products.length > 0) score += 10
-    if (products.length >= 5) score += 5
-    if (profile.facebook_url || profile.instagram_url) score += 5
-    return Math.min(100, score)
-  }
-
-  function getScoreColor(score: number) {
-    if (score >= 80) return '#00aa55'
-    if (score >= 50) return '#FF6B35'
-    return '#ff4444'
-  }
-
-  function getOneAction() {
-    if (!profile) return { task: 'Set up your business profile', link: '/onboarding' }
-    if (!profile.location) return { task: 'Add your business location', link: '/onboarding' }
-    if (!profile.tagline) return { task: 'Add a business tagline', link: '/onboarding' }
-    if (!profile.business_hours) return { task: 'Add your business hours', link: '/onboarding' }
-    if (!profile.services) return { task: 'List your services or products offered', link: '/onboarding' }
-    if (products.length === 0) return { task: 'Add your first product', link: '/products/new' }
-    if (products.length < 5) return { task: 'Add one more product to reach 5+', link: '/products/new' }
-    if (!profile.facebook_url && !profile.instagram_url) return { task: 'Add a social media link', link: '/onboarding' }
-    return { task: 'Share your store link on WhatsApp Status today', link: '/dashboard' }
-  }
-
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#0F172A', fontSize: '14px' }}>Loading...</div>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
       </div>
     )
   }
-const hasProfile = profile && profile.business_name
-  const score = calculateVisibilityScore()
-  const previousScore = profile?.last_visibility_score || 0
-  const scoreChange = score - previousScore
-  const oneAction = getOneAction()
-  const daysSinceCreated = profile?.created_at
-    ? Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24))
-    : 0
-  const isIndexingPeriod = daysSinceCreated < 7
-
-  const navItems = [
-    context?.permissions.customers && { href: '/dashboard/customers', label: 'Customers', icon: Users },
-    context?.permissions.payments && tierLimits?.paymentsModule && { href: '/dashboard/payments', label: 'Payments', icon: CreditCard },
-    context?.permissions.documents && tierLimits?.documentsModule && { href: '/dashboard/documents', label: 'Documents', icon: FileText },
-    tierLimits?.advancedAI && { href: '/dashboard/ai', label: 'AI', icon: Sparkles },
-    context?.permissions.employees && tierLimits?.employees && { href: '/dashboard/employees', label: 'Employees', icon: UserCog },
-    context?.isOwner && { href: '/dashboard/activity', label: 'Activity', icon: ActivityIcon },
-    context?.isOwner && { href: '/dashboard/billing', label: 'Billing', icon: Wallet },
-  ].filter(Boolean) as { href: string; label: string; icon: any }[]
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A' }}>
-        <button
-          onClick={() => setMenuOpen(true)}
-          aria-label="Open menu"
-          style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-        >
-          <Menu size={18} color="#fff" />
-        </button>
-        <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>
-          Cloutinet
-          {context && !context.isOwner && (
-            <span style={{ fontSize: '11px', color: '#94A3B8', fontWeight: 400, marginLeft: '8px' }}>
-              (as {context.employeeName})
-            </span>
-          )}
-        </div>
-        <div style={{ width: '36px' }} />
+      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Settings</div>
+        <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</Link>
       </div>
 
-      {menuOpen && (
-        <div
-          onClick={() => setMenuOpen(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 50 }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'fixed', top: 0, left: 0, bottom: 0, width: '260px', maxWidth: '80vw',
-              background: '#0F172A', boxShadow: '4px 0 24px rgba(0,0,0,0.2)',
-              display: 'flex', flexDirection: 'column', padding: '16px'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Cloutinet</div>
-              <button
-                onClick={() => setMenuOpen(false)}
-                aria-label="Close menu"
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}
-              >
-                <X size={20} color="#94A3B8" />
-              </button>
-            </div>
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
-              <Link
-                href="/dashboard"
-                onClick={() => setMenuOpen(false)}
-                style={sidebarLinkStyle}
-              >
-                Dashboard
-              </Link>
-              {navItems.map(item => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  style={sidebarLinkStyle}
-                >
-                  <item.icon size={16} />
-                  {item.label}
-                </Link>
-              ))}
+        {context?.isOwner && (
+          <div style={{
+            background: 'linear-gradient(135deg, #0F172A 0%, #0F766E 100%)',
+            borderRadius: '14px', padding: '18px', marginBottom: '24px',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+          }}>
+            <div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', fontWeight: 700, marginBottom: '4px' }}>Current plan</div>
+              <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>{planName}</div>
             </div>
-
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
-              <button
-                onClick={handleSignOut}
-                style={{ ...sidebarLinkStyle, width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', color: '#F87171', fontFamily: 'inherit' }}
-              >
-                <LogOut size={16} />
-                Sign Out
-              </button>
-            </div>
+            <Link href="/dashboard/billing" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '12px', fontWeight: 700, padding: '8px 14px', borderRadius: '8px', textDecoration: 'none' }}>
+              Manage →
+            </Link>
           </div>
+        )}
+
+        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Business Profile</h2>
+        <Link href="/onboarding" style={{
+          display: 'block', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px',
+          padding: '14px 16px', marginBottom: '24px', textDecoration: 'none', color: '#0F172A', fontSize: '13px', fontWeight: 600
+        }}>
+          Edit business info, location, hours & links →
+        </Link>
+
+        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Account Email</h2>
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginBottom: '24px' }}>
+          <p style={{ fontSize: '12px', color: '#64748B', marginBottom: '10px' }}>Current: <strong style={{ color: '#0F172A' }}>{email}</strong></p>
+          <input
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="New email address"
+            style={inputStyle}
+          />
+          {emailStatus && (
+            <p style={{ fontSize: '12px', marginTop: '8px', marginBottom: 0, color: emailStatus.type === 'success' ? '#166534' : '#dc2626' }}>{emailStatus.message}</p>
+          )}
+          <button onClick={handleChangeEmail} disabled={emailSubmitting} style={buttonStyle(emailSubmitting)}>
+            {emailSubmitting ? 'Updating...' : 'Update Email'}
+          </button>
         </div>
-      )}
+
+        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Password</h2>
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginBottom: '24px' }}>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="New password"
+            style={{ ...inputStyle, marginBottom: '8px' }}
+          />
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm new password"
+            style={inputStyle}
+          />
+          {passwordStatus && (
+            <p style={{ fontSize: '12px', marginTop: '8px', marginBottom: 0, color: passwordStatus.type === 'success' ? '#166534' : '#dc2626' }}>{passwordStatus.message}</p>
+          )}
+          <button onClick={handleChangePassword} disabled={passwordSubmitting} style={buttonStyle(passwordSubmitting)}>
+            {passwordSubmitting ? 'Updating...' : 'Update Password'}
+          </button>
+        </div>
+
+        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Account</h2>
+        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '4px', marginBottom: '24px' }}>
+          <button onClick={handleSignOut} style={rowButtonStyle('#0F172A')}>
+            Sign Out
+          </button>
+          <a href="mailto:cloutinet.hello@gmail.com?subject=Account%20deletion%20request" style={{ ...rowButtonStyle('#dc2626'), textDecoration: 'none', display: 'block' }}>
+            Request Account Deletion
+          </a>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', boxSizing: 'border-box' as const, padding: '11px 14px',
+  borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '13px', fontFamily: 'inherit'
+}
+
+function buttonStyle(disabled: boolean): React.CSSProperties {
+  return {
+    marginTop: '10px', width: '100%', padding: '11px', background: disabled ? '#93C5FD' : '#0F172A',
+    color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
+    cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit'
+  }
+}
+
+function rowButtonStyle(color: string): React.CSSProperties {
+  return {
+    width: '100%', textAlign: 'left' as const, background: 'transparent', border: 'none',
+    padding: '12px', fontSize: '13px', fontWeight: 600, color, cursor: 'pointer', fontFamily: 'inherit'
+  }
+}
