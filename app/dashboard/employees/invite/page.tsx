@@ -32,6 +32,7 @@ export default function InviteEmployeePage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [inviteLink, setInviteLink] = useState('')
+  const [emailSent, setEmailSent] = useState(false)
 
   function handleRoleChange(newRole: 'staff' | 'manager') {
     setRole(newRole)
@@ -65,9 +66,8 @@ export default function InviteEmployeePage() {
       .select('invite_token')
       .single()
 
-    setSaving(false)
-
     if (saveError) {
+      setSaving(false)
       if (saveError.code === '23505') {
         setError('You\u2019ve already invited someone with this email.')
       } else {
@@ -76,10 +76,40 @@ export default function InviteEmployeePage() {
       return
     }
 
-    // No email-sending service is wired up yet, so show the link directly —
-    // the owner copies and sends it themselves (WhatsApp, SMS, etc.) for now.
     const link = window.location.origin + '/employee-invite/' + data.invite_token
     setInviteLink(link)
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('business_name')
+      .eq('id', userData.user.id)
+      .single()
+
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData.session?.access_token
+
+    try {
+      const res = await fetch('/api/employees/send-invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          name,
+          email: email.trim().toLowerCase(),
+          inviteLink: link,
+          businessName: profile?.business_name || 'A business',
+          role,
+        }),
+      })
+      if (res.ok) setEmailSent(true)
+    } catch (e) {
+      // Link is still shown below regardless -- email is a bonus, not a
+      // blocker, same principle as the weekly report's failure handling.
+    }
+
+    setSaving(false)
   }
 
   if (inviteLink) {
@@ -90,9 +120,13 @@ export default function InviteEmployeePage() {
         </div>
         <div style={{ maxWidth: '480px', margin: '0 auto', padding: '32px 20px', textAlign: 'center' }}>
           <div style={{ fontSize: '36px', marginBottom: '12px' }}>✅</div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>Share this invite link</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
+            {emailSent ? `Email sent to ${name}` : 'Share this invite link'}
+          </h2>
           <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '20px', lineHeight: 1.5 }}>
-            Send this link to {name} directly — via WhatsApp, SMS, or however you normally reach them. They&rsquo;ll create or sign into their own Cloutinet account to accept.
+            {emailSent
+              ? `We emailed the invitation to ${email}. You can also share the link below directly, e.g. via WhatsApp.`
+              : `We couldn't confirm the email sent — share this link with ${name} directly (WhatsApp, SMS, etc.) as a backup.`}
           </p>
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px', fontSize: '12px', color: '#0F172A', wordBreak: 'break-all' as const, marginBottom: '20px' }}>
             {inviteLink}
