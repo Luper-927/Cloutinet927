@@ -34,6 +34,14 @@ async function sendFailureAlert(subject: string, details: string) {
 }
 
 export async function GET(req: NextRequest) {
+  // Vercel automatically sends this exact header when it triggers a
+  // scheduled cron job. Anyone else calling this URL directly won't have
+  // it, and gets rejected before any real work happens.
+  const authHeader = req.headers.get('authorization')
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const { data: profiles } = await supabaseAdmin
       .from('profiles')
