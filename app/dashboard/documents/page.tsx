@@ -11,6 +11,7 @@ type Document = {
   name: string
   category: string
   file_url: string
+  file_path: string | null
   file_type: string | null
   file_size_bytes: number | null
   uploaded_by_name: string
@@ -37,6 +38,7 @@ export default function DocumentsPage() {
   const [activeCategory, setActiveCategory] = useState('all')
   const [search, setSearch] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [viewingId, setViewingId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
   const [pendingCategory, setPendingCategory] = useState('other')
@@ -70,7 +72,7 @@ export default function DocumentsPage() {
 
     const { data } = await supabase
       .from('documents')
-      .select('id, name, category, file_url, file_type, file_size_bytes, uploaded_by_name, created_at')
+      .select('id, name, category, file_url, file_path, file_type, file_size_bytes, uploaded_by_name, created_at')
       .eq('owner_id', context.ownerId)
       .order('created_at', { ascending: false })
 
@@ -100,15 +102,18 @@ export default function DocumentsPage() {
       return
     }
 
-    const { data: urlData } = await supabase.storage
-      .from('business-documents')
-      .createSignedUrl(filePath, 60 * 60 * 24 * 365)
-
+    // We no longer store a long-lived signed URL here -- signed URLs expire,
+    // and a URL baked into the database permanently would silently break
+    // once that expiry passes. Instead we store the storage path, and
+    // generate a fresh, short-lived signed URL on demand each time someone
+    // views the document (see handleView below). file_url is kept only as
+    // a legacy fallback for rows that predate this change.
     const { error: saveError } = await supabase.from('documents').insert({
       owner_id: ownerId,
       name: file.name,
       category: pendingCategory,
-      file_url: urlData?.signedUrl || filePath,
+      file_url: filePath,
+      file_path: filePath,
       file_type: file.type,
       file_size_bytes: file.size,
       uploaded_by_name: actorName,
@@ -119,6 +124,29 @@ export default function DocumentsPage() {
 
     await logActivity(ownerId, actorName, 'uploaded', 'document', file.name)
     load()
+  }
+
+  async function handleView(doc: Document) {
+    if (!doc.file_path) {
+      // Legacy row from before this fix -- best-effort fallback to whatever
+      // was stored, which may or may not still be valid.
+      window.open(doc.file_url, '_blank')
+      return
+    }
+
+    setViewingId(doc.id)
+    const { data, error } = await supabase.storage
+      .from('business-documents')
+      .createSignedUrl(doc.file_path, 60)
+
+    setViewingId(null)
+
+    if (error || !data?.signedUrl) {
+      setError('Could not open document. Please try again.')
+      return
+    }
+
+    window.open(data.signedUrl, '_blank')
   }
 
   async function handleDelete(doc: Document) {
@@ -250,7 +278,13 @@ export default function DocumentsPage() {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexShrink: 0, marginLeft: '8px' }}>
-                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '10px', padding: '4px 10px', borderRadius: '6px', background: '#0F172A', color: '#fff', textDecoration: 'none' }}>View</a>
+                  <button
+                    onClick={() => handleView(doc)}
+                    disabled={viewingId === doc.id}
+                    style={{ fontSize: '10px', padding: '4px 10px', borderRadius: '6px', background: '#0F172A', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    {viewingId === doc.id ? '...' : 'View'}
+                  </button>
                   <button onClick={() => handleDelete(doc)} style={{ fontSize: '10px', padding: '4px 10px', borderRadius: '6px', background: 'transparent', color: '#ff4444', border: '1px solid #ff4444', cursor: 'pointer', fontFamily: 'inherit' }}>Delete</button>
                 </div>
               </div>
