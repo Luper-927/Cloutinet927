@@ -32,8 +32,10 @@ function isIncomplete(profile: any, productCount: number) {
 }
 
 export async function GET(req: NextRequest) {
+  // Fails closed: if CRON_SECRET is ever missing for any reason, this now
+  // rejects the request rather than silently skipping the check.
   const authHeader = req.headers.get('authorization')
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
