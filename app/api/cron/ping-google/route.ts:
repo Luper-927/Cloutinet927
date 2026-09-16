@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const SITEMAP_URLS = [
-  'https://cloutinet.online/sitemap/0.xml',
-  'https://cloutinet.online/sitemap/1.xml',
-]
+import { getProfileCount, getProductCount, SITEMAP_CHUNK_SIZE } from '../../../../lib/sitemap-helpers'
 
 const ALERT_EMAIL = 'luperabenga8@gmail.com'
 
@@ -31,15 +27,27 @@ async function sendFailureAlert(details: string) {
 }
 
 export async function GET(req: NextRequest) {
+  // Fails closed: if CRON_SECRET is ever missing for any reason, this now
+  // rejects the request rather than silently skipping the check.
   const authHeader = req.headers.get('authorization')
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const [profileCount, productCount] = await Promise.all([getProfileCount(), getProductCount()])
+  const storeChunks = Math.max(1, Math.ceil(profileCount / SITEMAP_CHUNK_SIZE))
+  const productChunks = Math.max(1, Math.ceil(productCount / SITEMAP_CHUNK_SIZE))
+
+  const sitemapUrls = [
+    'https://cloutinet.online/sitemap.xml',
+    ...Array.from({ length: storeChunks }, (_, i) => `https://cloutinet.online/store-sitemap/sitemap/${i}.xml`),
+    ...Array.from({ length: productChunks }, (_, i) => `https://cloutinet.online/product-sitemap/sitemap/${i}.xml`),
+  ]
 
   const results = []
   let hadFailure = false
 
-  for (const sitemapUrl of SITEMAP_URLS) {
+  for (const sitemapUrl of sitemapUrls) {
     try {
       const pingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`
       const response = await fetch(pingUrl)
