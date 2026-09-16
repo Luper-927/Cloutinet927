@@ -83,9 +83,15 @@ export default function NewProductPage() {
         .eq('id', ownerId)
         .single()
 
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+
       const response = await fetch('/api/generate-seo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
           type: 'product_description',
           productName: name,
