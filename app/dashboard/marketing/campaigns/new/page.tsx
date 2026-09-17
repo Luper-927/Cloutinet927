@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../../../lib/supabase'
+import { getBusinessTier } from '../../../../../lib/tiers'
+import { getActingContext, ActingContext } from '../../../../../lib/permissions'
 import Link from 'next/link'
 
 const OBJECTIVES = [
@@ -14,6 +16,9 @@ const OBJECTIVES = [
 ]
 
 export default function NewCampaignPage() {
+  const [context, setContext] = useState<ActingContext | null>(null)
+  const [tierLimits, setTierLimits] = useState<any>(null)
+  const [checkingAccess, setCheckingAccess] = useState(true)
   const [name, setName] = useState('')
   const [objective, setObjective] = useState(OBJECTIVES[0])
   const [destinationType, setDestinationType] = useState<'product' | 'business'>('business')
@@ -32,9 +37,19 @@ export default function NewCampaignPage() {
     const { data: userData } = await supabase.auth.getUser()
     if (!userData.user) { window.location.href = '/auth'; return }
 
+    const ctx = await getActingContext(userData.user.id)
+    if (!ctx) { window.location.href = '/onboarding'; return }
+    setContext(ctx)
+
+    const { limits } = await getBusinessTier(ctx.ownerId)
+    setTierLimits(limits)
+    setCheckingAccess(false)
+
+    if (!limits.marketingAutomation) return
+
     const [{ data: profileData }, { data: productsData }] = await Promise.all([
-      supabase.from('profiles').select('*').eq('id', userData.user.id).single(),
-      supabase.from('products').select('id, name, price, currency, description').eq('user_id', userData.user.id).eq('is_published', true),
+      supabase.from('profiles').select('*').eq('id', ctx.ownerId).single(),
+      supabase.from('products').select('id, name, price, currency, description').eq('user_id', ctx.ownerId).eq('is_published', true),
     ])
     setProfile(profileData)
     setProducts(productsData || [])
@@ -48,9 +63,21 @@ export default function NewCampaignPage() {
     const selectedProduct = products.find(p => p.id === productId)
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData?.session?.access_token
+
+      if (!accessToken) {
+        setError('Your session expired. Please refresh the page and try again.')
+        setGenerating(false)
+        return
+      }
+
       const response = await fetch('/api/generate-seo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
           type: 'campaign_copy',
           businessName: profile?.business_name,
@@ -74,14 +101,12 @@ export default function NewCampaignPage() {
 
   async function handleSave(status: 'draft' | 'active') {
     if (!name.trim()) { setError('Campaign name is required'); return }
+    if (!context) return
     setSaving(true)
     setError('')
 
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
-
     const { data: campaign, error: campaignError } = await supabase.from('campaigns').insert({
-      user_id: userData.user.id,
+      user_id: context.ownerId,
       name,
       objective,
       status,
@@ -105,6 +130,37 @@ export default function NewCampaignPage() {
 
     setSaving(false)
     window.location.href = '/dashboard/marketing'
+  }
+
+  if (checkingAccess) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (!tierLimits?.marketingAutomation) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+        <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>New Campaign</div>
+          <Link href="/dashboard/marketing" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Cancel</Link>
+        </div>
+        <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
+          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' as const }}>
+            <div style={{ fontSize: '28px', marginBottom: '10px' }}>📣</div>
+            <h2 style={{ color: '#0F172A', fontSize: '16px', marginBottom: '8px' }}>Marketing is a Growth plan feature</h2>
+            <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
+              Upgrade to the Growth plan or higher to create AI-generated campaigns.
+            </p>
+            <Link href="/dashboard/billing" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>
+              Upgrade to Growth
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
