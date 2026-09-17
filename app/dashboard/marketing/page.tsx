@@ -137,3 +137,41 @@ export default function MarketingPage() {
             </div>
           )}
         </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>Campaigns</h3>
+          <Link href="/dashboard/marketing/campaigns/new" style={{ background: '#0F172A', color: '#fff', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>+ New Campaign</Link>
+        </div>
+
+        {campaigns.length === 0 ? (
+          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' as const }}>
+            <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '12px' }}>No campaigns yet</p>
+            <Link href="/dashboard/marketing/campaigns/new" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Create Your First Campaign</Link>
+          </div>
+        ) : (
+          campaigns.map(c => {
+            const s = eventStats[c.id] || { views: 0, ctaClicks: 0, whatsappClicks: 0 }
+            return (
+              <div key={c.id} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>{c.name}</span>
+                  <span style={{
+                    fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px',
+                    background: c.status === 'active' ? '#FFFBEB' : c.status === 'completed' ? '#F0FDFA' : '#F8FAFC',
+                    color: c.status === 'active' ? '#D97706' : c.status === 'completed' ? '#0F766E' : '#64748B'
+                  }}>{c.status}</span>
+                </div>
+                <div style={{ fontSize: '11px', color: '#94A3B8', marginBottom: '6px' }}>{c.objective}</div>
+                <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: '#64748B' }}>
+                  <span>{s.views} views</span>
+                  <span>{s.ctaClicks} CTA clicks</span>
+                  <span>{s.whatsappClicks} WhatsApp</span>
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+    </div>
+  )
+}
