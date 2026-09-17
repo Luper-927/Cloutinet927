@@ -127,6 +127,8 @@ export default function Dashboard() {
     context?.permissions.customers && { href: '/dashboard/customers', label: 'Customers' },
     context?.permissions.payments && tierLimits?.paymentsModule && { href: '/dashboard/payments', label: 'Payments' },
     context?.permissions.documents && tierLimits?.documentsModule && { href: '/dashboard/documents', label: 'Documents' },
+    { href: '/dashboard/marketing', label: 'Marketing' },
+    { href: '/dashboard/integrations', label: 'Integrations' },
     tierLimits?.advancedAI && { href: '/dashboard/ai', label: 'AI' },
     context?.permissions.employees && tierLimits?.employees && { href: '/dashboard/employees', label: 'Employees' },
     context?.isOwner && { href: '/dashboard/activity', label: 'Activity' },
