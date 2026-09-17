@@ -72,9 +72,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 4. Everything below this line is your original generation logic, unchanged.
+    // 4. Everything below this line is your original generation logic, unchanged (plus campaign_copy).
     const body = await req.json()
-    const { type, businessName, category, location, productName, price, currency } = body
+    const { type, businessName, category, location, productName, price, currency, campaignName, objective } = body
 
     const apiKey = process.env.GROQ_API_KEY
     if (!apiKey) {
@@ -101,6 +101,26 @@ Write 3-4 sentences that:
 - End by directing customers to contact via WhatsApp to order
 
 Write like a premium retailer would — confident, specific, and persuasive. Avoid generic phrases like "upgrade your home" or "look no further." Do not include any phone number. Return only the description, nothing else.`
+    }
+
+    if (type === 'campaign_copy') {
+      const target = productName
+        ? `their product "${productName}"${price ? ' (priced at ' + currency + ' ' + price + ')' : ''}`
+        : `their business`
+
+      prompt = `Write a short, high-converting promotional marketing post for a Nigerian ${category || 'business'} called "${businessName || 'this business'}" in ${location || 'Nigeria'}.
+
+Campaign name: "${campaignName || 'Untitled Campaign'}"
+Campaign objective: "${objective || 'Build awareness'}"
+Promoting: ${target}
+
+Write 3-5 sentences suitable for posting on WhatsApp Status, Instagram, or Facebook that:
+- Open with a scroll-stopping hook relevant to the objective above
+- Speak directly to the customer's need or desire
+- Build urgency or excitement without sounding desperate or spammy
+- End with a natural call to action encouraging the reader to reach out
+
+Write like a savvy Nigerian small business owner would — warm, confident, and persuasive, not corporate. Do not include any phone number, emojis in excess (max 1-2), or hashtags. Return only the post text, nothing else.`
     }
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
