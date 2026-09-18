@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const apiKey = process.env.SERPAPI_KEY
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
+      return NextResponse.json({ error: 'API key not configured', debug: 'NO_KEY' }, { status: 500 })
     }
 
     const url = 'https://serpapi.com/search.json?engine=google&q=' + query + '&api_key=' + apiKey + '&gl=ng&hl=en'
@@ -22,67 +22,18 @@ export async function GET(req: NextRequest) {
     const response = await fetch(url)
     const data = await response.json()
 
-    if (data.error) {
-      return NextResponse.json({ found: false, googleScore: 0, business: null, onCloutinetSearch: false })
-    }
-
-    const kg = data.knowledge_graph
-    const local = data.local_results && data.local_results[0]
-    const place = kg || local
-
-    const organicResults = data.organic_results || []
-    const onCloutinetSearch = organicResults.some((r: any) =>
-      typeof r.link === 'string' && r.link.includes('cloutinet.online')
-    )
-
-    if (!place) {
-      return NextResponse.json({ found: false, googleScore: 0, business: null, onCloutinetSearch })
-    }
-
-    let score = 0
-    const breakdown: Record<string, boolean> = {}
-
-    breakdown.name = !!(place.title || place.name)
-    breakdown.address = !!place.address
-    breakdown.phone = !!place.phone
-    breakdown.hours = !!(place.hours || place.opening_hours)
-    breakdown.website = !!place.website
-    breakdown.rating = !!place.rating
-    breakdown.reviews = typeof place.reviews === 'number' || typeof place.review_count === 'number'
-    breakdown.photos = !!(place.image || place.thumbnail)
-    breakdown.category = !!(place.type || place.category)
-
-    if (breakdown.name) score += 15
-    if (breakdown.address) score += 15
-    if (breakdown.phone) score += 15
-    if (breakdown.hours) score += 10
-    if (breakdown.website) score += 10
-    if (breakdown.rating) score += 10
-    if (breakdown.reviews) score += 10
-    if (breakdown.photos) score += 10
-    if (breakdown.category) score += 5
-
-    const reviewCount = typeof place.reviews === 'number'
-      ? place.reviews
-      : typeof place.review_count === 'number'
-      ? place.review_count
-      : null
-
+    // TEMPORARY DEBUG: return the raw shape of what SerpAPI sent back
     return NextResponse.json({
-      found: true,
-      googleScore: score,
-      breakdown,
-      onCloutinetSearch,
-      business: {
-        name: place.title || place.name || null,
-        address: place.address || null,
-        phone: place.phone || null,
-        rating: place.rating || null,
-        reviewCount,
-        website: place.website || null,
-        hours: place.hours || place.opening_hours || null,
-        hasPhotos: breakdown.photos,
-        type: place.type || place.category || null,
+      _debug: {
+        httpStatus: response.status,
+        serpApiError: data.error || null,
+        hasKnowledgeGraph: !!data.knowledge_graph,
+        knowledgeGraphKeys: data.knowledge_graph ? Object.keys(data.knowledge_graph) : null,
+        hasLocalResults: !!(data.local_results && data.local_results.length),
+        localResultsCount: data.local_results ? data.local_results.length : 0,
+        firstLocalResultKeys: data.local_results && data.local_results[0] ? Object.keys(data.local_results[0]) : null,
+        firstLocalResultRaw: data.local_results && data.local_results[0] ? data.local_results[0] : null,
+        topLevelKeys: Object.keys(data),
       }
     })
 
