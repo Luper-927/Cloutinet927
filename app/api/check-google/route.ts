@@ -10,30 +10,71 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const query = encodeURIComponent(businessName + ' ' + city)
     const apiKey = process.env.SERPAPI_KEY
-
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key not configured', debug: 'NO_KEY' }, { status: 500 })
+      return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
-    const url = 'https://serpapi.com/search.json?engine=google&q=' + query + '&api_key=' + apiKey + '&gl=ng&hl=en'
+    const query = encodeURIComponent(businessName + ' ' + city)
 
-    const response = await fetch(url)
-    const data = await response.json()
+    const googleUrl = 'https://serpapi.com/search.json?engine=google&q=' + query + '&api_key=' + apiKey + '&gl=ng&hl=en'
+    const mapsUrl = 'https://serpapi.com/search.json?engine=google_maps&q=' + query + '&api_key=' + apiKey + '&type=search&hl=en'
 
-    // TEMPORARY DEBUG: return the raw shape of what SerpAPI sent back
+    const [googleRes, mapsRes] = await Promise.all([
+      fetch(googleUrl),
+      fetch(mapsUrl),
+    ])
+    const googleData = await googleRes.json()
+    const mapsData = await mapsRes.json()
+
+    const organicResults = googleData.organic_results || []
+    const onCloutinetSearch = organicResults.some((r: any) =>
+      typeof r.link === 'string' && r.link.includes('cloutinet.online')
+    )
+
+    const place = mapsData.place_results || (mapsData.local_results && mapsData.local_results[0])
+
+    if (!place) {
+      return NextResponse.json({ found: false, googleScore: 0, business: null, onCloutinetSearch })
+    }
+
+    const breakdown: Record<string, boolean> = {}
+    breakdown.name = !!place.title
+    breakdown.address = !!place.address
+    breakdown.phone = !!place.phone
+    breakdown.hours = !!(place.operating_hours || place.hours)
+    breakdown.website = !!place.website
+    breakdown.rating = !!place.rating
+    breakdown.reviews = typeof place.reviews === 'number'
+    breakdown.photos = !!(place.thumbnail || (place.photos && place.photos.length))
+    breakdown.category = !!(place.type || (place.types && place.types.length))
+
+    let score = 0
+    if (breakdown.name) score += 15
+    if (breakdown.address) score += 15
+    if (breakdown.phone) score += 15
+    if (breakdown.hours) score += 10
+    if (breakdown.website) score += 10
+    if (breakdown.rating) score += 10
+    if (breakdown.reviews) score += 10
+    if (breakdown.photos) score += 10
+    if (breakdown.category) score += 5
+
     return NextResponse.json({
-      _debug: {
-        httpStatus: response.status,
-        serpApiError: data.error || null,
-        hasKnowledgeGraph: !!data.knowledge_graph,
-        knowledgeGraphKeys: data.knowledge_graph ? Object.keys(data.knowledge_graph) : null,
-        hasLocalResults: !!(data.local_results && data.local_results.length),
-        localResultsCount: data.local_results ? data.local_results.length : 0,
-        firstLocalResultKeys: data.local_results && data.local_results[0] ? Object.keys(data.local_results[0]) : null,
-        firstLocalResultRaw: data.local_results && data.local_results[0] ? data.local_results[0] : null,
-        topLevelKeys: Object.keys(data),
+      found: true,
+      googleScore: score,
+      breakdown,
+      onCloutinetSearch,
+      business: {
+        name: place.title || null,
+        address: place.address || null,
+        phone: place.phone || null,
+        rating: place.rating || null,
+        reviewCount: typeof place.reviews === 'number' ? place.reviews : null,
+        website: place.website || null,
+        hours: place.operating_hours || place.hours || null,
+        hasPhotos: breakdown.photos,
+        type: place.type || (place.types && place.types[0]) || null,
       }
     })
 
