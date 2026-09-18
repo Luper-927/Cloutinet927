@@ -9,6 +9,7 @@ import Link from 'next/link'
 export default function MarketingPage() {
   const [context, setContext] = useState<ActingContext | null>(null)
   const [tierLimits, setTierLimits] = useState<any>(null)
+  const [noPermission, setNoPermission] = useState(false)
   const [profile, setProfile] = useState<any>(null)
   const [campaigns, setCampaigns] = useState<any[]>([])
   const [eventStats, setEventStats] = useState<Record<string, { views: number; ctaClicks: number; whatsappClicks: number }>>({})
@@ -24,6 +25,12 @@ export default function MarketingPage() {
     const ctx = await getActingContext(currentUser.id)
     if (!ctx) { window.location.href = '/onboarding'; return }
     setContext(ctx)
+
+    if (!ctx.permissions.marketing) {
+      setNoPermission(true)
+      setLoading(false)
+      return
+    }
 
     const { limits } = await getBusinessTier(ctx.ownerId)
     setTierLimits(limits)
@@ -63,6 +70,14 @@ export default function MarketingPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (noPermission) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to view marketing.</p>
       </div>
     )
   }
