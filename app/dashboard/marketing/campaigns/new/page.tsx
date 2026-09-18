@@ -19,6 +19,7 @@ export default function NewCampaignPage() {
   const [context, setContext] = useState<ActingContext | null>(null)
   const [tierLimits, setTierLimits] = useState<any>(null)
   const [checkingAccess, setCheckingAccess] = useState(true)
+  const [noPermission, setNoPermission] = useState(false)
   const [name, setName] = useState('')
   const [objective, setObjective] = useState(OBJECTIVES[0])
   const [destinationType, setDestinationType] = useState<'product' | 'business'>('business')
@@ -40,6 +41,12 @@ export default function NewCampaignPage() {
     const ctx = await getActingContext(userData.user.id)
     if (!ctx) { window.location.href = '/onboarding'; return }
     setContext(ctx)
+
+    if (!ctx.permissions.marketing) {
+      setNoPermission(true)
+      setCheckingAccess(false)
+      return
+    }
 
     const { limits } = await getBusinessTier(ctx.ownerId)
     setTierLimits(limits)
@@ -136,6 +143,14 @@ export default function NewCampaignPage() {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (noPermission) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to create campaigns.</p>
       </div>
     )
   }
