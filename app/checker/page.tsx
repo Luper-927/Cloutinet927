@@ -130,26 +130,29 @@ export default function CheckerPage() {
       {result && (
         <section style={{ maxWidth: '520px', margin: '0 auto', padding: '32px 20px' }}>
 
-          {/* CLOUTINET SEARCH VISIBILITY - NEW, HONEST CHECK */}
+          {/* CLOUTINET SEARCH VISIBILITY - relabeled for clarity: this is about a
+              Cloutinet page specifically, not the business's overall Google presence */}
           <div style={{
-            background: result.googleData.onCloutinetSearch ? '#F0FDF4' : '#FFF7ED',
-            border: result.googleData.onCloutinetSearch ? '1px solid #BBF7D0' : '1px solid #FED7AA',
+            background: result.googleData.onCloutinetSearch ? '#F0FDF4' : '#F8FAFC',
+            border: result.googleData.onCloutinetSearch ? '1px solid #BBF7D0' : '1px solid #E2E8F0',
             borderRadius: '12px', padding: '16px', marginBottom: '16px'
           }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '8px' }}>Google Search Visibility</div>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '8px' }}>Cloutinet Page Search Status</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>{result.googleData.onCloutinetSearch ? '✅' : '⏳'}</span>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: result.googleData.onCloutinetSearch ? '#166534' : '#9A3412' }}>
+              <span style={{ fontSize: '20px' }}>{result.googleData.onCloutinetSearch ? '✅' : 'ℹ️'}</span>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: result.googleData.onCloutinetSearch ? '#166534' : '#475569' }}>
                 {result.googleData.onCloutinetSearch
-                  ? 'This business page is showing up in Google Search results'
-                  : 'Not yet appearing in Google Search for this name'}
+                  ? 'This business\u2019s Cloutinet page is showing up in Google Search'
+                  : 'No Cloutinet page found in Google Search for this business'}
               </span>
             </div>
-            {!result.googleData.onCloutinetSearch && (
-              <div style={{ fontSize: '12px', color: '#64748B', marginTop: '6px' }}>
-                New pages can take 1-2 weeks to appear. This is separate from Google Business Profile below.
-              </div>
-            )}
+            <div style={{ fontSize: '12px', color: '#64748B', marginTop: '6px' }}>
+              {result.googleData.onCloutinetSearch
+                ? 'A new Cloutinet page for this business is already ranking on Google.'
+                : result.cloutProfile
+                  ? 'This business has a Cloutinet page, but it may still be indexing — new pages can take 1-2 weeks to appear on Google.'
+                  : 'This just checks for a Cloutinet page — not the business\u2019s overall Google presence. See their real Google Business Profile below.'}
+            </div>
           </div>
 
           {/* GOOGLE RESULT */}
