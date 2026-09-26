@@ -5,6 +5,51 @@ import { supabase } from '../../../lib/supabase'
 import { getBusinessTier } from '../../../lib/tiers'
 import { getActingContext, logActivity } from '../../../lib/permissions'
 import Link from 'next/link'
+import {
+  loadingWrapStyle,
+  loadingTextStyle,
+  noPermissionWrapStyle,
+  noPermissionTextStyle,
+  pageWrapStyle,
+  headerBarStyle,
+  headerTitleStyle,
+  backLinkStyle,
+  upgradeContentWrapStyle,
+  upgradeIconStyle,
+  upgradeHeadingStyle,
+  upgradeTextStyle,
+  upgradeButtonStyle,
+  contentWrapStyle,
+  locationBannerStyle,
+  statsGridStyle,
+  statCardGreenStyle,
+  statLabelGreenStyle,
+  statValueGreenStyle,
+  statCardOrangeStyle,
+  statLabelOrangeStyle,
+  statValueOrangeStyle,
+  statCardNeutralStyle,
+  statLabelNeutralStyle,
+  statValueNeutralStyle,
+  toggleFormButtonStyle,
+  formBoxStyle,
+  inputStyle,
+  statusRowStyle,
+  statusButtonStyle,
+  errorBoxStyle,
+  errorTextStyle,
+  saveButtonStyle,
+  sectionLabelStyle,
+  emptyTextStyle,
+  recordsListStyle,
+  recordCardStyle,
+  recordNameStyle,
+  recordMetaStyle,
+  recordMetaNoteStyle,
+  recordAmountWrapStyle,
+  recordAmountStyle,
+  statusBadgeStyle,
+} from './styles'
 
 type PaymentRecord = {
   id: string
@@ -127,22 +172,161 @@ export default function PaymentsPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      <div style={loadingWrapStyle}>
+        <p style={loadingTextStyle}>Loading...</p>
       </div>
     )
   }
 
   if (noPermission) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to view payments.</p>
+      <div style={noPermissionWrapStyle}>
+        <p style={noPermissionTextStyle}>You&rsquo;t have permission to view payments.</p>
       </div>
     )
   }
 
   if (!hasAccess) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-        <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Payments</div>
+      <div style={pageWrapStyle}>
+        <div style={headerBarStyle}>
+          <div style={headerTitleStyle}>Payments</div>
+          <Link href="/dashboard" style={backLinkStyle}>Back</Link>
+        </div>
+        <div style={upgradeContentWrapStyle}>
+          <div style={upgradeIconStyle}>💰</div>
+          <h2 style={upgradeHeadingStyle}>
+            Payment tracking needs Business or higher
+          </h2>
+          <p style={upgradeTextStyle}>
+            You&rsquo;re currently on the {tierName} plan. Upgrade to track money coming into your business.
+          </p>
+          <Link href="/dashboard/billing" style={upgradeButtonStyle}>
+            View Plans
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const moneyReceived = records.filter(r => r.status === 'paid').reduce((sum, r) => sum + Number(r.amount), 0)
+  const pending = records.filter(r => r.status === 'pending' || r.status === 'partial').reduce((sum, r) => sum + Number(r.amount), 0)
+  const thisMonth = records.filter(r => {
+    const d = new Date(r.created_at)
+    const now = new Date()
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && r.status === 'paid'
+  }).reduce((sum, r) => sum + Number(r.amount), 0)
+
+  const statusColors: Record<string, { bg: string; color: string }> = {
+    paid: { bg: '#F0FDF4', color: '#166534' },
+    pending: { bg: '#FFF7ED', color: '#9A3412' },
+    partial: { bg: '#FFF7ED', color: '#9A3412' },
+    failed: { bg: '#FEF2F2', color: '#dc2626' },
+    refunded: { bg: '#F8FAFC', color: '#64748B' },
+    cancelled: { bg: '#F8FAFC', color: '#64748B' },
+  }
+
+  return (
+    <div style={pageWrapStyle}>
+      <div style={headerBarStyle}>
+        <div style={headerTitleStyle}>Payments</div>
+        <Link href="/dashboard" style={backLinkStyle}>Back</Link>
+      </div>
+
+      <div style={contentWrapStyle}>
+
+        {scopedLocationName && (
+          <div style={locationBannerStyle}>
+            📍 Showing payments for {scopedLocationName} only
+          </div>
+        )}
+
+        <div style={statsGridStyle}>
+          <div style={statCardGreenStyle}>
+            <div style={statLabelGreenStyle}>Money Received</div>
+            <div style={statValueGreenStyle}>₦{moneyReceived.toLocaleString()}</div>
+          </div>
+          <div style={statCardOrangeStyle}>
+            <div style={statLabelOrangeStyle}>Pending</div>
+            <div style={statValueOrangeStyle}>₦{pending.toLocaleString()}</div>
+          </div>
+          <div style={statCardNeutralStyle}>
+            <div style={statLabelNeutralStyle}>Transactions</div>
+            <div style={statValueNeutralStyle}>{records.length}</div>
+          </div>
+          <div style={statCardNeutralStyle}>
+            <div style={statLabelNeutralStyle}>This Month</div>
+            <div style={statValueNeutralStyle}>₦{thisMonth.toLocaleString()}</div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setShowForm(!showForm)}
+          style={toggleFormButtonStyle}
+        >
+          {showForm ? 'Cancel' : '+ Record a Payment'}
+        </button>
+
+        {showForm && (
+          <div style={formBoxStyle}>
+            <input placeholder="Customer name" value={customerName} onChange={e => setCustomerName(e.target.value)} style={inputStyle} />
+            <input placeholder="Amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
+
+            <div style={statusRowStyle}>
+              {(['paid', 'pending', 'partial', 'failed', 'refunded', 'cancelled'] as const).map(s => (
+                <button
+                  key={s}
+                  onClick={() => setStatus(s)}
+                  style={statusButtonStyle(status === s)}
+                >{s}</button>
+              ))}
+            </div>
+
+            <input placeholder="Method (cash, transfer, POS...)" value={method} onChange={e => setMethod(e.target.value)} style={inputStyle} />
+            <input placeholder="Reference (optional)" value={reference} onChange={e => setReference(e.target.value)} style={inputStyle} />
+            <input placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ ...inputStyle, marginBottom: '12px' }} />
+
+            {error && (
+              <div style={errorBoxStyle}>
+                <p style={errorTextStyle}>{error}</p>
+              </div>
+            )}
+
+            <button
+              onClick={handleAdd}
+              disabled={saving}
+              style={saveButtonStyle(saving)}
+            >
+              {saving ? 'Saving...' : 'Save Record'}
+            </button>
+          </div>
+        )}
+
+        <div style={sectionLabelStyle}>
+          Recent Transactions
+        </div>
+
+        {records.length === 0 ? (
+          <p style={emptyTextStyle}>No payment records yet.</p>
+        ) : (
+          <div style={recordsListStyle}>
+            {records.map(r => (
+              <div key={r.id} style={recordCardStyle}>
+                <div>
+                  <div style={recordNameStyle}>{r.customer_name}</div>
+                  <div style={recordMetaStyle}>{new Date(r.created_at).toLocaleDateString()} {r.method ? '· ' + r.method : ''}</div>
+                  {r.reference && <div style={recordMetaStyle}>Ref: {r.reference}</div>}
+                  {r.note && <div style={recordMetaNoteStyle}>{r.note}</div>}
+                </div>
+                <div style={recordAmountWrapStyle}>
+                  <div style={recordAmountStyle}>{r.currency} {Number(r.amount).toLocaleString()}</div>
+                  <span style={statusBadgeStyle(statusColors[r.status]?.bg, statusColors[r.status]?.color)}>{r.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
