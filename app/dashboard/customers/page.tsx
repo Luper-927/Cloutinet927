@@ -59,15 +59,14 @@ export default function CustomersPage() {
       return
     }
 
+    const selectFields = 'id, name, phone, email, address, notes, tags, last_contacted_at, created_at'
+
     let query = supabase
       .from('customers')
-      .select('id, name, phone, email, address, notes, tags, last_contacted_at, created_at')
+      .select(selectFields)
       .eq('user_id', context.ownerId)
       .order('created_at', { ascending: false })
 
-    // An employee scoped to one location only sees that branch's
-    // customers. Owners and unscoped employees see everything —
-    // this line is simply skipped for them since locationId is null.
     if (context.locationId) {
       query = query.eq('location_id', context.locationId)
     }
@@ -76,6 +75,29 @@ export default function CustomersPage() {
     setCustomers(data || [])
 
     if (context.locationId) {
+      const locationFields = 'business_name, address'
       const { data: loc } = await supabase
         .from('locations')
-        .select('business_name,
+        .select(locationFields)
+        .eq('id', context.locationId)
+        .maybeSingle()
+      setScopedLocationName(loc?.business_name || loc?.address || null)
+    }
+
+    setLoading(false)
+  }
+
+  async function markContacted(id: string) {
+    setUpdatingId(id)
+    await supabase
+      .from('customers')
+      .update({ last_contacted_at: new Date().toISOString() })
+      .eq('id', id)
+    await load()
+    setUpdatingId(null)
+  }
+
+  function needsFollowUp(c: Customer) {
+    if (!hasAdvanced) return false
+    if (!c.last_contacted_at) return true
+    const daysSince = (Date.now() - new Date
