@@ -14,7 +14,10 @@ type Employee = {
   role: string
   status: string
   permissions: Record<string, boolean>
+  location_id: string | null
 }
+
+type LocationOption = { id: string; business_name: string | null; address: string }
 
 const PERMISSION_LABELS: Record<PermissionKey, string> = {
   products: 'Products — add, edit, publish/hide products',
@@ -38,6 +41,8 @@ export default function EditEmployeePage() {
   const [employee, setEmployee] = useState<Employee | null>(null)
   const [role, setRole] = useState<'manager' | 'staff'>('staff')
   const [permissions, setPermissions] = useState<Record<string, boolean>>({})
+  const [locations, setLocations] = useState<LocationOption[]>([])
+  const [locationId, setLocationId] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -55,7 +60,7 @@ export default function EditEmployeePage() {
 
     const { data, error: fetchError } = await supabase
       .from('employees')
-      .select('id, owner_id, name, email, role, status, permissions')
+      .select('id, owner_id, name, email, role, status, permissions, location_id')
       .eq('id', employeeId)
       .eq('owner_id', ctx.ownerId)
       .maybeSingle()
@@ -69,6 +74,15 @@ export default function EditEmployeePage() {
     setEmployee(data)
     setRole(data.role === 'manager' ? 'manager' : 'staff')
     setPermissions(data.permissions || {})
+    setLocationId(data.location_id || '')
+
+    const { data: locs } = await supabase
+      .from('locations')
+      .select('id, business_name, address')
+      .eq('owner_id', ctx.ownerId)
+      .order('is_primary', { ascending: false })
+    setLocations(locs || [])
+
     setLoading(false)
   }
 
@@ -85,7 +99,7 @@ export default function EditEmployeePage() {
 
     const { error: saveError } = await supabase
       .from('employees')
-      .update({ role, permissions })
+      .update({ role, permissions, location_id: locationId || null })
       .eq('id', employee.id)
 
     setSaving(false)
@@ -137,6 +151,24 @@ export default function EditEmployeePage() {
             Staff
           </button>
         </div>
+
+        {locations.length > 0 && (
+          <>
+            <label style={labelStyle}>Location</label>
+            <select
+              value={locationId}
+              onChange={e => { setLocationId(e.target.value); setSaved(false) }}
+              style={{ ...selectStyle }}
+            >
+              <option value="">All locations</option>
+              {locations.map(loc => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.business_name || loc.address}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
 
         <label style={labelStyle}>Permissions</label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
@@ -201,4 +233,11 @@ const toggleStyle: React.CSSProperties = {
 
 const toggleActive: React.CSSProperties = {
   background: '#0F172A', color: '#fff', border: '1px solid #0F172A'
+}
+
+const selectStyle: React.CSSProperties = {
+  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
+  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
+  fontSize: '14px', marginBottom: '24px', outline: 'none', fontFamily: 'inherit',
+  boxSizing: 'border-box', appearance: 'auto' as const
 }
