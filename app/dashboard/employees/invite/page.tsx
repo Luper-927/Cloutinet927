@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../../../../lib/supabase'
 
 const PERMISSION_LABELS: Record<string, string> = {
@@ -24,15 +24,32 @@ const DEFAULT_MANAGER_PERMISSIONS: Record<string, boolean> = {
   marketing: true, documents: true, payments: false, employees: false,
 }
 
+type LocationOption = { id: string; business_name: string | null; address: string }
+
 export default function InviteEmployeePage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'staff' | 'manager'>('staff')
   const [permissions, setPermissions] = useState(DEFAULT_STAFF_PERMISSIONS)
+  const [locations, setLocations] = useState<LocationOption[]>([])
+  const [locationId, setLocationId] = useState<string>('') // '' means "all locations"
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [inviteLink, setInviteLink] = useState('')
   const [emailSent, setEmailSent] = useState(false)
+
+  useEffect(() => { loadLocations() }, [])
+
+  async function loadLocations() {
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) return
+    const { data } = await supabase
+      .from('locations')
+      .select('id, business_name, address')
+      .eq('owner_id', userData.user.id)
+      .order('is_primary', { ascending: false })
+    setLocations(data || [])
+  }
 
   function handleRoleChange(newRole: 'staff' | 'manager') {
     setRole(newRole)
@@ -62,6 +79,7 @@ export default function InviteEmployeePage() {
         email: email.trim().toLowerCase(),
         role,
         permissions,
+        location_id: locationId || null,
       })
       .select('invite_token')
       .single()
@@ -178,6 +196,24 @@ export default function InviteEmployeePage() {
             }}
           >Manager</button>
         </div>
+
+        {locations.length > 0 && (
+          <>
+            <label style={labelStyle}>Location</label>
+            <select
+              value={locationId}
+              onChange={e => setLocationId(e.target.value)}
+              style={{ ...inputStyle, appearance: 'auto' as const }}
+            >
+              <option value="">All locations</option>
+              {locations.map(loc => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.business_name || loc.address}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
 
         <label style={labelStyle}>Permissions</label>
         <div style={{ border: '1px solid #E2E8F0', borderRadius: '10px', padding: '4px', marginBottom: '20px' }}>
