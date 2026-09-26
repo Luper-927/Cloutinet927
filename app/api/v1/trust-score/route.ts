@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('business_id, business_name, business_category, location, phone, tagline, business_hours, services, facebook_url, instagram_url')
+    .select('id, business_id, business_name, business_category, location, phone, tagline, business_hours, services, facebook_url, instagram_url')
     .eq('business_id', businessId)
     .maybeSingle()
 
@@ -37,9 +37,16 @@ export async function GET(req: NextRequest) {
   const { count: productCount } = await supabase
     .from('products')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', profile.business_id ? undefined : undefined) // placeholder, corrected below
+    .eq('user_id', profile.id)
 
-  // Note: products are linked by profiles.id (uuid), not business_id —
-  // corrected query below using the actual owner uuid.
-  return NextResponse.json({ error: 'internal' }, { status: 500 })
+  const score = calculateVisibilityScore(profile, productCount || 0)
+
+  return NextResponse.json({
+    business_id: profile.business_id,
+    business_name: profile.business_name,
+    trust_score: score,
+    max_score: 100,
+  }, {
+    headers: { 'X-RateLimit-Remaining': String(rateLimit.remaining) }
+  })
 }
