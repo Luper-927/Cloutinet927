@@ -34,6 +34,8 @@ export default function DocumentsPage() {
   const [tierName, setTierName] = useState('Free')
   const [ownerId, setOwnerId] = useState('')
   const [actorName, setActorName] = useState('')
+  const [locationId, setLocationId] = useState<string | null>(null)
+  const [scopedLocationName, setScopedLocationName] = useState<string | null>(null)
 
   const [activeCategory, setActiveCategory] = useState('all')
   const [search, setSearch] = useState('')
@@ -60,6 +62,7 @@ export default function DocumentsPage() {
 
     setOwnerId(context.ownerId)
     setActorName(context.employeeName || 'Owner')
+    setLocationId(context.locationId)
 
     const { limits } = await getBusinessTier(context.ownerId)
     setTierName(limits.name)
@@ -70,13 +73,30 @@ export default function DocumentsPage() {
       return
     }
 
-    const { data } = await supabase
+    let docsQuery = supabase
       .from('documents')
       .select('id, name, category, file_url, file_path, file_type, file_size_bytes, uploaded_by_name, created_at')
       .eq('owner_id', context.ownerId)
       .order('created_at', { ascending: false })
 
+    if (context.locationId) {
+      docsQuery = docsQuery.eq('location_id', context.locationId)
+    }
+
+    const { data } = await docsQuery
     setDocuments(data || [])
+
+    if (context.locationId) {
+      const locFields = 'business_name, address'
+      const { data: loc } = await supabase
+        .from('locations')
+        .select(locFields)
+        .eq('id', context.locationId)
+        .maybeSingle()
+      const locName = loc?.business_name || loc?.address
+      setScopedLocationName(locName || null)
+    }
+
     setLoading(false)
   }
 
@@ -110,6 +130,7 @@ export default function DocumentsPage() {
     // a legacy fallback for rows that predate this change.
     const { error: saveError } = await supabase.from('documents').insert({
       owner_id: ownerId,
+      location_id: locationId,
       name: file.name,
       category: pendingCategory,
       file_url: filePath,
@@ -215,6 +236,13 @@ export default function DocumentsPage() {
       </div>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
+
+        {scopedLocationName && (
+          <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '12px', color: '#0369A1', fontWeight: 600 }}>
+            📍 Showing documents for {scopedLocationName} only
+          </div>
+        )}
+
         <input
           placeholder="Search documents..."
           value={search}
