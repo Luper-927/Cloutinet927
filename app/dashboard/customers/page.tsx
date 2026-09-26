@@ -1,220 +1,303 @@
-'use client'
+import type { CSSProperties } from 'react'
 
-import { useState, useEffect } from 'react'
-import { supabase } from '../../../lib/supabase'
-import { getBusinessTier } from '../../../lib/tiers'
-import { getActingContext } from '../../../lib/permissions'
-import Link from 'next/link'
-
-type Customer = {
-  id: string
-  name: string
-  phone: string | null
-  email: string | null
-  address: string | null
-  notes: string | null
-  tags: string[] | null
-  last_contacted_at: string | null
-  created_at: string
+export const loadingWrapStyle: CSSProperties = {
+  minHeight: '100vh',
+  background: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '20px',
 }
 
-const FOLLOW_UP_DAYS = 30
-const MS_PER_DAY = 1000 * 60 * 60 * 24
+export const loadingTextStyle: CSSProperties = {
+  color: '#64748B',
+  fontSize: '14px',
+  fontFamily: 'Segoe UI, system-ui, sans-serif',
+  textAlign: 'center',
+}
 
-export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [loading, setLoading] = useState(true)
-  const [hasAccess, setHasAccess] = useState(true)
-  const [noPermission, setNoPermission] = useState(false)
-  const [hasAdvanced, setHasAdvanced] = useState(false)
-  const [hasMarketing, setHasMarketing] = useState(false)
-  const [tierName, setTierName] = useState('Free')
-  const [updatingId, setUpdatingId] = useState<string | null>(null)
-  const [scopedLocationName, setScopedLocationName] = useState<string | null>(null)
+export const pageStyle: CSSProperties = {
+  minHeight: '100vh',
+  background: '#fff',
+  fontFamily: 'Segoe UI, system-ui, sans-serif',
+}
 
-  useEffect(() => {
-    load()
-  }, [])
+export const headerStyle: CSSProperties = {
+  background: '#0F172A',
+  padding: '14px 20px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+}
 
-  async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) {
-      window.location.href = '/auth'
-      return
-    }
+export const headerTitleStyle: CSSProperties = {
+  fontSize: '16px',
+  fontWeight: 800,
+  color: '#fff',
+}
 
-    const context = await getActingContext(userData.user.id)
-    if (!context) {
-      window.location.href = '/onboarding'
-      return
-    }
+export const backLinkStyle: CSSProperties = {
+  color: '#94A3B8',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
 
-    if (!context.permissions.customers) {
-      setNoPermission(true)
-      setLoading(false)
-      return
-    }
+export const contentStyle: CSSProperties = {
+  maxWidth: '480px',
+  margin: '0 auto',
+  padding: '24px 16px',
+}
 
-    const { limits } = await getBusinessTier(context.ownerId)
-    setTierName(limits.name)
-    setHasAdvanced(limits.advancedCustomers)
-    setHasMarketing(limits.marketingAutomation)
+export const labelStyle: CSSProperties = {
+  display: 'block',
+  color: '#475569',
+  fontSize: '12px',
+  fontWeight: 700,
+  marginBottom: '6px',
+  textTransform: 'uppercase',
+}
 
-    if (!limits.customerRecords) {
-      setHasAccess(false)
-      setLoading(false)
-      return
-    }
+export const inputStyle: CSSProperties = {
+  width: '100%',
+  background: '#F8FAFC',
+  border: '1px solid #E2E8F0',
+  borderRadius: '8px',
+  padding: '12px 14px',
+  color: '#0F172A',
+  fontSize: '14px',
+  marginBottom: '16px',
+  outline: 'none',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+}
 
-    const selectFields = 'id, name, phone, email'
-      + ', address, notes, tags'
-      + ', last_contacted_at, created_at'
+export const notesInputStyle: CSSProperties = {
+  ...inputStyle,
+  minHeight: '80px',
+  resize: 'vertical',
+}
 
-    let query = supabase
-      .from('customers')
-      .select(selectFields)
-      .eq('user_id', context.ownerId)
-      .order('created_at', { ascending: false })
+export const errorBoxStyle: CSSProperties = {
+  background: '#FEF2F2',
+  border: '1px solid #FECACA',
+  borderRadius: '8px',
+  padding: '12px',
+  marginBottom: '12px',
+}
 
-    if (context.locationId) {
-      query = query.eq('location_id', context.locationId)
-    }
+export const errorTextStyle: CSSProperties = {
+  color: '#dc2626',
+  fontSize: '12px',
+  margin: 0,
+}
 
-    const { data } = await query
-    setCustomers(data || [])
+export const upgradeWrapStyle: CSSProperties = {
+  maxWidth: '480px',
+  margin: '0 auto',
+  padding: '48px 20px',
+  textAlign: 'center',
+}
 
-    if (context.locationId) {
-      const locationFields = 'business_name, address'
-      const { data: loc } = await supabase
-        .from('locations')
-        .select(locationFields)
-        .eq('id', context.locationId)
-        .maybeSingle()
-      const name = loc?.business_name || loc?.address
-      setScopedLocationName(name || null)
-    }
+export const upgradeEmojiStyle: CSSProperties = {
+  fontSize: '36px',
+  marginBottom: '12px',
+}
 
-    setLoading(false)
+export const upgradeTitleStyle: CSSProperties = {
+  fontSize: '18px',
+  fontWeight: 800,
+  color: '#0F172A',
+  marginBottom: '8px',
+}
+
+export const upgradeTextStyle: CSSProperties = {
+  fontSize: '14px',
+  color: '#64748B',
+  lineHeight: 1.5,
+  marginBottom: '24px',
+}
+
+export const upgradeButtonStyle: CSSProperties = {
+  display: 'inline-block',
+  background: '#0F172A',
+  color: '#fff',
+  borderRadius: '8px',
+  padding: '12px 24px',
+  fontSize: '14px',
+  fontWeight: 700,
+  textDecoration: 'none',
+}
+
+export function saveButtonStyle(saving: boolean): CSSProperties {
+  return {
+    width: '100%',
+    background: '#0F172A',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '14px',
+    cursor: 'pointer',
+    fontSize: '15px',
+    fontWeight: 700,
+    fontFamily: 'inherit',
+    opacity: saving ? 0.7 : 1,
   }
+}
 
-  async function markContacted(id: string) {
-    setUpdatingId(id)
-    const now = new Date().toISOString()
-    await supabase
-      .from('customers')
-      .update({ last_contacted_at: now })
-      .eq('id', id)
-    await load()
-    setUpdatingId(null)
-  }
+export const locationBannerStyle: CSSProperties = {
+  background: '#F0F9FF',
+  border: '1px solid #BAE6FD',
+  borderRadius: '8px',
+  padding: '10px 14px',
+  marginBottom: '16px',
+  fontSize: '12px',
+  color: '#0369A1',
+  fontWeight: 600,
+}
 
-  function needsFollowUp(c: Customer) {
-    if (!hasAdvanced) return false
-    if (!c.last_contacted_at) return true
-    const then = new Date(c.last_contacted_at).getTime()
-    const now = Date.now()
-    const msSince = now - then
-    const daysSince = msSince / MS_PER_DAY
-    return daysSince >= FOLLOW_UP_DAYS
-  }
+export const addButtonStyle: CSSProperties = {
+  display: 'block',
+  width: '100%',
+  textAlign: 'center',
+  background: '#0F172A',
+  color: '#fff',
+  borderRadius: '8px',
+  padding: '14px',
+  fontSize: '15px',
+  fontWeight: 700,
+  textDecoration: 'none',
+  marginBottom: '10px',
+  boxSizing: 'border-box',
+}
 
-  if (loading) {
-    return (
-      <div style={loadingWrapStyle}>
-        <p style={loadingTextStyle}>Loading...</p>
-      </div>
-    )
-  }
+export const messageButtonStyle: CSSProperties = {
+  display: 'block',
+  width: '100%',
+  textAlign: 'center',
+  background: '#fff',
+  color: '#0F172A',
+  border: '1px solid #E2E8F0',
+  borderRadius: '8px',
+  padding: '14px',
+  fontSize: '15px',
+  fontWeight: 700,
+  textDecoration: 'none',
+  marginBottom: '20px',
+  boxSizing: 'border-box',
+}
 
-  if (noPermission) {
-    return (
-      <div style={loadingWrapStyle}>
-        <p style={loadingTextStyle}>
-          You don&rsquo;t have permission to view customers.
-        </p>
-      </div>
-    )
-  }
+export const followUpBoxStyle: CSSProperties = {
+  background: '#FFF7ED',
+  border: '1px solid #FED7AA',
+  borderRadius: '12px',
+  padding: '14px',
+  marginBottom: '20px',
+}
 
-  if (!hasAccess) {
-    return (
-      <div style={pageStyle}>
-        <div style={headerStyle}>
-          <div style={headerTitleStyle}>Customers</div>
-          <Link href="/dashboard" style={backLinkStyle}>Back</Link>
-        </div>
-        <div style={upgradeWrapStyle}>
-          <div style={upgradeEmojiStyle}>👥</div>
-          <h2 style={upgradeTitleStyle}>
-            Customer records need Essential or higher
-          </h2>
-          <p style={upgradeTextStyle}>
-            You&rsquo;re currently on the {tierName} plan.
-            Upgrade to save customer names, contacts,
-            and notes so you never lose track of who
-            you&rsquo;ve sold to.
-          </p>
-          <Link href="/dashboard/billing" style={upgradeButtonStyle}>
-            View Plans
-          </Link>
-        </div>
-      </div>
-    )
-  }
+export const followUpTitleStyle: CSSProperties = {
+  fontSize: '12px',
+  fontWeight: 700,
+  color: '#9A3412',
+  textTransform: 'uppercase',
+  marginBottom: '4px',
+}
 
-  const followUpCustomers = customers.filter(needsFollowUp)
+export const followUpTextStyle: CSSProperties = {
+  fontSize: '12px',
+  color: '#9A3412',
+  margin: 0,
+}
 
-  return (
-    <div style={pageStyle}>
-      <div style={headerStyle}>
-        <div style={headerTitleStyle}>Customers</div>
-        <Link href="/dashboard" style={backLinkStyle}>Back</Link>
-      </div>
+export const emptyWrapStyle: CSSProperties = {
+  textAlign: 'center',
+  padding: '40px 20px',
+}
 
-      <div style={contentStyle}>
-        {scopedLocationName && (
-          <div style={locationBannerStyle}>
-            📍 Showing customers for {scopedLocationName} only
-          </div>
-        )}
+export const emptyEmojiStyle: CSSProperties = {
+  fontSize: '36px',
+  marginBottom: '12px',
+}
 
-        <Link href="/dashboard/customers/new" style={addButtonStyle}>
-          + Add Customer
-        </Link>
+export const emptyTextStyle: CSSProperties = {
+  color: '#64748B',
+  fontSize: '14px',
+}
 
-        {hasMarketing && (
-          <Link
-            href="/dashboard/customers/message"
-            style={messageButtonStyle}
-          >
-            📢 Message Customers
-          </Link>
-        )}
+export const listWrapStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '10px',
+}
 
-        {hasAdvanced && followUpCustomers.length > 0 && (
-          <div style={followUpBoxStyle}>
-            <div style={followUpTitleStyle}>
-              Needs Follow-Up ({followUpCustomers.length})
-            </div>
-            <p style={followUpTextStyle}>
-              These customers haven&rsquo;t been marked
-              as contacted in {FOLLOW_UP_DAYS}+ days.
-            </p>
-          </div>
-        )}
+export const normalCardStyle: CSSProperties = {
+  border: '1px solid #E2E8F0',
+  background: '#fff',
+  borderRadius: '12px',
+  padding: '14px',
+}
 
-        {customers.length === 0 ? (
-          <div style={emptyWrapStyle}>
-            <div style={emptyEmojiStyle}>👥</div>
-            <p style={emptyTextStyle}>
-              No customers yet. Add your first one above.
-            </p>
-          </div>
-        ) : (
-          <div style={listWrapStyle}>
-            {customers.map(c => {
-              const flagged = needsFollowUp(c)
-              const cardStyle = flagged
-                ? flaggedCardStyle
-                : normalCardStyle
-              return (
+export const flaggedCardStyle: CSSProperties = {
+  border: '1px solid #FED7AA',
+  background: '#FFFBF5',
+  borderRadius: '12px',
+  padding: '14px',
+}
+
+export const nameStyle: CSSProperties = {
+  fontWeight: 700,
+  fontSize: '14px',
+  color: '#0F172A',
+  marginBottom: '4px',
+}
+
+export const detailStyle: CSSProperties = {
+  fontSize: '12px',
+  color: '#64748B',
+  marginBottom: '2px',
+}
+
+export const notesStyle: CSSProperties = {
+  fontSize: '12px',
+  color: '#94A3B8',
+  marginTop: '6px',
+  fontStyle: 'italic',
+}
+
+export const tagsWrapStyle: CSSProperties = {
+  display: 'flex',
+  gap: '6px',
+  flexWrap: 'wrap',
+  marginTop: '8px',
+}
+
+export const tagStyle: CSSProperties = {
+  fontSize: '10px',
+  padding: '2px 8px',
+  borderRadius: '999px',
+  background: '#F0F9FF',
+  color: '#0369A1',
+  border: '1px solid #BAE6FD',
+}
+
+export const contactedRowStyle: CSSProperties = {
+  marginTop: '10px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+}
+
+export const contactedLabelStyle: CSSProperties = {
+  fontSize: '11px',
+  color: '#94A3B8',
+}
+
+export const contactedButtonStyle: CSSProperties = {
+  fontSize: '10px',
+  padding: '3px 10px',
+  borderRadius: '6px',
+  background: '#fff',
+  color: '#0F172A',
+  border: '1px solid #E2E8F0',
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+}
