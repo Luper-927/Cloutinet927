@@ -52,6 +52,11 @@ type Customer = {
   created_at: string
 }
 
+type LocationRow = {
+  business_name: string | null
+  address: string | null
+}
+
 const FOLLOW_UP_DAYS = 30
 const MS_PER_DAY = 1000 * 60 * 60 * 24
 
@@ -106,7 +111,7 @@ export default function CustomersPage() {
 
     let query = supabase
       .from('customers')
-      .select(selectFields)
+      .select<string, Customer>(selectFields)
       .eq('user_id', context.ownerId)
       .order('created_at', { ascending: false })
 
@@ -121,7 +126,7 @@ export default function CustomersPage() {
       const locationFields = 'business_name, address'
       const { data: loc } = await supabase
         .from('locations')
-        .select(locationFields)
+        .select<string, LocationRow>(locationFields)
         .eq('id', context.locationId)
         .maybeSingle()
       const name = loc?.business_name || loc?.address
