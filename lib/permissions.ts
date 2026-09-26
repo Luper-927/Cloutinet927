@@ -13,6 +13,12 @@ export type ActingContext = {
   employeeName: string | null
   role: 'owner' | 'manager' | 'staff' | null
   permissions: Record<PermissionKey, boolean>
+  // Which location this session is scoped to, if any. Null means
+  // "all locations" — true for owners always, and for any employee
+  // who wasn't assigned a specific branch. Every data query that
+  // supports location scoping should filter by this when it's set,
+  // and skip filtering entirely when it's null.
+  locationId: string | null
 }
 
 const OWNER_PERMISSIONS: Record<PermissionKey, boolean> = {
@@ -42,13 +48,14 @@ export async function getActingContext(userId: string): Promise<ActingContext | 
       employeeName: null,
       role: 'owner',
       permissions: OWNER_PERMISSIONS,
+      locationId: null,
     }
   }
 
   // Not an owner — check if they're an active employee of a business.
   const { data: employee } = await supabase
     .from('employees')
-    .select('owner_id, name, role, permissions, status')
+    .select('owner_id, name, role, permissions, status, location_id')
     .eq('user_id', userId)
     .eq('status', 'active')
     .maybeSingle()
@@ -60,6 +67,7 @@ export async function getActingContext(userId: string): Promise<ActingContext | 
       employeeName: employee.name,
       role: employee.role as 'manager' | 'staff',
       permissions: employee.permissions as Record<PermissionKey, boolean>,
+      locationId: employee.location_id,
     }
   }
 
