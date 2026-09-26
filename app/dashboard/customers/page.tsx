@@ -19,6 +19,7 @@ type Customer = {
 }
 
 const FOLLOW_UP_DAYS = 30
+const MS_PER_DAY = 1000 * 60 * 60 * 24
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -37,10 +38,16 @@ export default function CustomersPage() {
 
   async function load() {
     const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
+    if (!userData.user) {
+      window.location.href = '/auth'
+      return
+    }
 
     const context = await getActingContext(userData.user.id)
-    if (!context) { window.location.href = '/onboarding'; return }
+    if (!context) {
+      window.location.href = '/onboarding'
+      return
+    }
 
     if (!context.permissions.customers) {
       setNoPermission(true)
@@ -59,7 +66,9 @@ export default function CustomersPage() {
       return
     }
 
-    const selectFields = 'id, name, phone, email, address, notes, tags, last_contacted_at, created_at'
+    const selectFields = 'id, name, phone, email'
+      + ', address, notes, tags'
+      + ', last_contacted_at, created_at'
 
     let query = supabase
       .from('customers')
@@ -81,7 +90,8 @@ export default function CustomersPage() {
         .select(locationFields)
         .eq('id', context.locationId)
         .maybeSingle()
-      setScopedLocationName(loc?.business_name || loc?.address || null)
+      const name = loc?.business_name || loc?.address
+      setScopedLocationName(name || null)
     }
 
     setLoading(false)
@@ -89,9 +99,10 @@ export default function CustomersPage() {
 
   async function markContacted(id: string) {
     setUpdatingId(id)
+    const now = new Date().toISOString()
     await supabase
       .from('customers')
-      .update({ last_contacted_at: new Date().toISOString() })
+      .update({ last_contacted_at: now })
       .eq('id', id)
     await load()
     setUpdatingId(null)
@@ -100,4 +111,110 @@ export default function CustomersPage() {
   function needsFollowUp(c: Customer) {
     if (!hasAdvanced) return false
     if (!c.last_contacted_at) return true
-    const daysSince = (Date.now() - new Date
+    const then = new Date(c.last_contacted_at).getTime()
+    const now = Date.now()
+    const msSince = now - then
+    const daysSince = msSince / MS_PER_DAY
+    return daysSince >= FOLLOW_UP_DAYS
+  }
+
+  if (loading) {
+    return (
+      <div style={loadingWrapStyle}>
+        <p style={loadingTextStyle}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (noPermission) {
+    return (
+      <div style={loadingWrapStyle}>
+        <p style={loadingTextStyle}>
+          You don&rsquo;t have permission to view customers.
+        </p>
+      </div>
+    )
+  }
+
+  if (!hasAccess) {
+    return (
+      <div style={pageStyle}>
+        <div style={headerStyle}>
+          <div style={headerTitleStyle}>Customers</div>
+          <Link href="/dashboard" style={backLinkStyle}>Back</Link>
+        </div>
+        <div style={upgradeWrapStyle}>
+          <div style={upgradeEmojiStyle}>👥</div>
+          <h2 style={upgradeTitleStyle}>
+            Customer records need Essential or higher
+          </h2>
+          <p style={upgradeTextStyle}>
+            You&rsquo;re currently on the {tierName} plan.
+            Upgrade to save customer names, contacts,
+            and notes so you never lose track of who
+            you&rsquo;ve sold to.
+          </p>
+          <Link href="/dashboard/billing" style={upgradeButtonStyle}>
+            View Plans
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const followUpCustomers = customers.filter(needsFollowUp)
+
+  return (
+    <div style={pageStyle}>
+      <div style={headerStyle}>
+        <div style={headerTitleStyle}>Customers</div>
+        <Link href="/dashboard" style={backLinkStyle}>Back</Link>
+      </div>
+
+      <div style={contentStyle}>
+        {scopedLocationName && (
+          <div style={locationBannerStyle}>
+            📍 Showing customers for {scopedLocationName} only
+          </div>
+        )}
+
+        <Link href="/dashboard/customers/new" style={addButtonStyle}>
+          + Add Customer
+        </Link>
+
+        {hasMarketing && (
+          <Link
+            href="/dashboard/customers/message"
+            style={messageButtonStyle}
+          >
+            📢 Message Customers
+          </Link>
+        )}
+
+        {hasAdvanced && followUpCustomers.length > 0 && (
+          <div style={followUpBoxStyle}>
+            <div style={followUpTitleStyle}>
+              Needs Follow-Up ({followUpCustomers.length})
+            </div>
+            <p style={followUpTextStyle}>
+              These customers haven&rsquo;t been marked
+              as contacted in {FOLLOW_UP_DAYS}+ days.
+            </p>
+          </div>
+        )}
+
+        {customers.length === 0 ? (
+          <div style={emptyWrapStyle}>
+            <div style={emptyEmojiStyle}>👥</div>
+            <p style={emptyTextStyle}>
+              No customers yet. Add your first one above.
+            </p>
+          </div>
+        ) : (
+          <div style={listWrapStyle}>
+            {customers.map(c => {
+              const flagged = needsFollowUp(c)
+              const cardStyle = flagged
+                ? flaggedCardStyle
+                : normalCardStyle
+              return (
