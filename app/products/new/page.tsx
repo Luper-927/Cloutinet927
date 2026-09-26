@@ -27,6 +27,7 @@ export default function NewProductPage() {
   const [checkingLimit, setCheckingLimit] = useState(true)
   const [ownerId, setOwnerId] = useState<string>('')
   const [actorName, setActorName] = useState<string>('')
+  const [locationId, setLocationId] = useState<string | null>(null)
   const [noAccess, setNoAccess] = useState(false)
 
   useEffect(() => {
@@ -48,6 +49,7 @@ export default function NewProductPage() {
 
     setOwnerId(context.ownerId)
     setActorName(context.employeeName || 'Owner')
+    setLocationId(context.locationId)
 
     const { count } = await supabase
       .from('products')
@@ -168,6 +170,7 @@ export default function NewProductPage() {
 
     const { error: saveError } = await supabase.from('products').insert({
       user_id: ownerId,
+      location_id: locationId,
       name,
       slug,
       description,
