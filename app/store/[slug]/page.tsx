@@ -1,5 +1,6 @@
 import WhatsAppButton from '../../components/WhatsAppButton'
 import { supabase } from '../../../lib/supabase'
+import { getSimilarBusinesses } from '../../../lib/similar-businesses'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -63,6 +64,12 @@ export default async function StorePage({ params }: { params: { slug: string } }
   trackPageView(params.slug)
 
   const { profile, products } = data
+
+  const similarBusinesses = await getSimilarBusinesses({
+    id: profile.id,
+    business_category: profile.business_category,
+    location: profile.location,
+  })
 
   const sameAs: string[] = []
   if (profile.facebook_url) sameAs.push(profile.facebook_url)
@@ -270,6 +277,46 @@ export default async function StorePage({ params }: { params: { slug: string } }
           </div>
         )}
       </section>
+
+      {/* SIMILAR BUSINESSES — organic only, no campaign/spend signal */}
+      {similarBusinesses.length > 0 && (
+        <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 16px 24px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: '#0F172A' }}>
+            Similar Businesses{profile.location ? ' Near ' + profile.location : ''}
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
+            {similarBusinesses.map((b) => (
+              <Link
+                key={b.business_slug}
+                href={'/store/' + b.business_slug}
+                style={{ textDecoration: 'none', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden', display: 'block' }}
+              >
+                {b.logo_url ? (
+                  <div style={{ position: 'relative' as const, width: '100%', height: '90px', background: '#F8FAFC' }}>
+                    <Image
+                      src={b.logo_url}
+                      alt={b.business_name}
+                      fill
+                      sizes="(max-width: 640px) 50vw, 200px"
+                      style={{ objectFit: 'cover' as const }}
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div style={{ width: '100%', height: '90px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', fontWeight: 800, color: '#CBD5E1' }}>
+                    {b.business_name.charAt(0)}
+                  </div>
+                )}
+                <div style={{ padding: '10px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '2px' }}>{b.business_name}</div>
+                  {b.business_category && <div style={{ fontSize: '11px', color: '#64748B' }}>{b.business_category}</div>}
+                  {b.resolvedLocation && <div style={{ fontSize: '11px', color: '#94A3B8' }}>📍 {b.resolvedLocation}</div>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* FAQ SECTION — AEO OPTIMIZED */}
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 16px 40px' }}>
