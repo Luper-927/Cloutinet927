@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../../lib/supabase'
+import { getActingContext, logActivity } from '../../../../lib/permissions'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 
@@ -9,10 +10,13 @@ export default function EditProductPage() {
   const params = useParams()
   const productId = params.id as string
 
-  const [user, setUser] = useState<any>(null)
+  const [ownerId, setOwnerId] = useState('')
+  const [actorName, setActorName] = useState('')
+  const [locationId, setLocationId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [noAccess, setNoAccess] = useState(false)
 
   const [pName, setPName] = useState('')
   const [pPrice, setPPrice] = useState('')
@@ -31,14 +35,34 @@ export default function EditProductPage() {
       window.location.href = '/auth'
       return
     }
-    setUser(currentUser)
 
-    const { data: product } = await supabase
+    const context = await getActingContext(currentUser.id)
+    if (!context) {
+      window.location.href = '/onboarding'
+      return
+    }
+
+    if (!context.permissions.products) {
+      setNoAccess(true)
+      setLoading(false)
+      return
+    }
+
+    setOwnerId(context.ownerId)
+    setActorName(context.employeeName || 'Owner')
+    setLocationId(context.locationId)
+
+    let productQuery = supabase
       .from('products')
       .select('*')
       .eq('id', productId)
-      .eq('user_id', currentUser.id)
-      .single()
+      .eq('user_id', context.ownerId)
+
+    if (context.locationId) {
+      productQuery = productQuery.eq('location_id', context.locationId)
+    }
+
+    const { data: product } = await productQuery.single()
 
     if (!product) {
       window.location.href = '/dashboard'
@@ -65,7 +89,7 @@ export default function EditProductPage() {
   }
 
   async function handleSave() {
-    if (!user) return
+    if (!ownerId) return
     if (!pName.trim()) {
       setError('Product name is required')
       return
@@ -74,7 +98,7 @@ export default function EditProductPage() {
     setSaving(true)
     setError('')
 
-    const { error: dbError } = await supabase
+    let updateQuery = supabase
       .from('products')
       .update({
         name: pName,
@@ -84,7 +108,13 @@ export default function EditProductPage() {
         image_url: pImage,
       })
       .eq('id', productId)
-      .eq('user_id', user.id)
+      .eq('user_id', ownerId)
+
+    if (locationId) {
+      updateQuery = updateQuery.eq('location_id', locationId)
+    }
+
+    const { error: dbError } = await updateQuery
 
     setSaving(false)
 
@@ -93,23 +123,33 @@ export default function EditProductPage() {
       return
     }
 
+    await logActivity(ownerId, actorName, 'updated', 'product', pName)
+
     window.location.href = '/dashboard'
   }
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#07070f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#FF6B35' }}>Loading...</div>
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#0F172A', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</div>
+      </div>
+    )
+  }
+
+  if (noAccess) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to manage products.</p>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#07070f', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0f0f1a', borderBottom: '1px solid #252535' }}>
-        <Link href="/dashboard" style={{ color: '#8888aa', textDecoration: 'none', fontSize: '13px' }}>← Dashboard</Link>
-        <div style={{ color: '#f0f0ff', fontWeight: 700, fontSize: '14px' }}>Edit Product</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A' }}>
+        <Link href="/dashboard" style={{ color: '#94A3B8', textDecoration: 'none', fontSize: '13px' }}>← Dashboard</Link>
+        <div style={{ color: '#fff', fontWeight: 700, fontSize: '14px' }}>Edit Product</div>
         <div style={{ width: '60px' }}></div>
       </div>
 
@@ -117,15 +157,15 @@ export default function EditProductPage() {
 
         <label style={{ display: 'block', marginBottom: '14px' }}>
           <div style={{
-            border: '1px dashed #252535', borderRadius: '12px',
+            border: '1px dashed #E2E8F0', borderRadius: '10px',
             height: pImage ? 'auto' : '120px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', overflow: 'hidden', background: '#161625'
+            cursor: 'pointer', overflow: 'hidden', background: '#F8FAFC'
           }}>
             {pImage ? (
               <img src={pImage} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
             ) : (
-              <span style={{ color: '#8888aa', fontSize: '13px' }}>📷 Tap to add photo</span>
+              <span style={{ color: '#64748B', fontSize: '13px' }}>📷 Tap to add photo</span>
             )}
           </div>
           <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
@@ -149,12 +189,12 @@ export default function EditProductPage() {
         <label style={labelStyle}>Description</label>
         <textarea placeholder="Short description" value={pDesc} onChange={e => setPDesc(e.target.value)} style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} />
 
-        {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
+        {error && <p style={{ color: '#dc2626', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
 
         <button onClick={handleSave} disabled={saving} style={{
-          width: '100%', background: 'linear-gradient(135deg, #FF6B35, #E91E8C)',
-          color: '#fff', border: 'none', borderRadius: '10px',
-          padding: '14px', cursor: 'pointer', fontSize: '14px', fontWeight: 700,
+          width: '100%', background: '#0F172A',
+          color: '#fff', border: 'none', borderRadius: '8px',
+          padding: '14px', cursor: 'pointer', fontSize: '15px', fontWeight: 700,
           fontFamily: 'inherit', opacity: saving ? 0.7 : 1
         }}>
           {saving ? 'Saving...' : 'Save Changes'}
@@ -165,12 +205,13 @@ export default function EditProductPage() {
 }
 
 const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#8888aa', fontSize: '11px',
-  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px'
+  display: 'block', color: '#475569', fontSize: '12px',
+  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase'
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#161625', border: '1px solid #252535',
-  borderRadius: '10px', padding: '12px 14px', color: '#f0f0ff',
-  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit'
+  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
+  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
+  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
+  boxSizing: 'border-box'
 }
