@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Cloutinet — Create. Share. Grow.',
   description: 'Create a free business page, list your products and services, and get found on Google. Built for small businesses in Nigeria and beyond.',
   metadataBase: new URL('https://cloutinet.online'),
+  manifest: '/manifest.json',
   verification: {
     google: 'CRx67pQlEwCou57kseSwTkoeWymJL2M9wqv6CtY9FKA',
   },
@@ -47,6 +48,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="theme-color" content="#0F172A" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
@@ -62,6 +65,17 @@ export default function RootLayout({
                 ttq.load('D8R47VBC77U2T659MTN0');
                 ttq.page();
               }(window, document, 'ttq');
+            `,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function () {
+                  navigator.serviceWorker.register('/sw.js').catch(function () {})
+                })
+              }
             `,
           }}
         />
