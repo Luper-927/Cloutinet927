@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getBusinessTier } from '../../../../lib/tiers'
+import { calculateVisibilityScore } from '../../../../lib/visibility-score'
 
 const ALERT_EMAIL = 'luperabenga8@gmail.com'
 
@@ -62,13 +63,26 @@ export async function GET(req: NextRequest) {
 
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, email, business_name')
+      .select('id, email, business_name, business_category, location, phone, tagline, business_hours, services, facebook_url, instagram_url')
       .not('email', 'is', null)
 
     let sent = 0
+    let scoresSnapshotted = 0
     const failures: { email: string; error: string }[] = []
 
     for (const profile of profiles || []) {
+      // Snapshot the visibility score for every business (not just
+      // aiAutomation-tier ones), so next Monday's "+X this week" on
+      // the dashboard has something real to compare against.
+      const { count: productCountForScore } = await supabase
+        .from('products')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+
+      const currentScore = calculateVisibilityScore(profile, productCountForScore || 0)
+      await supabase.from('profiles').update({ last_visibility_score: currentScore }).eq('id', profile.id)
+      scoresSnapshotted++
+
       const { limits } = await getBusinessTier(profile.id)
       if (!limits.aiAutomation) continue
 
@@ -112,7 +126,7 @@ export async function GET(req: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true, sent, failed: failures.length })
+    return NextResponse.json({ success: true, sent, scoresSnapshotted, failed: failures.length })
   } catch (e: any) {
     await sendFailureAlert('🔴 Cloutinet: Weekly digest cron crashed entirely', `${e.message}\n\n${e.stack || ''}`)
     return NextResponse.json({ success: false, error: e.message }, { status: 500 })
