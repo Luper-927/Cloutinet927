@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { getBusinessTier } from '../../lib/tiers'
 import { getActingContext, ActingContext, logActivity } from '../../lib/permissions'
+import { calculateVisibilityScore } from '../../lib/visibility-score'
 import Link from 'next/link'
 import {
   pageWrapStyle,
@@ -213,22 +214,6 @@ export default function Dashboard() {
     load()
   }
 
-  function calculateVisibilityScore() {
-    if (!profile) return 0
-    let score = 0
-    if (profile.business_name) score += 20
-    if (profile.location) score += 15
-    if (profile.phone) score += 15
-    if (profile.business_category) score += 10
-    if (profile.tagline) score += 10
-    if (profile.business_hours) score += 5
-    if (profile.services) score += 5
-    if (products.length > 0) score += 10
-    if (products.length >= 5) score += 5
-    if (profile.facebook_url || profile.instagram_url) score += 5
-    return Math.min(100, score)
-  }
-
   function getScoreColor(score: number) {
     if (score >= 80) return '#00aa55'
     if (score >= 50) return '#FF6B35'
@@ -256,7 +241,7 @@ export default function Dashboard() {
   }
 
   const hasProfile = profile && profile.business_name
-  const score = calculateVisibilityScore()
+  const score = profile ? calculateVisibilityScore(profile, products.length) : 0
   const previousScore = profile?.last_visibility_score || 0
   const scoreChange = score - previousScore
   const oneAction = getOneAction()
