@@ -36,6 +36,19 @@ async function getPrimaryLocationMap(ownerIds: string[]): Promise<Record<string,
   return map
 }
 
+// Only recommend businesses that actually have something to show —
+// otherwise a visitor can land on a dead-end page with no products.
+async function getOwnerIdsWithLiveProducts(ownerIds: string[]): Promise<Set<string>> {
+  if (ownerIds.length === 0) return new Set()
+  const { data } = await supabase
+    .from('products')
+    .select('user_id')
+    .in('user_id', ownerIds)
+    .eq('is_published', true)
+
+  return new Set((data || []).map((row) => row.user_id))
+}
+
 /**
  * Organic "Similar Businesses" — same category strongly preferred,
  * same resolved location strongly preferred within that. No campaign
@@ -54,7 +67,7 @@ export async function getSimilarBusinesses(current: CurrentBusiness, limit = 6):
     .not('business_slug', 'is', null)
     .limit(20)
 
-  const pool: any[] = sameCategory ? [...sameCategory] : []
+  let pool: any[] = sameCategory ? [...sameCategory] : []
 
   // Category pool too thin — backfill with same-location businesses
   // from other categories rather than showing fewer than a handful.
@@ -76,6 +89,11 @@ export async function getSimilarBusinesses(current: CurrentBusiness, limit = 6):
       }
     }
   }
+
+  if (pool.length === 0) return []
+
+  const liveProductOwners = await getOwnerIdsWithLiveProducts(pool.map((p) => p.id))
+  pool = pool.filter((p) => liveProductOwners.has(p.id))
 
   if (pool.length === 0) return []
 
