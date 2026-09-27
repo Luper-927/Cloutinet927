@@ -54,8 +54,6 @@ export async function GET(req: NextRequest) {
 
   const lowerQuery = query.toLowerCase()
 
-  // Detect a city mention and strip it from the search terms — it's a
-  // location filter, not a product-intent word.
   const cityMatch = Object.entries(cityMap)
     .sort((a, b) => b[1].length - a[1].length)
     .find(([, name]) => lowerQuery.includes(name.toLowerCase()))
@@ -64,9 +62,6 @@ export async function GET(req: NextRequest) {
     ? lowerQuery.replace(cityMatch[1].toLowerCase(), '').trim()
     : lowerQuery
 
-  // Is this query itself basically a full category name (e.g. "kitchen
-  // utensils")? That's the ONLY case where a broad category listing is
-  // correct — per spec, broad results only when the query is explicitly broad.
   const categoryMatch = Object.entries(categoryMap).find(([, name]) => {
     const parts = name.toLowerCase().split(' & ')
     return parts.some(p => p.length > 3 && queryWithoutCity === p)
@@ -82,21 +77,22 @@ export async function GET(req: NextRequest) {
   }
 
   if (categoryMatch) {
-    // Broad query: return everything in that category, no precision filtering needed.
     const { data } = await productsQuery.eq('profiles.business_category', categoryMatch[1]).limit(40)
     return NextResponse.json({ mode: 'broad', category: categoryMatch[1], results: data || [] })
   }
 
-  // Specific query: pull a reasonably wide candidate set via trigram-backed
-  // ILIKE, then score precisely in code — Postgres ILIKE alone can't express
-  // "reward exact type match, penalize category-only match."
   const tokens = tokenize(queryWithoutCity)
   if (tokens.length === 0) {
     return NextResponse.json({ mode: 'specific', results: [] })
   }
 
   const orFilter = tokens.map(t => `name.ilike.%${t}%,description.ilike.%${t}%`).join(',')
-  const { data: candidates } = await productsQuery.or(orFilter).limit(200)
+  const { data: candidates, error } = await productsQuery.or(orFilter).limit(200)
+
+  if (error) {
+    console.error('search-products query failed:', error.message)
+    return NextResponse.json({ mode: 'specific', results: [], error: error.message })
+  }
 
   const normalizedQuery = queryWithoutCity.trim()
 
@@ -118,8 +114,6 @@ export async function GET(req: NextRequest) {
     return { ...p, _score: score }
   })
 
-  // Threshold excludes weak/category-only matches — precision over volume,
-  // exactly per spec: a product never appears just because its category matches.
   const results = scored
     .filter(p => p._score >= 40)
     .sort((a, b) => b._score - a._score)
