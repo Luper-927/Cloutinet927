@@ -7,6 +7,9 @@ export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('signup')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -26,6 +29,10 @@ export default function AuthPage() {
   }
 
   async function handleSignup() {
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
     setLoading(true)
     setError('')
     const { data, error } = await supabase.auth.signUp({
@@ -110,14 +117,48 @@ export default function AuthPage() {
         />
 
         <label style={labelStyle}>Password</label>
-        <input
-          placeholder={mode === 'signup' ? 'Create a password (min 6 characters)' : 'Enter your password'}
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && (mode === 'login' ? handleLogin() : handleSignup())}
-          style={inputStyle}
-        />
+        <div style={{ position: 'relative' as const, marginBottom: '16px' }}>
+          <input
+            placeholder={mode === 'signup' ? 'Create a password (min 6 characters)' : 'Enter your password'}
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && (mode === 'login' ? handleLogin() : handleSignup())}
+            style={{ ...inputStyle, marginBottom: 0, paddingRight: '44px' }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            style={eyeButtonStyle}
+          >
+            {showPassword ? '🙈' : '👁️'}
+          </button>
+        </div>
+
+        {mode === 'signup' && (
+          <>
+            <label style={labelStyle}>Confirm Password</label>
+            <div style={{ position: 'relative' as const, marginBottom: '16px' }}>
+              <input
+                placeholder="Re-enter your password"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSignup()}
+                style={{ ...inputStyle, marginBottom: 0, paddingRight: '44px' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                style={eyeButtonStyle}
+              >
+                {showConfirmPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+          </>
+        )}
 
         {error && (
           <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px' }}>
@@ -171,4 +212,11 @@ const inputStyle: React.CSSProperties = {
   borderRadius: '8px', padding: '13px 14px', color: '#0F172A',
   fontSize: '15px', marginBottom: '16px', outline: 'none',
   fontFamily: 'inherit', boxSizing: 'border-box' as const
+}
+
+const eyeButtonStyle: React.CSSProperties = {
+  position: 'absolute' as const, right: '10px', top: '50%',
+  transform: 'translateY(-50%)', background: 'transparent',
+  border: 'none', cursor: 'pointer', fontSize: '16px',
+  padding: '4px', lineHeight: 1
 }
