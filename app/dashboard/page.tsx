@@ -74,6 +74,24 @@ import {
   deleteButtonStyle,
 } from './styles'
 
+// Local to this file until these are added to styles.ts — same visual
+// language as the other boxed sections (profileCardStyle etc.).
+const insightsBoxStyle: React.CSSProperties = {
+  background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px',
+  padding: '16px', marginBottom: '16px',
+}
+const insightRowStyle: React.CSSProperties = {
+  display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+  gap: '10px', padding: '10px 0', borderBottom: '1px solid #E2E8F0',
+}
+const insightMessageStyle: React.CSSProperties = {
+  fontSize: '13px', color: '#0F172A', lineHeight: 1.5,
+}
+const insightDismissStyle: React.CSSProperties = {
+  background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer',
+  fontSize: '12px', flexShrink: 0, fontFamily: 'inherit', padding: '2px 4px',
+}
+
 export default function Dashboard() {
   const [context, setContext] = useState<ActingContext | null>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -84,6 +102,7 @@ export default function Dashboard() {
   const [tierLimits, setTierLimits] = useState<any>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [scopedLocationName, setScopedLocationName] = useState<string | null>(null)
+  const [insights, setInsights] = useState<any[]>([])
 
   useEffect(() => { load() }, [])
 
@@ -150,12 +169,29 @@ export default function Dashboard() {
       setLeadCount(leadC || 0)
       setViewCount(viewC || 0)
     }
+
+    if (limits.aiAutomation) {
+      const { data: insightsData } = await supabase
+        .from('ai_insights')
+        .select('*')
+        .eq('owner_id', ctx.ownerId)
+        .eq('dismissed', false)
+        .order('created_at', { ascending: false })
+        .limit(5)
+      setInsights(insightsData || [])
+    }
+
     setLoading(false)
   }
 
   async function handleSignOut() {
     await supabase.auth.signOut()
     window.location.href = '/auth'
+  }
+
+  async function dismissInsight(id: string) {
+    setInsights(prev => prev.filter(i => i.id !== id))
+    await supabase.from('ai_insights').update({ dismissed: true }).eq('id', id)
   }
 
   async function togglePublish(id: string, current: boolean, name: string) {
@@ -352,6 +388,18 @@ export default function Dashboard() {
                 <div style={scoreTrackStyle}>
                   <div style={scoreFillStyle(getScoreColor(score), score)}></div>
                 </div>
+              </div>
+            )}
+
+            {context?.isOwner && insights.length > 0 && (
+              <div style={insightsBoxStyle}>
+                <div style={scoreLabelStyle}>Insights</div>
+                {insights.map((insight, i) => (
+                  <div key={insight.id} style={i === insights.length - 1 ? { ...insightRowStyle, borderBottom: 'none' } : insightRowStyle}>
+                    <div style={insightMessageStyle}>{insight.message}</div>
+                    <button onClick={() => dismissInsight(insight.id)} style={insightDismissStyle} aria-label="Dismiss">✕</button>
+                  </div>
+                ))}
               </div>
             )}
 
