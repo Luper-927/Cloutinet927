@@ -45,6 +45,8 @@ export default function SearchClient({
     window.history.replaceState(null, '', '/search?q=' + encodeURIComponent(q))
   }
 
+  const hasSearchedAlready = initialQuery.length > 0
+
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
       <div style={{ background: '#0F172A', padding: '14px 20px' }}>
@@ -52,35 +54,40 @@ export default function SearchClient({
       </div>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 20px' }}>
-        <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '16px', textAlign: 'center' as const }}>
-          Try something specific, like &ldquo;non-stick pot&rdquo; or &ldquo;Samsung phone in Lagos&rdquo;
-        </p>
 
-        <input
-          placeholder="What are you looking for?"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSearch()}
-          style={{
-            width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
-            borderRadius: '10px', padding: '14px 16px', color: '#0F172A',
-            fontSize: '15px', marginBottom: '12px', outline: 'none', fontFamily: 'inherit',
-            boxSizing: 'border-box' as const
-          }}
-        />
+        {!hasSearchedAlready && (
+          <>
+            <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '16px', textAlign: 'center' as const }}>
+              Try something specific, like &ldquo;non-stick pot&rdquo; or &ldquo;Samsung phone in Lagos&rdquo;
+            </p>
 
-        <button
-          onClick={() => handleSearch()}
-          disabled={loading}
-          style={{
-            width: '100%', background: '#0F172A', color: '#fff', border: 'none',
-            borderRadius: '10px', padding: '14px', cursor: 'pointer',
-            fontSize: '15px', fontWeight: 700, fontFamily: 'inherit', marginBottom: '24px',
-            opacity: loading ? 0.7 : 1
-          }}
-        >
-          {loading ? 'Searching...' : 'Search'}
-        </button>
+            <input
+              placeholder="What are you looking for?"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              style={{
+                width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
+                borderRadius: '10px', padding: '14px 16px', color: '#0F172A',
+                fontSize: '15px', marginBottom: '12px', outline: 'none', fontFamily: 'inherit',
+                boxSizing: 'border-box' as const
+              }}
+            />
+
+            <button
+              onClick={() => handleSearch()}
+              disabled={loading}
+              style={{
+                width: '100%', background: '#0F172A', color: '#fff', border: 'none',
+                borderRadius: '10px', padding: '14px', cursor: 'pointer',
+                fontSize: '15px', fontWeight: 700, fontFamily: 'inherit', marginBottom: '24px',
+                opacity: loading ? 0.7 : 1
+              }}
+            >
+              {loading ? 'Searching...' : 'Search'}
+            </button>
+          </>
+        )}
 
         {searched && !loading && results.length === 0 && (
           <div style={{ textAlign: 'center' as const, padding: '20px' }}>
@@ -95,12 +102,15 @@ export default function SearchClient({
 
         {results.length > 0 && (
           <>
+            <p style={{ fontSize: '13px', color: '#475569', marginBottom: '4px', fontWeight: 600 }}>
+              Results for &ldquo;{initialQuery}&rdquo;
+            </p>
             {mode === 'broad' && (
               <p style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '12px' }}>
                 Showing all results in this category
               </p>
             )}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
               {results.map(p => (
                 <Link
                   key={p.id}
@@ -123,6 +133,38 @@ export default function SearchClient({
               ))}
             </div>
           </>
+        )}
+
+        {hasSearchedAlready && (
+          <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '16px' }}>
+            <p style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '8px', fontWeight: 600 }}>Search again</p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                placeholder="What are you looking for?"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                style={{
+                  flex: 1, background: '#F8FAFC', border: '1px solid #E2E8F0',
+                  borderRadius: '8px', padding: '10px 12px', color: '#0F172A',
+                  fontSize: '13px', outline: 'none', fontFamily: 'inherit',
+                  boxSizing: 'border-box' as const
+                }}
+              />
+              <button
+                onClick={() => handleSearch()}
+                disabled={loading}
+                style={{
+                  background: '#0F172A', color: '#fff', border: 'none',
+                  borderRadius: '8px', padding: '10px 16px', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: 700, fontFamily: 'inherit',
+                  opacity: loading ? 0.7 : 1, whiteSpace: 'nowrap' as const
+                }}
+              >
+                {loading ? '...' : 'Search'}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
