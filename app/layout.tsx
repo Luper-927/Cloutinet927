@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import InstallPrompt from './components/InstallPrompt'
 
 export const metadata: Metadata = {
   title: 'Cloutinet — Create. Share. Grow.',
@@ -80,7 +81,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <InstallPrompt />
+        {children}
+      </body>
     </html>
   )
 }
