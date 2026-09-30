@@ -1,4 +1,5 @@
 import WhatsAppButton from '../../components/WhatsAppButton'
+import FloatingWhatsAppButton from '../../components/FloatingWhatsAppButton'
 import { supabase } from '../../../lib/supabase'
 import { getSimilarBusinesses } from '../../../lib/similar-businesses'
 import { notFound } from 'next/navigation'
@@ -29,7 +30,6 @@ const getStoreData = cache(async (slug: string) => {
 })
 
 function trackPageView(slug: string) {
-  // Fire-and-forget: never block or fail page rendering because of analytics.
   supabase.from('analytics_events').insert({
     event_type: 'page_view',
     business_slug: slug,
@@ -196,6 +196,10 @@ export default async function StorePage({ params }: { params: { slug: string } }
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
+      {whatsappLink && (
+        <FloatingWhatsAppButton href={whatsappLink} businessSlug={params.slug} />
+      )}
+
       <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0' }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
           <div style={{ width: '28px', height: '28px', background: '#0F172A', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>C</div>
@@ -278,7 +282,6 @@ export default async function StorePage({ params }: { params: { slug: string } }
         )}
       </section>
 
-      {/* SIMILAR BUSINESSES — organic only, no campaign/spend signal */}
       {similarBusinesses.length > 0 && (
         <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 16px 24px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: '#0F172A' }}>
@@ -318,7 +321,6 @@ export default async function StorePage({ params }: { params: { slug: string } }
         </section>
       )}
 
-      {/* FAQ SECTION — AEO OPTIMIZED */}
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 16px 40px' }}>
         <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: '#0F172A' }}>
           Common Questions About {profile.business_name}
