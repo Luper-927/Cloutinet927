@@ -3,9 +3,11 @@
 export default function FloatingWhatsAppButton({
   href,
   businessSlug,
+  source = 'floating_button',
 }: {
   href: string
   businessSlug: string
+  source?: string
 }) {
   function handleClick() {
     fetch('/api/track-lead', {
@@ -13,7 +15,7 @@ export default function FloatingWhatsAppButton({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         business_slug: businessSlug,
-        source: 'floating_button',
+        source,
       }),
     }).catch(() => {})
   }
