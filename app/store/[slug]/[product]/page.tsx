@@ -2,6 +2,8 @@ import { supabase } from '../../../../lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { cache } from 'react'
+import WhatsAppButton from '../../../components/WhatsAppButton'
+import FloatingWhatsAppButton from '../../../components/FloatingWhatsAppButton'
 
 export const revalidate = 60
 
@@ -27,7 +29,6 @@ const getProductData = cache(async (businessSlug: string, productSlug: string) =
 })
 
 function trackPageView(businessSlug: string, productId: string) {
-  // Fire-and-forget: never block or fail page rendering because of analytics.
   supabase.from('analytics_events').insert({
     event_type: 'page_view',
     business_slug: businessSlug,
@@ -80,6 +81,10 @@ export default async function ProductPage({ params }: { params: { slug: string; 
     <div style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#fff', color: '#0F172A' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
 
+      {whatsappLink && (
+        <FloatingWhatsAppButton href={whatsappLink} businessSlug={params.slug} source="floating_button_product" />
+      )}
+
       <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0' }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
           <div style={{ width: '28px', height: '28px', background: '#0F172A', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>C</div>
@@ -116,11 +121,14 @@ export default async function ProductPage({ params }: { params: { slug: string; 
         )}
 
         {whatsappLink && (
-          <a href={whatsappLink} style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            background: '#16A34A', color: '#fff', padding: '14px',
-            borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700, marginBottom: '20px'
-          }}>Contact Seller on WhatsApp</a>
+          <div style={{ marginBottom: '20px' }}>
+            <WhatsAppButton
+              href={whatsappLink}
+              businessSlug={params.slug}
+              label="Contact Seller on WhatsApp"
+              source="product_page"
+            />
+          </div>
         )}
 
         <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', marginBottom: '20px' }}>
