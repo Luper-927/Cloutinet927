@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../../../../lib/supabase'
 import { getActingContext, logActivity } from '../../../../lib/permissions'
 import { useParams } from 'next/navigation'
@@ -15,6 +15,7 @@ export default function EditProductPage() {
   const [locationId, setLocationId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [error, setError] = useState('')
   const [noAccess, setNoAccess] = useState(false)
 
@@ -23,6 +24,8 @@ export default function EditProductPage() {
   const [pCurrency, setPCurrency] = useState('NGN')
   const [pDesc, setPDesc] = useState('')
   const [pImage, setPImage] = useState<string | null>(null)
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     load()
@@ -78,14 +81,11 @@ export default function EditProductPage() {
     setLoading(false)
   }
 
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files && e.target.files[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = function (ev) {
-      setPImage(ev.target?.result as string)
-    }
-    reader.readAsDataURL(file)
+    setPendingImageFile(file)
+    setPImage(URL.createObjectURL(file))
   }
 
   async function handleSave() {
@@ -98,6 +98,27 @@ export default function EditProductPage() {
     setSaving(true)
     setError('')
 
+    let finalImageUrl = pImage
+
+    if (pendingImageFile) {
+      setUploadingImage(true)
+      const fileName = ownerId + '/' + Date.now() + '.' + pendingImageFile.name.split('.').pop()
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, pendingImageFile, { upsert: true })
+
+      setUploadingImage(false)
+
+      if (uploadError) {
+        setSaving(false)
+        setError('Image upload failed: ' + uploadError.message)
+        return
+      }
+
+      const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(fileName)
+      finalImageUrl = urlData.publicUrl
+    }
+
     let updateQuery = supabase
       .from('products')
       .update({
@@ -105,7 +126,7 @@ export default function EditProductPage() {
         description: pDesc,
         price: pPrice ? parseFloat(pPrice) : null,
         currency: pCurrency,
-        image_url: pImage,
+        image_url: finalImageUrl,
       })
       .eq('id', productId)
       .eq('user_id', ownerId)
@@ -155,7 +176,10 @@ export default function EditProductPage() {
 
       <div style={{ maxWidth: '420px', margin: '0 auto', padding: '16px' }}>
 
-        <label style={{ display: 'block', marginBottom: '14px' }}>
+        <label
+          onClick={() => fileRef.current?.click()}
+          style={{ display: 'block', marginBottom: '14px' }}
+        >
           <div style={{
             border: '1px dashed #E2E8F0', borderRadius: '10px',
             height: pImage ? 'auto' : '120px',
@@ -168,8 +192,8 @@ export default function EditProductPage() {
               <span style={{ color: '#64748B', fontSize: '13px' }}>📷 Tap to add photo</span>
             )}
           </div>
-          <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
         </label>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageSelect} />
 
         <label style={labelStyle}>Product / Service Name *</label>
         <input placeholder="e.g. Rice 50kg bag" value={pName} onChange={e => setPName(e.target.value)} style={inputStyle} />
@@ -197,7 +221,7 @@ export default function EditProductPage() {
           padding: '14px', cursor: 'pointer', fontSize: '15px', fontWeight: 700,
           fontFamily: 'inherit', opacity: saving ? 0.7 : 1
         }}>
-          {saving ? 'Saving...' : 'Save Changes'}
+          {uploadingImage ? 'Uploading image...' : saving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>
