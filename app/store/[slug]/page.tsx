@@ -1,3 +1,4 @@
+import WhatsAppButton from '../../components/WhatsAppButton'
 import FloatingWhatsAppButton from '../../components/FloatingWhatsAppButton'
 import { supabase } from '../../../lib/supabase'
 import { getSimilarBusinesses } from '../../../lib/similar-businesses'
@@ -152,7 +153,7 @@ export default async function StorePage({ params }: { params: { slug: string } }
   }
 
   const whatsappLink = profile.phone
-    ? 'https://wa.me/' + profile.phone.replace(/[^0-9]/g, '').replace(/^0/, '234') + '?text=' + encodeURIComponent('Hello, I found your business on Cloutinet and would like to know more.')
+    ? 'https://wa.me/' + profile.phone.replace(/[^0-9]/g, '').replace(/^0/, '234') + '?text=' + encodeURIComponent('Hello, I found ' + profile.business_name + ' on Cloutinet and I\u2019m interested in your products/services. Can you tell me more?')
     : null
 
   const servicesList = profile.services
@@ -215,6 +216,12 @@ export default async function StorePage({ params }: { params: { slug: string } }
         {profile.tagline && <p style={{ fontSize: '13px', color: '#CBD5E1' }}>{profile.tagline}</p>}
         {profile.location && <p style={{ fontSize: '12px', color: '#64748B', marginTop: '6px' }}>📍 {profile.location}</p>}
       </section>
+
+      {whatsappLink && (
+        <div style={{ textAlign: 'center', padding: '20px' }}>
+          <WhatsAppButton href={whatsappLink} businessSlug={params.slug} label="Contact on WhatsApp" />
+        </div>
+      )}
 
       {(profile.business_hours || servicesList.length > 0 || socialLinks.length > 0 || profile.phone) && (
         <section style={{ maxWidth: '700px', margin: '0 auto 24px', padding: '0 16px' }}>
