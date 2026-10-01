@@ -4,12 +4,10 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import Link from 'next/link'
 
-const ADMIN_EMAIL = 'luperabenga8@gmail.com'
-
 export default function AdminPage() {
-  const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [unauthorized, setUnauthorized] = useState(false)
+  const [loadError, setLoadError] = useState('')
   const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'products' | 'feedback' | 'leads'>('overview')
 
   const [stats, setStats] = useState({ businesses: 0, products: 0, views: 0, leads: 0, feedback: 0 })
@@ -21,46 +19,42 @@ export default function AdminPage() {
   useEffect(() => { load() }, [])
 
   async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    const currentUser = userData?.user
-    if (!currentUser) { window.location.href = '/auth'; return }
-    if (currentUser.email !== ADMIN_EMAIL) { setUnauthorized(true); setLoading(false); return }
-    setUser(currentUser)
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      const currentUser = userData?.user
+      if (!currentUser) { window.location.href = '/auth'; return }
 
-    const [
-      { count: bizCount },
-      { count: prodCount },
-      { count: viewCount },
-      { count: leadCount },
-      { count: feedCount },
-      { data: bizData },
-      { data: prodData },
-      { data: feedData },
-      { data: leadData },
-    ] = await Promise.all([
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).not('business_name', 'is', null),
-      supabase.from('products').select('*', { count: 'exact', head: true }),
-      supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_type', 'page_view'),
-      supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_type', 'whatsapp_click'),
-      supabase.from('feedback').select('*', { count: 'exact', head: true }),
-      supabase.from('profiles').select('*').not('business_name', 'is', null).order('created_at', { ascending: false }),
-      supabase.from('products').select('*').order('created_at', { ascending: false }).limit(50),
-      supabase.from('feedback').select('*').order('created_at', { ascending: false }),
-      supabase.from('analytics_events').select('*').eq('event_type', 'whatsapp_click').order('created_at', { ascending: false }).limit(200),
-    ])
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
 
-    setStats({
-      businesses: bizCount || 0,
-      products: prodCount || 0,
-      views: viewCount || 0,
-      leads: leadCount || 0,
-      feedback: feedCount || 0,
-    })
-    setBusinesses(bizData || [])
-    setProducts(prodData || [])
-    setFeedbacks(feedData || [])
-    setLeads(leadData || [])
-    setLoading(false)
+      const response = await fetch('/api/admin/stats', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+
+      if (response.status === 403 || response.status === 401) {
+        setUnauthorized(true)
+        setLoading(false)
+        return
+      }
+
+      if (!response.ok) {
+        const text = await response.text()
+        setLoadError('Server error (' + response.status + '): ' + text.slice(0, 300))
+        setLoading(false)
+        return
+      }
+
+      const data = await response.json()
+      setStats(data.stats)
+      setBusinesses(data.businesses)
+      setProducts(data.products)
+      setFeedbacks(data.feedbacks)
+      setLeads(data.leads)
+      setLoading(false)
+    } catch (e: any) {
+      setLoadError('Failed to load: ' + (e?.message || 'unknown error'))
+      setLoading(false)
+    }
   }
 
   function businessNameFor(slug: string) {
@@ -77,6 +71,17 @@ export default function AdminPage() {
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#07070f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ color: '#FF6B35' }}>Loading...</div>
+    </div>
+  )
+
+  if (loadError) return (
+    <div style={{ minHeight: '100vh', background: '#07070f', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Segoe UI, sans-serif' }}>
+      <div style={{ textAlign: 'center', color: '#f0f0ff', maxWidth: '500px' }}>
+        <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚠️</div>
+        <h2>Something went wrong</h2>
+        <p style={{ color: '#8888aa', fontSize: '12px', marginTop: '12px', wordBreak: 'break-word' as const }}>{loadError}</p>
+        <Link href="/dashboard" style={{ color: '#FF6B35', display: 'inline-block', marginTop: '16px' }}>Go to Dashboard</Link>
+      </div>
     </div>
   )
 
