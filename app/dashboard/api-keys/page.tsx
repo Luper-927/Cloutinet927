@@ -186,7 +186,7 @@ export default function ApiKeysPage() {
         </div>
 
         <p style={{ fontSize: '11px', color: '#94A3B8', marginBottom: '16px' }}>
-          Use this key in the <code>X-API-Key</code> header to call <code>/api/v1/products</code>. Currently supports listing and creating products only.
+          Use this key in the <code>Authorization: Bearer</code> header to call <code>/api/v1/products</code> (listing and creating products) or <code>/api/v1/trust-score</code> (check a business&rsquo;s visibility score).
         </p>
 
         {keys.length === 0 ? (
