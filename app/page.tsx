@@ -24,6 +24,7 @@ import {
   Search,
   Megaphone,
   Plug,
+  Zap,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -126,10 +127,10 @@ const PLANS = [
     highlighted: false,
   },
   {
-    name: "Essential",
-    price: "₦5,000",
+    name: "Startup",
+    price: "₦15,000",
     period: "/month",
-    description: "For businesses ready to build real visibility.",
+    description: "For early-stage businesses with one location.",
     features: [
       "Everything in Free",
       "Up to 40 products or services",
@@ -137,20 +138,21 @@ const PLANS = [
       "Customer records (CRM)",
       "70 AI content generations/month",
     ],
-    cta: "Start Essential Plan",
-    href: "/auth?plan=essential",
+    cta: "Start Startup Plan",
+    href: "/auth?plan=startup",
     highlighted: false,
   },
   {
     name: "Growth",
-    price: "₦8,000",
+    price: "₦40,000",
     period: "/month",
-    description: "For businesses ready to market and grow.",
+    description: "For scaling teams ready to grow.",
     features: [
-      "Everything in Essential",
-      "Up to 120 products or services",
+      "Everything in Startup",
+      "Employee accounts (up to 5 seats)",
+      "Payments module",
+      "Document management",
       "Marketing campaigns with AI-generated copy",
-      "Advanced customer management",
       "180 AI content generations/month",
     ],
     cta: "Start Growth Plan",
@@ -158,40 +160,45 @@ const PLANS = [
     highlighted: true,
   },
   {
-    name: "Business",
-    price: "₦15,000",
+    name: "Scale",
+    price: "₦75,000",
     period: "/month",
-    description: "For teams managing multiple locations.",
+    description: "For companies managing multiple locations.",
     features: [
       "Everything in Growth",
-      "Up to 250 products or services",
-      "Employee accounts & permissions",
-      "Payments module",
-      "Document management",
+      "Unlimited locations",
+      "Up to 20 employee seats",
       "Advanced AI tools",
+      "Priority support",
       "600 AI content generations/month",
     ],
-    cta: "Talk to Sales",
-    href: "/contact?topic=business-plan",
+    cta: "Start Scale Plan",
+    href: "/auth?plan=scale",
     highlighted: false,
   },
   {
-    name: "Advanced",
-    price: "₦22,000",
-    period: "/month",
-    description: "Full platform access with custom integrations.",
+    name: "Enterprise",
+    price: "Custom",
+    period: "",
+    description: "For multi-branch companies and custom needs.",
     features: [
-      "Everything in Business",
-      "Up to 999 products or services",
-      "Custom integrations (WhatsApp API, social shops, webhooks)",
-      "AI automation",
-      "Priority support",
-      "2,999 AI content generations/month",
+      "Everything in Scale",
+      "Unlimited employee seats",
+      "Dedicated onboarding & support",
+      "Custom integrations (webhooks, API)",
+      "SLA-backed uptime & support",
+      "Trust-Score API access (pay-as-you-go)",
     ],
     cta: "Talk to Sales",
-    href: "/contact?topic=advanced-plan",
+    href: "/contact?topic=enterprise-plan",
     highlighted: false,
   },
+];
+
+const API_PRICING = [
+  { range: "0 – 1,000 calls / month", price: "₦15", unit: "per call" },
+  { range: "1,001 – 10,000 calls / month", price: "₦10", unit: "per call" },
+  { range: "10,001+ calls / month", price: "₦6", unit: "per call, or contact sales" },
 ];
 
 const STEPS = [
@@ -275,6 +282,7 @@ export default function Home() {
       <Hero />
       <Features />
       <Pricing />
+      <ApiPricing />
       <Testimonials />
       <Steps />
       <FinalCta />
@@ -680,6 +688,57 @@ function Pricing() {
               </a>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ApiPricing() {
+  return (
+    <section className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold text-emerald-700 sm:text-xs">
+            <Zap className="h-3 w-3 fill-current" />
+            PAY AS YOU GO
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
+            Trust-Score API
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
+            Let your own systems check a business's Cloutinet visibility score programmatically. Only pay for what you actually call — no bundles, no waste.
+          </p>
+        </div>
+
+        <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white sm:mt-14">
+          {API_PRICING.map((tier, i) => (
+            <div
+              key={tier.range}
+              className={`flex items-center justify-between px-6 py-4 sm:px-8 ${
+                i !== API_PRICING.length - 1 ? "border-b border-slate-100" : ""
+              }`}
+            >
+              <span className="text-sm text-slate-600">{tier.range}</span>
+              <span className="text-sm font-semibold text-slate-900">
+                {tier.price} <span className="font-normal text-slate-400">{tier.unit}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-6 text-center text-xs text-slate-400">
+          Available as an add-on from the Growth plan and above. Billed monthly based on actual usage.
+        </p>
+
+        <div className="mt-6 flex justify-center">
+          <a
+            href="/docs/trust-score"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+          >
+            View API Documentation
+            <ArrowRight className="h-4 w-4" />
+          </a>
         </div>
       </div>
     </section>
