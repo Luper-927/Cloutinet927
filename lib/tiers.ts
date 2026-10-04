@@ -17,8 +17,6 @@ export const TIER_LIMITS = {
     aiAutomation: false,
     prioritySupport: false,
   },
-  // Legacy tiers — kept exactly as-is for anyone still on them. Not offered
-  // to new signups (plans.is_active = false), but must keep working.
   essential: {
     name: 'Essential',
     productLimit: 40,
@@ -59,7 +57,7 @@ export const TIER_LIMITS = {
     advancedCustomers: true,
     marketingAutomation: true,
     employees: true,
-    employeeSeatLimit: null, // unlimited — unchanged from before this fix
+    employeeSeatLimit: null,
     paymentsModule: true,
     documentsModule: true,
     advancedAI: true,
@@ -83,7 +81,6 @@ export const TIER_LIMITS = {
     aiAutomation: true,
     prioritySupport: true,
   },
-  // Current tiers — what new signups actually see and buy.
   startup: {
     name: 'Startup',
     productLimit: 40,
@@ -96,7 +93,7 @@ export const TIER_LIMITS = {
     paymentsModule: false,
     documentsModule: false,
     advancedAI: false,
-    integrations: false,
+    integrations: true,
     aiAutomation: false,
     prioritySupport: false,
   },
@@ -112,7 +109,7 @@ export const TIER_LIMITS = {
     paymentsModule: true,
     documentsModule: true,
     advancedAI: false,
-    integrations: false,
+    integrations: true,
     aiAutomation: false,
     prioritySupport: false,
   },
@@ -128,7 +125,7 @@ export const TIER_LIMITS = {
     paymentsModule: true,
     documentsModule: true,
     advancedAI: true,
-    integrations: false,
+    integrations: true,
     aiAutomation: false,
     prioritySupport: true,
   },
@@ -140,7 +137,7 @@ export const TIER_LIMITS = {
     advancedCustomers: true,
     marketingAutomation: true,
     employees: true,
-    employeeSeatLimit: null, // unlimited
+    employeeSeatLimit: null,
     paymentsModule: true,
     documentsModule: true,
     advancedAI: true,
@@ -161,7 +158,7 @@ const PLAN_ID_TO_TIER: Record<string, TierKey> = {
   startup: 'startup',
   growth_v2: 'growth2',
   scale: 'scale',
-  enterprise: 'enterprise', // no Paystack plan — only ever set manually for a closed deal
+  enterprise: 'enterprise',
 }
 
 export async function getBusinessTier(userId: string) {
