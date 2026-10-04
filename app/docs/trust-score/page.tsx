@@ -25,7 +25,7 @@ export default function TrustScoreDocsPage() {
           <div style={{ width: '28px', height: '28px', background: '#0F172A', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>C</div>
           <span style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>Cloutinet</span>
         </Link>
-        <Link href="/dashboard/integrations" style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textDecoration: 'none', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '5px 10px' }}>
+        <Link href="/dashboard/api-keys" style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textDecoration: 'none', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '5px 10px' }}>
           Get an API Key →
         </Link>
       </nav>
@@ -39,10 +39,24 @@ export default function TrustScoreDocsPage() {
         <section style={sectionStyle}>
           <h2 style={headingStyle}>Authentication</h2>
           <p style={textStyle}>
-            Every request requires an API key, generated from your Cloutinet dashboard under Integrations
-            (available on the Advanced plan). Pass it as a Bearer token in the Authorization header.
+            Every request requires an API key, generated from your Cloutinet dashboard under API Access
+            (available as a pay-as-you-go add-on on the Growth plan and above). Pass it as a Bearer token in the Authorization header.
           </p>
           <div style={codeBlockStyle}>{`Authorization: Bearer YOUR_API_KEY`}</div>
+        </section>
+
+        <section style={sectionStyle}>
+          <h2 style={headingStyle}>Pricing</h2>
+          <table style={tableStyle}>
+            <thead>
+              <tr><th style={thStyle}>Volume</th><th style={thStyle}>Price</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style={tdStyle}>0 – 1,000 calls / month</td><td style={tdStyle}>₦15 per call</td></tr>
+              <tr><td style={tdStyle}>1,001 – 10,000 calls / month</td><td style={tdStyle}>₦10 per call</td></tr>
+              <tr><td style={tdStyle}>10,001+ calls / month</td><td style={tdStyle}>₦6 per call, or contact sales</td></tr>
+            </tbody>
+          </table>
         </section>
 
         <section style={sectionStyle}>
