@@ -17,19 +17,25 @@ interface Subscription {
   current_period_end: string | null
 }
 
-const TIER_ORDER = ['free', 'essential', 'growth', 'business', 'advanced']
-
 const TIER_STYLE: Record<string, { accent: string; tint: string; label: string }> = {
-  free:      { accent: '#64748B', tint: '#F8FAFC', label: 'Getting started' },
-  essential: { accent: '#0F766E', tint: '#F0FDFA', label: 'Build visibility' },
-  growth:    { accent: '#D97706', tint: '#FFFBEB', label: 'Recommended' },
-  business:  { accent: '#C2410C', tint: '#FFF7ED', label: 'Multiple locations' },
-  advanced:  { accent: '#4C1D95', tint: '#FAF5FF', label: 'Full platform' },
+  free:       { accent: '#64748B', tint: '#F8FAFC', label: 'Getting started' },
+  startup:    { accent: '#0F766E', tint: '#F0FDFA', label: 'Early-stage' },
+  growth_v2:  { accent: '#D97706', tint: '#FFFBEB', label: 'Recommended' },
+  scale:      { accent: '#C2410C', tint: '#FFF7ED', label: 'Multiple locations' },
+  enterprise: { accent: '#4C1D95', tint: '#FAF5FF', label: 'Custom' },
+  // Legacy — only ever shown as someone's current plan, never in "Available Plans"
+  essential:  { accent: '#0F766E', tint: '#F0FDFA', label: 'Build visibility (legacy)' },
+  growth:     { accent: '#D97706', tint: '#FFFBEB', label: 'Legacy plan' },
+  business:   { accent: '#C2410C', tint: '#FFF7ED', label: 'Legacy plan' },
+  advanced:   { accent: '#4C1D95', tint: '#FAF5FF', label: 'Legacy plan' },
 }
+
+const RECOMMENDED_PLAN_ID = 'growth_v2'
 
 function BillingContent() {
   const searchParams = useSearchParams()
   const [plans, setPlans] = useState<Plan[]>([])
+  const [currentPlanDetails, setCurrentPlanDetails] = useState<Plan | null>(null)
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loading, setLoading] = useState(true)
   const [upgrading, setUpgrading] = useState<string | null>(null)
@@ -62,8 +68,31 @@ function BillingContent() {
       supabase.from('subscriptions').select('*').eq('user_id', userData.user.id).single(),
     ])
 
-    setPlans(plansData || [])
-    setSubscription(subData || { plan_id: 'free', status: 'active', current_period_end: null })
+    const activePlans = plansData || []
+    setPlans(activePlans)
+
+    const sub = subData || { plan_id: 'free', status: 'active', current_period_end: null }
+    setSubscription(sub)
+
+    // The current plan might be a legacy/inactive one (e.g. a pre-pivot
+    // subscriber) -- fetch it directly rather than relying on the
+    // active-only list above, so the hero section never silently shows
+    // "Free" for someone who is actually paying.
+    if (sub.plan_id === 'free') {
+      setCurrentPlanDetails({ id: 'free', name: 'Free', price_ngn: 0 })
+    } else {
+      const fromActive = activePlans.find(p => p.id === sub.plan_id)
+      if (fromActive) {
+        setCurrentPlanDetails(fromActive)
+      } else {
+        const { data: legacyPlan } = await supabase
+          .from('plans')
+          .select('id, name, price_ngn')
+          .eq('id', sub.plan_id)
+          .maybeSingle()
+        setCurrentPlanDetails(legacyPlan || { id: sub.plan_id, name: sub.plan_id, price_ngn: 0 })
+      }
+    }
   }
 
   async function verifyPayment(reference: string) {
@@ -135,7 +164,18 @@ function BillingContent() {
   }
 
   const currentPlanId = subscription?.plan_id || 'free'
-  const currentIndex = TIER_ORDER.indexOf(currentPlanId)
+
+  // Ladder is built from whatever plans actually exist (active list, plus
+  // the current plan if it's a legacy one not in that list) sorted by
+  // price -- so it never silently goes stale again when tiers change.
+  const ladderPlans = [...plans]
+  if (currentPlanDetails && !ladderPlans.find(p => p.id === currentPlanDetails.id)) {
+    ladderPlans.push(currentPlanDetails)
+  }
+  ladderPlans.sort((a, b) => a.price_ngn - b.price_ngn)
+  const currentIndex = ladderPlans.findIndex(p => p.id === currentPlanId)
+
+  const currentStyle = TIER_STYLE[currentPlanId] || TIER_STYLE.free
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
@@ -166,8 +206,8 @@ function BillingContent() {
           boxShadow: '0 8px 24px rgba(15,23,42,0.18)'
         }}>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', fontWeight: 700, marginBottom: '6px' }}>Current plan</div>
-          <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', textTransform: 'capitalize' as const, marginBottom: '4px' }}>
-            {plans.find(p => p.id === currentPlanId)?.name || 'Free'}
+          <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>
+            {currentPlanDetails?.name || 'Free'}
           </div>
           {subscription?.current_period_end && (
             <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '14px' }}>
@@ -175,15 +215,16 @@ function BillingContent() {
             </div>
           )}
 
-          {/* Tier ladder — a real sequence, so a stepped marker earns its place */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '14px' }}>
-            {TIER_ORDER.map((tierId, i) => (
-              <div key={tierId} style={{
-                flex: 1, height: '5px', borderRadius: '3px',
-                background: i <= currentIndex ? '#E7A93D' : 'rgba(255,255,255,0.2)'
-              }} />
-            ))}
-          </div>
+          {ladderPlans.length > 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '14px' }}>
+              {ladderPlans.map((p, i) => (
+                <div key={p.id} style={{
+                  flex: 1, height: '5px', borderRadius: '3px',
+                  background: i <= currentIndex ? '#E7A93D' : 'rgba(255,255,255,0.2)'
+                }} />
+              ))}
+            </div>
+          )}
         </div>
 
         <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginBottom: '14px' }}>Available Plans</h2>
@@ -201,7 +242,7 @@ function BillingContent() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
                 <div>
                   <span style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>{plan.name}</span>
-                  {plan.id === 'growth' && !isCurrent && (
+                  {plan.id === RECOMMENDED_PLAN_ID && !isCurrent && (
                     <span style={{
                       marginLeft: '8px', fontSize: '10px', fontWeight: 700, color: style.accent,
                       background: style.tint, border: '1px solid ' + style.accent,
@@ -241,6 +282,34 @@ function BillingContent() {
             </div>
           )
         })}
+
+        {/* If the current plan is a legacy one hidden from new signups,
+            show it here too so it isn't invisible on this page. */}
+        {currentPlanDetails && !plans.find(p => p.id === currentPlanDetails.id) && (
+          <div style={{
+            border: '1px solid ' + currentStyle.accent,
+            borderLeft: '4px solid ' + currentStyle.accent,
+            borderRadius: '10px', padding: '16px', marginBottom: '12px',
+            background: currentStyle.tint
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+              <div>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>{currentPlanDetails.name}</span>
+                <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>{currentStyle.label}</div>
+              </div>
+              <span style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap' as const }}>
+                {currentPlanDetails.price_ngn === 0 ? 'Free' : '₦' + currentPlanDetails.price_ngn.toLocaleString() + '/mo'}
+              </span>
+            </div>
+            <div style={{
+              marginTop: '10px', textAlign: 'center' as const, padding: '10px',
+              background: '#fff', border: '1px solid ' + currentStyle.accent, borderRadius: '8px',
+              fontSize: '13px', fontWeight: 700, color: currentStyle.accent
+            }}>
+              Current Plan
+            </div>
+          </div>
+        )}
 
         <p style={{ fontSize: '11px', color: '#94A3B8', textAlign: 'center' as const, marginTop: '20px', lineHeight: 1.5 }}>
           Payments are securely processed by Paystack. Your card details are never stored on Cloutinet's servers.
