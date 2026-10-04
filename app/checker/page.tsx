@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { calculateVisibilityScore } from '../../lib/visibility-score'
 import Link from 'next/link'
 
 export default function CheckerPage() {
@@ -23,7 +24,7 @@ export default function CheckerPage() {
           .select('*')
           .ilike('business_name', '%' + businessName + '%')
           .limit(1)
-          .single()
+          .maybeSingle()
       ])
 
       const googleData = await googleRes.json()
@@ -39,17 +40,7 @@ export default function CheckerPage() {
           .eq('user_id', cloutProfile.id)
           .eq('is_published', true)
         productCount = count || 0
-
-        if (cloutProfile.business_name) cloutScore += 20
-        if (cloutProfile.location) cloutScore += 15
-        if (cloutProfile.phone) cloutScore += 15
-        if (cloutProfile.business_category) cloutScore += 10
-        if (cloutProfile.tagline) cloutScore += 10
-        if (cloutProfile.business_hours) cloutScore += 5
-        if (cloutProfile.services) cloutScore += 5
-        if (productCount > 0) cloutScore += 10
-        if (productCount >= 5) cloutScore += 5
-        if (cloutProfile.facebook_url || cloutProfile.instagram_url) cloutScore += 5
+        cloutScore = calculateVisibilityScore(cloutProfile, productCount)
       }
 
       setResult({
@@ -130,8 +121,6 @@ export default function CheckerPage() {
       {result && (
         <section style={{ maxWidth: '520px', margin: '0 auto', padding: '32px 20px' }}>
 
-          {/* CLOUTINET SEARCH VISIBILITY - relabeled for clarity: this is about a
-              Cloutinet page specifically, not the business's overall Google presence */}
           <div style={{
             background: result.googleData.onCloutinetSearch ? '#F0FDF4' : '#F8FAFC',
             border: result.googleData.onCloutinetSearch ? '1px solid #BBF7D0' : '1px solid #E2E8F0',
@@ -155,7 +144,6 @@ export default function CheckerPage() {
             </div>
           </div>
 
-          {/* GOOGLE RESULT */}
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '12px' }}>Google Business Profile</div>
 
@@ -209,7 +197,6 @@ export default function CheckerPage() {
             )}
           </div>
 
-          {/* CLOUTINET STATUS */}
           <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '12px' }}>Cloutinet Page Status</div>
 
@@ -235,7 +222,6 @@ export default function CheckerPage() {
             )}
           </div>
 
-          {/* IMPROVEMENT TIPS */}
           {result.googleData.found && result.googleData.googleScore < 100 && (
             <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
               <div style={{ fontSize: '13px', fontWeight: 700, color: '#166534', marginBottom: '10px' }}>How to improve your Google score:</div>
