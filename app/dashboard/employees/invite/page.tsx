@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../../../lib/supabase'
+import { getBusinessTier } from '../../../../lib/tiers'
 
 const PERMISSION_LABELS: Record<string, string> = {
   products: 'Products',
@@ -38,7 +39,13 @@ export default function InviteEmployeePage() {
   const [inviteLink, setInviteLink] = useState('')
   const [emailSent, setEmailSent] = useState(false)
 
-  useEffect(() => { loadLocations() }, [])
+  const [checkingSeats, setCheckingSeats] = useState(true)
+  const [seatLimit, setSeatLimit] = useState<number | null>(null)
+  const [seatsUsed, setSeatsUsed] = useState(0)
+  const [seatsFull, setSeatsFull] = useState(false)
+  const [tierName, setTierName] = useState('')
+
+  useEffect(() => { loadLocations(); checkSeats() }, [])
 
   async function loadLocations() {
     const { data: userData } = await supabase.auth.getUser()
@@ -49,6 +56,30 @@ export default function InviteEmployeePage() {
       .eq('owner_id', userData.user.id)
       .order('is_primary', { ascending: false })
     setLocations(data || [])
+  }
+
+  async function checkSeats() {
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) { window.location.href = '/auth'; return }
+
+    const { limits } = await getBusinessTier(userData.user.id)
+    setTierName(limits.name)
+    setSeatLimit(limits.employeeSeatLimit)
+
+    if (limits.employeeSeatLimit !== null) {
+      const { count } = await supabase
+        .from('employees')
+        .select('id', { count: 'exact', head: true })
+        .eq('owner_id', userData.user.id)
+
+      const used = count ?? 0
+      setSeatsUsed(used)
+      if (used >= limits.employeeSeatLimit) {
+        setSeatsFull(true)
+      }
+    }
+
+    setCheckingSeats(false)
   }
 
   function handleRoleChange(newRole: 'staff' | 'manager') {
@@ -70,6 +101,22 @@ export default function InviteEmployeePage() {
 
     const { data: userData } = await supabase.auth.getUser()
     if (!userData.user) { window.location.href = '/auth'; return }
+
+    // Re-check right before insert too -- guards against two invites
+    // being sent in quick succession from different tabs/sessions.
+    if (seatLimit !== null) {
+      const { count } = await supabase
+        .from('employees')
+        .select('id', { count: 'exact', head: true })
+        .eq('owner_id', userData.user.id)
+
+      if ((count ?? 0) >= seatLimit) {
+        setSaving(false)
+        setSeatsFull(true)
+        setSeatsUsed(count ?? 0)
+        return
+      }
+    }
 
     const { data, error: saveError } = await supabase
       .from('employees')
@@ -130,6 +177,42 @@ export default function InviteEmployeePage() {
     setSaving(false)
   }
 
+  if (checkingSeats) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      </div>
+    )
+  }
+
+  if (seatsFull) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+        <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Invite Employee</div>
+          <a href="/dashboard/employees" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Cancel</a>
+        </div>
+        <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 20px', textAlign: 'center' }}>
+          <div style={{ fontSize: '36px', marginBottom: '12px' }}>👥</div>
+          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+            You&rsquo;ve used all {seatLimit} employee seats
+          </h2>
+          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.5, marginBottom: '24px' }}>
+            Your {tierName} plan includes {seatLimit} employee seat{seatLimit === 1 ? '' : 's'}. You currently have {seatsUsed}.
+            Upgrade to add more team members.
+          </p>
+          <a href="/dashboard/billing" style={{
+            display: 'inline-block', background: '#0F172A', color: '#fff',
+            borderRadius: '8px', padding: '12px 24px', fontSize: '14px',
+            fontWeight: 700, textDecoration: 'none'
+          }}>
+            View Plans
+          </a>
+        </div>
+      </div>
+    )
+  }
+
   if (inviteLink) {
     return (
       <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
@@ -169,6 +252,13 @@ export default function InviteEmployeePage() {
       </div>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
+
+        {seatLimit !== null && (
+          <p style={{ fontSize: '12px', color: '#94A3B8', fontWeight: 600, marginBottom: '16px' }}>
+            {seatsUsed} / {seatLimit} employee seats used ({tierName} plan)
+          </p>
+        )}
+
         <label style={labelStyle}>Name *</label>
         <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Amaka Johnson" style={inputStyle} />
 
