@@ -40,7 +40,7 @@ export default function TrustScoreDocsPage() {
           <h2 style={headingStyle}>Authentication</h2>
           <p style={textStyle}>
             Every request requires an API key, generated from your Cloutinet dashboard under API Access
-            (available as a pay-as-you-go add-on on the Growth plan and above). Pass it as a Bearer token in the Authorization header.
+            (available as a pay-as-you-go add-on on the Startup plan and above). Pass it as a Bearer token in the Authorization header.
           </p>
           <div style={codeBlockStyle}>{`Authorization: Bearer YOUR_API_KEY`}</div>
         </section>
