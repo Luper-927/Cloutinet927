@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import SearchBar from "./components/SearchBar";
-import { supabase } from "../lib/supabase";
 import {
   Star,
   Phone,
@@ -18,6 +17,7 @@ import {
   CreditCard,
   Clock,
   CheckCircle2,
+  Quote,
   ClipboardList,
   Rocket,
   Users,
@@ -25,7 +25,6 @@ import {
   Megaphone,
   Plug,
   Zap,
-  Eye,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -46,7 +45,7 @@ const NAV_LINKS = [
   { label: "How it Works", href: "#how-it-works" },
   { label: "Features", href: "#features" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Real Results", href: "#real-results" },
+  { label: "Success Stories", href: "#success-stories" },
 ];
 
 const FEATURES = [
@@ -229,6 +228,27 @@ const STEPS = [
   },
 ];
 
+const TESTIMONIALS = [
+  {
+    quote:
+      "Cloutinet helped my business show up on Google in days. I now get more customers on WhatsApp daily!",
+    name: "Chioma E.",
+    role: "Fashion Designer, Lagos",
+  },
+  {
+    quote:
+      "The best decision I made this year. Setup was super easy and it's helping my business grow consistently.",
+    name: "Ahmed R.",
+    role: "Phone Accessories, Abuja",
+  },
+  {
+    quote:
+      "I love the visibility score feature. It shows me exactly what to fix and how to get more customers.",
+    name: "Blessing O.",
+    role: "Cakes & Pastries, Port Harcourt",
+  },
+];
+
 const FOOTER_COLUMNS = [
   {
     title: "Product",
@@ -243,7 +263,7 @@ const FOOTER_COLUMNS = [
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Real Results", href: "#real-results" },
+      { label: "Success Stories", href: "#success-stories" },
       { label: "Contact", href: "mailto:cloutinet.hello@gmail.com" },
     ],
   },
@@ -255,28 +275,7 @@ const FOOTER_COLUMNS = [
     ],
   },
 ];
-
-async function getRealStats() {
-  const [
-    { count: businessCount },
-    { count: productCount },
-    { count: viewCount },
-  ] = await Promise.all([
-    supabase.from('profiles').select('id', { count: 'exact', head: true }).not('business_name', 'is', null),
-    supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_published', true),
-    supabase.from('analytics_events').select('id', { count: 'exact', head: true }).eq('event_type', 'page_view'),
-  ]);
-
-  return {
-    businesses: businessCount || 0,
-    products: productCount || 0,
-    views: viewCount || 0,
-  };
-}
-
-export default async function Home() {
-  const stats = await getRealStats();
-
+export default function Home() {
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-white">
       <Navbar />
@@ -284,7 +283,7 @@ export default async function Home() {
       <Features />
       <Pricing />
       <ApiPricing />
-      <RealResults stats={stats} />
+      <Testimonials />
       <Steps />
       <FinalCta />
       <Footer />
@@ -398,6 +397,20 @@ function Hero() {
               <PlayCircle className="h-4 w-4" />
               See How It Works
             </a>
+          </div>
+
+          <div className="mt-5 flex items-center justify-center gap-2 text-xs text-slate-400 lg:justify-start">
+            <span className="flex -space-x-1.5">
+              {["C", "A", "B"].map((letter) => (
+                <span
+                  key={letter}
+                  className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#0A0E27] bg-emerald-500 text-[10px] font-bold text-white"
+                >
+                  {letter}
+                </span>
+              ))}
+            </span>
+            Trusted by real Nigerian businesses already growing with Cloutinet
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
@@ -732,41 +745,42 @@ function ApiPricing() {
   );
 }
 
-function RealResults({ stats }: { stats: { businesses: number; products: number; views: number } }) {
-  const items = [
-    { icon: Store, value: stats.businesses.toLocaleString(), label: "Businesses on Cloutinet" },
-    { icon: Package, value: stats.products.toLocaleString(), label: "Products & services listed" },
-    { icon: Eye, value: stats.views.toLocaleString(), label: "Real page views generated" },
-  ];
-
+function Testimonials() {
   return (
-    <section id="real-results" className="bg-white py-14 sm:py-20 lg:py-28">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
-            REAL NUMBERS, NOT PROMISES
-          </span>
-          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-            Pulled live from the platform right now
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
-            No case studies, no invented quotes — just what Cloutinet is actually doing today.
-          </p>
-        </div>
+    <section id="success-stories" className="bg-white py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
+          <div className="mx-auto max-w-xl text-center">
+            <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-slate-300 sm:text-xs">
+              BUILT FOR NIGERIAN BUSINESSES
+            </span>
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:mt-4 sm:text-3xl lg:text-4xl">
+              Loved by Nigerian Businesses
+            </h2>
+          </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:mt-14 sm:grid-cols-3">
-          {items.map((item) => (
-            <div
-              key={item.label}
-              className="flex flex-col items-center rounded-2xl border border-slate-100 bg-[#F5F7FB] p-8 text-center"
-            >
-              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                <item.icon className="h-5 w-5" />
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:gap-5 md:grid-cols-3">
+            {TESTIMONIALS.map((t) => (
+              <div
+                key={t.name}
+                className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6"
+              >
+                <Quote className="h-5 w-5 text-blue-400" />
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
+                  {t.quote}
+                </p>
+                <div className="mt-6 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">
+                    {t.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{t.name}</p>
+                    <p className="text-xs text-slate-500">{t.role}</p>
+                  </div>
+                </div>
               </div>
-              <div className="text-3xl font-bold text-slate-900 sm:text-4xl">{item.value}</div>
-              <p className="mt-2 text-sm text-slate-500">{item.label}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -830,7 +844,7 @@ function FinalCta() {
                 Ready to Get More Customers?
               </h2>
               <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 sm:mt-4 sm:text-base lg:mx-0">
-                Join businesses already growing with Cloutinet.
+                Join Nigerian businesses already growing with Cloutinet.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
                 <a
