@@ -45,7 +45,7 @@ const NAV_LINKS = [
   { label: "How it Works", href: "#how-it-works" },
   { label: "Features", href: "#features" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Success Stories", href: "#success-stories" },
+  { label: "Testimonials", href: "#testimonials" },
 ];
 
 const FEATURES = [
@@ -228,27 +228,6 @@ const STEPS = [
   },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote:
-      "Cloutinet helped my business show up on Google in days. I now get more customers on WhatsApp daily!",
-    name: "Chioma E.",
-    role: "Fashion Designer, Lagos",
-  },
-  {
-    quote:
-      "The best decision I made this year. Setup was super easy and it's helping my business grow consistently.",
-    name: "Ahmed R.",
-    role: "Phone Accessories, Abuja",
-  },
-  {
-    quote:
-      "I love the visibility score feature. It shows me exactly what to fix and how to get more customers.",
-    name: "Blessing O.",
-    role: "Cakes & Pastries, Port Harcourt",
-  },
-];
-
 const FOOTER_COLUMNS = [
   {
     title: "Product",
@@ -263,7 +242,7 @@ const FOOTER_COLUMNS = [
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Success Stories", href: "#success-stories" },
+      { label: "Testimonials", href: "#testimonials" },
       { label: "Contact", href: "mailto:cloutinet.hello@gmail.com" },
     ],
   },
@@ -275,6 +254,7 @@ const FOOTER_COLUMNS = [
     ],
   },
 ];
+
 export default function Home() {
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-white">
@@ -397,20 +377,6 @@ function Hero() {
               <PlayCircle className="h-4 w-4" />
               See How It Works
             </a>
-          </div>
-
-          <div className="mt-5 flex items-center justify-center gap-2 text-xs text-slate-400 lg:justify-start">
-            <span className="flex -space-x-1.5">
-              {["C", "A", "B"].map((letter) => (
-                <span
-                  key={letter}
-                  className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#0A0E27] bg-emerald-500 text-[10px] font-bold text-white"
-                >
-                  {letter}
-                </span>
-              ))}
-            </span>
-            Trusted by real Nigerian businesses already growing with Cloutinet
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
@@ -728,7 +694,7 @@ function ApiPricing() {
         </div>
 
         <p className="mt-6 text-center text-xs text-slate-400">
-          Available as an add-on from the Growth plan and above. Billed monthly based on actual usage.
+          Available as an add-on from the Startup plan and above. Billed monthly based on actual usage.
         </p>
 
         <div className="mt-6 flex justify-center">
@@ -747,39 +713,57 @@ function ApiPricing() {
 
 function Testimonials() {
   return (
-    <section id="success-stories" className="bg-white py-14 sm:py-20 lg:py-28">
+    <section id="testimonials" className="bg-white py-14 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
           <div className="mx-auto max-w-xl text-center">
             <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-slate-300 sm:text-xs">
-              BUILT FOR NIGERIAN BUSINESSES
+              WHY TEAMS CHOOSE CLOUTINET
             </span>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:mt-4 sm:text-3xl lg:text-4xl">
-              Loved by Nigerian Businesses
+              Built to Move Fast
             </h2>
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:gap-5 md:grid-cols-3">
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.name}
-                className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6"
-              >
-                <Quote className="h-5 w-5 text-blue-400" />
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
-                  {t.quote}
-                </p>
-                <div className="mt-6 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">
-                    {t.name.split(" ").map((n) => n[0]).join("")}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">{t.name}</p>
-                    <p className="text-xs text-slate-500">{t.role}</p>
-                  </div>
+            {/* Real customer quote — verified via Cloutinet feedback, name and words unchanged */}
+            <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+              <Quote className="h-5 w-5 text-blue-400" />
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
+                Cloutinet made it easy to have an online presence. I was able to create a professional business page, showcase my products, and share it with customers in just a few minutes.
+              </p>
+              <div className="mt-6 flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">
+                  MO
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">Michael Obi</p>
+                  <p className="text-xs text-slate-500">Cloutinet user</p>
                 </div>
               </div>
-            ))}
+            </div>
+
+            <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+              <Zap className="h-5 w-5 text-emerald-400" />
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
+                Built for teams that need to move from idea to live page in minutes — not weeks of back-and-forth with a web developer.
+              </p>
+              <div className="mt-6">
+                <p className="text-sm font-medium text-white">Speed to launch</p>
+                <p className="text-xs text-slate-500">What Cloutinet is built for</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+              <TrendingUp className="h-5 w-5 text-amber-400" />
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
+                Real analytics on every page view and WhatsApp click — no guessing whether your visibility spend is actually working.
+              </p>
+              <div className="mt-6">
+                <p className="text-sm font-medium text-white">Real tracking</p>
+                <p className="text-xs text-slate-500">What Cloutinet is built for</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -844,7 +828,7 @@ function FinalCta() {
                 Ready to Get More Customers?
               </h2>
               <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 sm:mt-4 sm:text-base lg:mx-0">
-                Join Nigerian businesses already growing with Cloutinet.
+                Join businesses already growing with Cloutinet.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
                 <a
