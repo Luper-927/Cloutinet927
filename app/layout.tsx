@@ -3,8 +3,9 @@ import './globals.css'
 import InstallPrompt from './components/InstallPrompt'
 
 export const metadata: Metadata = {
-  title: 'Cloutinet — Create. Share. Grow.',
-  description: 'Create a free business page, list your products and services, and get found on Google. Built for small businesses in Nigeria and beyond.',
+  title: 'Cloutinet - The Business Operating System',
+  description:
+    'Run your operations, teams, customers and growth from one connected platform. Cloutinet brings customers, payments, documents, marketing and your public business presence together.',
   metadataBase: new URL('https://cloutinet.online'),
   manifest: '/manifest.json',
   verification: {
@@ -24,7 +25,8 @@ export default function RootLayout({
     url: 'https://cloutinet.online',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web, Android, iOS',
-    description: 'Nigeria free business visibility platform. Helps SMEs get found on Google and receive customer inquiries via WhatsApp. Free business page, product listings, WhatsApp lead capture.',
+    description:
+      'The Business Operating System for modern companies. Run operations, teams, customers, payments and growth from one connected platform, with a public business presence that makes your business accessible.',
     inLanguage: 'en-NG',
     offers: {
       '@type': 'Offer',
@@ -38,9 +40,10 @@ export default function RootLayout({
     },
     audience: {
       '@type': 'Audience',
-      audienceType: 'Small Business Owners, SMEs, Entrepreneurs, Nigerian Businesses',
+      audienceType: 'Startups, growing companies and established businesses',
     },
-    keywords: 'Nigerian business directory, WhatsApp business Nigeria, SME Nigeria, get found on Google Nigeria, free business page Nigeria, Port Harcourt businesses, Lagos businesses, Abuja businesses',
+    keywords:
+      'business operating system, business management software, customer management, payment requests, business automation, employee management, business documents, public business page, Nigeria',
     sameAs: [
       'https://github.com/Luper-927/Cloutinet927',
     ],
