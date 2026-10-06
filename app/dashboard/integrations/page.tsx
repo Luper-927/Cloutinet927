@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '../../../lib/supabase'
-import { getBusinessTier } from '../../../lib/tiers'
-import { getActingContext, ActingContext } from '../../../lib/permissions'
 import Link from 'next/link'
+import { supabase } from '../../../lib/supabase'
+import { useDashboard } from '../../components/DashboardShell'
 
 type IntegrationField = {
   key: string
@@ -88,8 +87,12 @@ type SavedIntegration = {
 }
 
 export default function IntegrationsPage() {
-  const [context, setContext] = useState<ActingContext | null>(null)
-  const [tierLimits, setTierLimits] = useState<any>(null)
+  const { context, tierLimits } = useDashboard()
+
+  const isOwner = !!context.isOwner
+  const hasAccess = !!tierLimits?.integrations
+  const tierName = tierLimits?.name || 'Free'
+
   const [loading, setLoading] = useState(true)
   const [saved, setSaved] = useState<Record<string, SavedIntegration>>({})
   const [activeKey, setActiveKey] = useState<string | null>(null)
@@ -100,22 +103,11 @@ export default function IntegrationsPage() {
   useEffect(() => { load() }, [])
 
   async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    const currentUser = userData?.user
-    if (!currentUser) { window.location.href = '/auth'; return }
-
-    const ctx = await getActingContext(currentUser.id)
-    if (!ctx) { window.location.href = '/onboarding'; return }
-    setContext(ctx)
-
-    const { limits } = await getBusinessTier(ctx.ownerId)
-    setTierLimits(limits)
-
-    if (limits.integrations) {
+    if (isOwner && hasAccess) {
       const { data: integrationsData } = await supabase
         .from('business_integrations')
         .select('integration_key, status, config')
-        .eq('user_id', ctx.ownerId)
+        .eq('user_id', context.ownerId)
 
       const map: Record<string, SavedIntegration> = {}
       for (const row of integrationsData || []) {
@@ -123,7 +115,6 @@ export default function IntegrationsPage() {
       }
       setSaved(map)
     }
-
     setLoading(false)
   }
 
@@ -143,7 +134,7 @@ export default function IntegrationsPage() {
   }
 
   async function saveIntegration() {
-    if (!context || !activeKey) return
+    if (!activeKey) return
     const def = INTEGRATIONS.find(i => i.key === activeKey)
     if (!def) return
 
@@ -182,7 +173,6 @@ export default function IntegrationsPage() {
   }
 
   async function disconnectIntegration(key: string) {
-    if (!context) return
     const confirmed = confirm('Disconnect this integration?')
     if (!confirmed) return
 
@@ -200,44 +190,31 @@ export default function IntegrationsPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#0F172A', fontSize: '14px' }}>Loading...</div>
+      <div style={{ padding: '24px 0' }}>
+        <p style={mutedStyle}>Loading...</p>
       </div>
     )
   }
 
-  if (!context?.isOwner) {
+  if (!isOwner) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-        <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Integrations</div>
-          <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Back</Link>
-        </div>
-        <div style={{ maxWidth: '480px', margin: '0 auto', padding: '40px 16px', textAlign: 'center' }}>
-          <p style={{ color: '#64748B', fontSize: '13px' }}>Only the business owner can manage integrations.</p>
-        </div>
+      <div style={{ padding: '24px 0' }}>
+        <p style={mutedStyle}>Only the business owner can manage integrations.</p>
       </div>
     )
   }
 
-  if (!tierLimits?.integrations) {
+  if (!hasAccess) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-        <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Integrations</div>
-          <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Back</Link>
-        </div>
-        <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
-            <div style={{ fontSize: '28px', marginBottom: '10px' }}>🔌</div>
-            <h2 style={{ color: '#0F172A', fontSize: '16px', marginBottom: '8px' }}>Integrations is an Advanced plan feature</h2>
-            <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
-              Connect WhatsApp Business API, Facebook & Instagram Shop, analytics tools, and custom webhooks by upgrading to the Advanced plan.
-            </p>
-            <Link href="/dashboard/billing" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>
-              Upgrade to Advanced
-            </Link>
-          </div>
+      <div style={wrapStyle}>
+        <h1 style={titleStyle}>Integrations</h1>
+        <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
+          <div style={{ fontSize: '28px', marginBottom: '10px' }}>🔌</div>
+          <h2 style={{ color: '#0F172A', fontSize: '16px', marginBottom: '8px' }}>Integrations are not included in your plan</h2>
+          <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>
+            You&rsquo;re currently on the {tierName} plan. Upgrade to connect WhatsApp Business API, Facebook &amp; Instagram Shop, analytics tools, and custom webhooks.
+          </p>
+          <Link href="/dashboard/billing" style={primaryButtonStyle}>View Plans</Link>
         </div>
       </div>
     )
@@ -247,111 +224,150 @@ export default function IntegrationsPage() {
   const activeDef = INTEGRATIONS.find(i => i.key === activeKey)
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Integrations</div>
-        <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Back</Link>
-      </div>
+    <div style={{ ...wrapStyle, maxWidth: '600px' }}>
+      <h1 style={titleStyle}>Integrations</h1>
+      <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>
+        Connect external tools to automate your marketing, messaging, and analytics.
+      </p>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px' }}>
-        <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
-          Connect external tools to automate your marketing, messaging, and analytics.
-        </p>
-
-        {error && !activeKey && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
-            <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
-          </div>
-        )}
-
-        {categories.map(category => (
-          <div key={category} style={{ marginBottom: '24px' }}>
-            <h3 style={{ color: '#94A3B8', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, marginBottom: '10px', letterSpacing: '0.5px' }}>
-              {category}
-            </h3>
-            {INTEGRATIONS.filter(i => i.category === category).map(def => {
-              const isConnected = saved[def.key]?.status === 'connected'
-              return (
-                <div key={def.key} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <div style={{ color: '#0F172A', fontWeight: 700, fontSize: '13px' }}>{def.name}</div>
-                        {isConnected && (
-                          <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0' }}>Connected</span>
-                        )}
-                      </div>
-                      <p style={{ color: '#64748B', fontSize: '12px', lineHeight: 1.4, margin: 0 }}>{def.description}</p>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                    <button
-                      onClick={() => openConnect(def)}
-                      style={{ background: isConnected ? '#fff' : '#0F172A', color: isConnected ? '#0F172A' : '#fff', border: '1px solid ' + (isConnected ? '#E2E8F0' : '#0F172A'), borderRadius: '6px', padding: '7px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
-                    >
-                      {isConnected ? 'Manage' : 'Connect'}
-                    </button>
-                    {isConnected && (
-                      <button
-                        onClick={() => disconnectIntegration(def.key)}
-                        style={{ background: 'transparent', color: '#ff4444', border: '1px solid #ff4444', borderRadius: '6px', padding: '7px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
-                      >
-                        Disconnect
-                      </button>
-                    )}
-                  </div>
+      {categories.map(category => (
+        <div key={category} style={{ marginBottom: '24px' }}>
+          <h2 style={{ color: '#475569', fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>
+            {category}
+          </h2>
+          {INTEGRATIONS.filter(i => i.category === category).map(def => {
+            const isConnected = saved[def.key]?.status === 'connected'
+            return (
+              <div key={def.key} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                  <div style={{ color: '#0F172A', fontWeight: 700, fontSize: '14px' }}>{def.name}</div>
+                  {isConnected && (
+                    <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0' }}>Connected</span>
+                  )}
                 </div>
-              )
-            })}
-          </div>
-        ))}
-      </div>
+                <p style={{ color: '#64748B', fontSize: '13px', lineHeight: 1.45, margin: 0 }}>{def.description}</p>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <button
+                    onClick={() => openConnect(def)}
+                    style={{
+                      background: isConnected ? '#fff' : '#0F172A',
+                      color: isConnected ? '#0F172A' : '#fff',
+                      border: '1px solid ' + (isConnected ? '#E2E8F0' : '#0F172A'),
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      minHeight: '36px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    {isConnected ? 'Manage' : 'Connect'}
+                  </button>
+                  {isConnected && (
+                    <button
+                      onClick={() => disconnectIntegration(def.key)}
+                      style={{
+                        background: 'transparent',
+                        color: '#DC2626',
+                        border: '1px solid #FCA5A5',
+                        borderRadius: '6px',
+                        padding: '8px 16px',
+                        minHeight: '36px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      Disconnect
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ))}
 
       {activeDef && (
         <div
           onClick={closeModal}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50 }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 80 }}
         >
           <div
+            role="dialog"
+            aria-label={activeDef.name}
             onClick={(e) => e.stopPropagation()}
-            style={{ background: '#fff', borderRadius: '16px 16px 0 0', width: '100%', maxWidth: '480px', padding: '20px', maxHeight: '85vh', overflowY: 'auto' as const }}
+            style={{ background: '#fff', borderRadius: '16px 16px 0 0', width: '100%', maxWidth: '480px', padding: '20px', maxHeight: '85vh', overflowY: 'auto' }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ color: '#0F172A', fontSize: '15px', fontWeight: 800, margin: 0 }}>{activeDef.name}</h3>
-              <button onClick={closeModal} style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#94A3B8' }}>✕</button>
+              <h3 style={{ color: '#0F172A', fontSize: '16px', fontWeight: 800, margin: 0 }}>{activeDef.name}</h3>
+              <button
+                onClick={closeModal}
+                aria-label="Close"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#64748B', minWidth: '36px', minHeight: '36px' }}
+              >✕</button>
             </div>
 
-            <p style={{ color: '#64748B', fontSize: '12px', marginBottom: '16px', lineHeight: 1.5 }}>{activeDef.description}</p>
+            <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '16px', lineHeight: 1.5 }}>{activeDef.description}</p>
 
             {activeDef.fields.map(field => (
               <div key={field.key} style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', color: '#475569', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>{field.label}</label>
+                <label style={{ display: 'block', color: '#475569', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>{field.label}</label>
                 <input
                   type={field.type}
                   placeholder={field.placeholder}
                   value={formValues[field.key] || ''}
                   onChange={e => setFormValues(prev => ({ ...prev, [field.key]: e.target.value }))}
-                  style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px', color: '#0F172A', fontSize: '14px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' as const }}
+                  style={{ width: '100%', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px', color: '#0F172A', fontSize: '14px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
                 />
               </div>
             ))}
 
             {error && (
               <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
-                <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
+                <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{error}</p>
               </div>
             )}
 
             <button
               onClick={saveIntegration}
               disabled={saving}
-              style={{ width: '100%', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '8px', padding: '13px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+              style={{ width: '100%', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '8px', padding: '13px', minHeight: '44px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
             >
-              {saving ? 'Saving...' : 'Save & Connect'}
+              {saving ? 'Saving...' : 'Save and connect'}
             </button>
           </div>
         </div>
       )}
     </div>
   )
+}
+
+const wrapStyle: React.CSSProperties = {
+  maxWidth: '480px',
+  margin: '0 auto',
+  fontFamily: 'Segoe UI, system-ui, sans-serif',
+}
+
+const titleStyle: React.CSSProperties = {
+  fontSize: '22px',
+  fontWeight: 800,
+  color: '#0F172A',
+  margin: '0 0 14px',
+  letterSpacing: '-0.01em',
+}
+
+const mutedStyle: React.CSSProperties = { color: '#64748B', fontSize: '14px' }
+
+const primaryButtonStyle: React.CSSProperties = {
+  display: 'inline-block',
+  background: '#0F172A',
+  color: '#fff',
+  padding: '12px 24px',
+  borderRadius: '8px',
+  textDecoration: 'none',
+  fontSize: '14px',
+  fontWeight: 700,
 }
