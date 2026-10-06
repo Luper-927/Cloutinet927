@@ -126,7 +126,13 @@ const shellCss = `
 }
 `
 
-export default function DashboardShell({ children }: { children: ReactNode }) {
+export default function DashboardShell({
+  children,
+  chrome = true,
+}: {
+  children: ReactNode
+  chrome?: boolean
+}) {
   const pathname = usePathname()
   const [context, setContext] = useState<ActingContext | null>(null)
   const [profile, setProfile] = useState<any>(null)
