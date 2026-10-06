@@ -13,6 +13,9 @@ const SHELL_PAGES = [
   '/dashboard/customers/message',
   '/dashboard/payments',
   '/dashboard/payments/requests',
+  '/dashboard/documents',
+  '/dashboard/activity',
+  '/dashboard/ai',
 ]
 
 // Whole sections converted, including dynamic routes like /employees/[id]
