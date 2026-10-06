@@ -9,7 +9,10 @@ import DashboardShell from '../components/DashboardShell'
 const SHELL_PAGES = [
   '/dashboard',
   '/dashboard/customers',
+  '/dashboard/customers/new',
+  '/dashboard/customers/message',
   '/dashboard/payments',
+  '/dashboard/payments/requests',
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
