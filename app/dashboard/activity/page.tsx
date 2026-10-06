@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
-import { getActingContext } from '../../../lib/permissions'
-import Link from 'next/link'
+import { useDashboard } from '../../components/DashboardShell'
 
 type LogEntry = {
   id: string
@@ -15,26 +14,20 @@ type LogEntry = {
 }
 
 export default function ActivityLogPage() {
+  const { context } = useDashboard()
+
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [loading, setLoading] = useState(true)
-  const [isOwner, setIsOwner] = useState(false)
 
   useEffect(() => {
     load()
   }, [])
 
   async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
-
-    const context = await getActingContext(userData.user.id)
-    if (!context) { window.location.href = '/onboarding'; return }
-
     if (!context.isOwner) {
       setLoading(false)
       return
     }
-    setIsOwner(true)
 
     const { data } = await supabase
       .from('activity_log')
@@ -49,46 +42,60 @@ export default function ActivityLogPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
+      <div style={{ padding: '24px 0' }}>
+        <p style={mutedStyle}>Loading...</p>
       </div>
     )
   }
 
-  if (!isOwner) {
+  if (!context.isOwner) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>Only the business owner can view the activity log.</p>
+      <div style={{ padding: '24px 0' }}>
+        <p style={mutedStyle}>Only the business owner can view the activity log.</p>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Activity Log</div>
-        <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Back</Link>
-      </div>
+    <div style={wrapStyle}>
+      <h1 style={titleStyle}>Activity</h1>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
-        {logs.length === 0 ? (
-          <p style={{ color: '#64748B', fontSize: '13px', textAlign: 'center' as const, padding: '30px' }}>No activity recorded yet.</p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {logs.map(log => (
-              <div key={log.id} style={{ borderLeft: '2px solid #E2E8F0', paddingLeft: '12px' }}>
-                <div style={{ fontSize: '13px', color: '#0F172A' }}>
-                  <strong>{log.actor_name}</strong> {log.action} {log.object_type}
-                  {log.object_label ? ': ' + log.object_label : ''}
-                </div>
-                <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>
-                  {new Date(log.created_at).toLocaleString()}
-                </div>
+      {logs.length === 0 ? (
+        <p style={{ color: '#64748B', fontSize: '13px', textAlign: 'center', padding: '30px' }}>No activity recorded yet.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {logs.map(log => (
+            <div key={log.id} style={{ borderLeft: '2px solid #CBD5E1', paddingLeft: '12px' }}>
+              <div style={{ fontSize: '14px', color: '#0F172A', lineHeight: 1.45 }}>
+                <strong>{log.actor_name}</strong> {log.action} {log.object_type}
+                {log.object_label ? ': ' + log.object_label : ''}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '2px' }}>
+                {new Date(log.created_at).toLocaleString()}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
+}
+
+const wrapStyle: React.CSSProperties = {
+  maxWidth: '480px',
+  margin: '0 auto',
+  fontFamily: 'Segoe UI, system-ui, sans-serif',
+}
+
+const titleStyle: React.CSSProperties = {
+  fontSize: '22px',
+  fontWeight: 800,
+  color: '#0F172A',
+  margin: '0 0 14px',
+  letterSpacing: '-0.01em',
+}
+
+const mutedStyle: React.CSSProperties = {
+  color: '#64748B',
+  fontSize: '14px',
 }
