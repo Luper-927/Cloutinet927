@@ -1,43 +1,45 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '../../../lib/supabase'
-import { getBusinessTier } from '../../../lib/tiers'
-import { getActingContext, ActingContext } from '../../../lib/permissions'
 import Link from 'next/link'
+import { supabase } from '../../../lib/supabase'
+import { useDashboard } from '../../components/DashboardShell'
+
+type Status = { type: 'success' | 'error'; message: string } | null
+
+function LinkRow({ href, title, hint }: { href: string; title: string; hint: string }) {
+  return (
+    <Link href={href} style={rowStyle}>
+      <span>
+        <span style={rowTitleStyle}>{title}</span>
+        <span style={rowHintStyle}>{hint}</span>
+      </span>
+      <span style={{ color: '#94A3B8', fontSize: '18px' }} aria-hidden="true">›</span>
+    </Link>
+  )
+}
 
 export default function SettingsPage() {
-  const [context, setContext] = useState<ActingContext | null>(null)
+  const { context, tierLimits, signOut } = useDashboard()
+
+  const isOwner = !!context.isOwner
+  const canTeam = isOwner && !!context.permissions.employees && !!tierLimits?.employees
+  const canDeveloper = isOwner && !!tierLimits?.integrations
+  const planName = tierLimits?.name || 'Free'
+
   const [email, setEmail] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [planName, setPlanName] = useState('Free')
-  const [loading, setLoading] = useState(true)
 
-  const [emailStatus, setEmailStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [emailStatus, setEmailStatus] = useState<Status>(null)
   const [emailSubmitting, setEmailSubmitting] = useState(false)
-  const [passwordStatus, setPasswordStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [passwordStatus, setPasswordStatus] = useState<Status>(null)
   const [passwordSubmitting, setPasswordSubmitting] = useState(false)
 
-  useEffect(() => { load() }, [])
-
-  async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
-    setEmail(userData.user.email || '')
-
-    const ctx = await getActingContext(userData.user.id)
-    if (!ctx) { window.location.href = '/onboarding'; return }
-    setContext(ctx)
-
-    if (ctx.isOwner) {
-      const { tierKey } = await getBusinessTier(ctx.ownerId)
-      setPlanName(tierKey.charAt(0).toUpperCase() + tierKey.slice(1))
-    }
-
-    setLoading(false)
-  }
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email || ''))
+  }, [])
 
   async function handleChangeEmail() {
     setEmailStatus(null)
@@ -78,125 +80,216 @@ export default function SettingsPage() {
     setPasswordSubmitting(false)
   }
 
-  async function handleSignOut() {
-    await supabase.auth.signOut()
-    window.location.href = '/auth'
-  }
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
-      </div>
-    )
-  }
-
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Settings</div>
-        <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>← Dashboard</Link>
+    <div style={wrapStyle}>
+      <h1 style={titleStyle}>Settings</h1>
+
+      {isOwner && (
+        <>
+          <h2 style={groupTitleStyle}>Business</h2>
+          <div style={panelStyle}>
+            <LinkRow href="/onboarding" title="Business profile" hint="Name, location, hours and links" />
+            <LinkRow href="/dashboard/locations" title="Locations" hint="Your branches and where employees work" />
+          </div>
+        </>
+      )}
+
+      {canTeam && (
+        <>
+          <h2 style={groupTitleStyle}>Team</h2>
+          <div style={panelStyle}>
+            <LinkRow href="/dashboard/employees" title="Employees and permissions" hint="Invite staff and choose what each person can access" />
+          </div>
+        </>
+      )}
+
+      <h2 style={groupTitleStyle}>Account</h2>
+
+      <div style={cardStyle}>
+        <div style={cardTitleStyle}>Email</div>
+        <p style={{ fontSize: '13px', color: '#64748B', margin: '0 0 10px' }}>
+          Current: <strong style={{ color: '#0F172A' }}>{email}</strong>
+        </p>
+        <input
+          type="email"
+          value={newEmail}
+          onChange={e => setNewEmail(e.target.value)}
+          placeholder="New email address"
+          style={inputStyle}
+        />
+        {emailStatus && (
+          <p style={{ fontSize: '13px', margin: '8px 0 0', color: emailStatus.type === 'success' ? '#166534' : '#dc2626' }}>
+            {emailStatus.message}
+          </p>
+        )}
+        <button onClick={handleChangeEmail} disabled={emailSubmitting} style={buttonStyle(emailSubmitting)}>
+          {emailSubmitting ? 'Updating...' : 'Update email'}
+        </button>
       </div>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
-
-        {context?.isOwner && (
-          <div style={{
-            background: 'linear-gradient(135deg, #0F172A 0%, #0F766E 100%)',
-            borderRadius: '14px', padding: '18px', marginBottom: '24px',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-          }}>
-            <div>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', fontWeight: 700, marginBottom: '4px' }}>Current plan</div>
-              <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>{planName}</div>
-            </div>
-            <Link href="/dashboard/billing" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: '12px', fontWeight: 700, padding: '8px 14px', borderRadius: '8px', textDecoration: 'none' }}>
-              Manage →
-            </Link>
-          </div>
+      <div style={cardStyle}>
+        <div style={cardTitleStyle}>Password</div>
+        <input
+          type="password"
+          value={newPassword}
+          onChange={e => setNewPassword(e.target.value)}
+          placeholder="New password"
+          style={{ ...inputStyle, marginBottom: '8px' }}
+        />
+        <input
+          type="password"
+          value={confirmPassword}
+          onChange={e => setConfirmPassword(e.target.value)}
+          placeholder="Confirm new password"
+          style={inputStyle}
+        />
+        {passwordStatus && (
+          <p style={{ fontSize: '13px', margin: '8px 0 0', color: passwordStatus.type === 'success' ? '#166534' : '#dc2626' }}>
+            {passwordStatus.message}
+          </p>
         )}
+        <button onClick={handleChangePassword} disabled={passwordSubmitting} style={buttonStyle(passwordSubmitting)}>
+          {passwordSubmitting ? 'Updating...' : 'Update password'}
+        </button>
+      </div>
 
-        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Business Profile</h2>
-        <Link href="/onboarding" style={{
-          display: 'block', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px',
-          padding: '14px 16px', marginBottom: '24px', textDecoration: 'none', color: '#0F172A', fontSize: '13px', fontWeight: 600
-        }}>
-          Edit business info, location, hours & links →
-        </Link>
+      {isOwner && (
+        <>
+          <h2 style={groupTitleStyle}>Billing</h2>
+          <div style={panelStyle}>
+            <LinkRow href="/dashboard/billing" title={'Plan: ' + planName} hint="Change your plan and see renewal dates" />
+          </div>
+        </>
+      )}
 
-        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Account Email</h2>
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginBottom: '24px' }}>
-          <p style={{ fontSize: '12px', color: '#64748B', marginBottom: '10px' }}>Current: <strong style={{ color: '#0F172A' }}>{email}</strong></p>
-          <input
-            type="email"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            placeholder="New email address"
-            style={inputStyle}
-          />
-          {emailStatus && (
-            <p style={{ fontSize: '12px', marginTop: '8px', marginBottom: 0, color: emailStatus.type === 'success' ? '#166534' : '#dc2626' }}>{emailStatus.message}</p>
-          )}
-          <button onClick={handleChangeEmail} disabled={emailSubmitting} style={buttonStyle(emailSubmitting)}>
-            {emailSubmitting ? 'Updating...' : 'Update Email'}
-          </button>
-        </div>
+      {canDeveloper && (
+        <>
+          <h2 style={groupTitleStyle}>Developer</h2>
+          <div style={panelStyle}>
+            <LinkRow href="/dashboard/api-keys" title="API keys" hint="Connect Cloutinet to your own systems" />
+            <LinkRow href="/dashboard/integrations" title="Integrations" hint="WhatsApp, analytics, email and webhooks" />
+          </div>
+        </>
+      )}
 
-        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Password</h2>
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginBottom: '24px' }}>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="New password"
-            style={{ ...inputStyle, marginBottom: '8px' }}
-          />
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirm new password"
-            style={inputStyle}
-          />
-          {passwordStatus && (
-            <p style={{ fontSize: '12px', marginTop: '8px', marginBottom: 0, color: passwordStatus.type === 'success' ? '#166534' : '#dc2626' }}>{passwordStatus.message}</p>
-          )}
-          <button onClick={handleChangePassword} disabled={passwordSubmitting} style={buttonStyle(passwordSubmitting)}>
-            {passwordSubmitting ? 'Updating...' : 'Update Password'}
-          </button>
-        </div>
-
-        <h2 style={{ fontSize: '13px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' as const, marginBottom: '10px' }}>Account</h2>
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '4px', marginBottom: '24px' }}>
-          <button onClick={handleSignOut} style={rowButtonStyle('#0F172A')}>
-            Sign Out
-          </button>
-          <a href="mailto:cloutinet.hello@gmail.com?subject=Account%20deletion%20request" style={{ ...rowButtonStyle('#dc2626'), textDecoration: 'none', display: 'block' }}>
-            Request Account Deletion
-          </a>
-        </div>
-
+      <h2 style={{ ...groupTitleStyle, color: '#B91C1C' }}>Danger zone</h2>
+      <div style={{ ...panelStyle, borderColor: '#FECACA' }}>
+        <button onClick={signOut} style={{ ...rowStyle, width: '100%', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <span>
+            <span style={rowTitleStyle}>Sign out</span>
+            <span style={rowHintStyle}>Sign out on this device</span>
+          </span>
+        </button>
+        <a
+          href="mailto:cloutinet.hello@gmail.com?subject=Account%20deletion%20request"
+          style={{ ...rowStyle, borderBottom: 'none' }}
+        >
+          <span>
+            <span style={{ ...rowTitleStyle, color: '#B91C1C' }}>Request account deletion</span>
+            <span style={rowHintStyle}>Opens an email to our team to process your request</span>
+          </span>
+        </a>
       </div>
     </div>
   )
 }
 
+const wrapStyle: React.CSSProperties = {
+  maxWidth: '480px',
+  margin: '0 auto',
+  fontFamily: 'Segoe UI, system-ui, sans-serif',
+  paddingBottom: '24px',
+}
+
+const titleStyle: React.CSSProperties = {
+  fontSize: '22px',
+  fontWeight: 800,
+  color: '#0F172A',
+  margin: '0 0 6px',
+  letterSpacing: '-0.01em',
+}
+
+const groupTitleStyle: React.CSSProperties = {
+  fontSize: '14px',
+  fontWeight: 700,
+  color: '#475569',
+  margin: '24px 0 8px',
+}
+
+const panelStyle: React.CSSProperties = {
+  background: '#fff',
+  border: '1px solid #E2E8F0',
+  borderRadius: '12px',
+  overflow: 'hidden',
+}
+
+const rowStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '12px',
+  minHeight: '56px',
+  padding: '12px 16px',
+  borderBottom: '1px solid #EEF2F6',
+  textDecoration: 'none',
+  color: '#0F172A',
+}
+
+const rowTitleStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: '14px',
+  fontWeight: 600,
+  color: '#0F172A',
+}
+
+const rowHintStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: '12px',
+  color: '#64748B',
+  marginTop: '2px',
+  lineHeight: 1.4,
+}
+
+const cardStyle: React.CSSProperties = {
+  background: '#fff',
+  border: '1px solid #E2E8F0',
+  borderRadius: '12px',
+  padding: '16px',
+  marginBottom: '12px',
+}
+
+const cardTitleStyle: React.CSSProperties = {
+  fontSize: '14px',
+  fontWeight: 700,
+  color: '#0F172A',
+  marginBottom: '10px',
+}
+
 const inputStyle: React.CSSProperties = {
-  width: '100%', boxSizing: 'border-box' as const, padding: '11px 14px',
-  borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '13px', fontFamily: 'inherit'
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '12px 14px',
+  borderRadius: '8px',
+  border: '1px solid #E2E8F0',
+  fontSize: '14px',
+  fontFamily: 'inherit',
+  outline: 'none',
 }
 
 function buttonStyle(disabled: boolean): React.CSSProperties {
   return {
-    marginTop: '10px', width: '100%', padding: '11px', background: disabled ? '#93C5FD' : '#0F172A',
-    color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 700,
-    cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit'
-  }
-}
-
-function rowButtonStyle(color: string): React.CSSProperties {
-  return {
-    width: '100%', textAlign: 'left' as const, background: 'transparent', border: 'none',
-    padding: '12px', fontSize: '13px', fontWeight: 600, color, cursor: 'pointer', fontFamily: 'inherit'
+    marginTop: '10px',
+    width: '100%',
+    minHeight: '44px',
+    padding: '11px',
+    background: '#0F172A',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: 700,
+    cursor: disabled ? 'default' : 'pointer',
+    fontFamily: 'inherit',
+    opacity: disabled ? 0.6 : 1,
   }
 }
