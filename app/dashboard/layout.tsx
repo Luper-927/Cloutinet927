@@ -3,13 +3,19 @@
 import { usePathname } from 'next/navigation'
 import DashboardShell from '../components/DashboardShell'
 
+// Pages that have been converted to the new shell. Add a path here each
+// time a page has had its own header/menu removed. Once every page under
+// /dashboard is converted, delete this list and always render the shell.
+const SHELL_PAGES = [
+  '/dashboard',
+  '/dashboard/customers',
+  '/dashboard/payments',
+]
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
-  // TEMPORARY: sub-pages still render their own menu, so the shell
-  // only applies to the dashboard home for now. Remove this condition
-  // once the sub-pages have had their own menus removed.
-  if (pathname !== '/dashboard') {
+  if (!pathname || !SHELL_PAGES.includes(pathname)) {
     return <>{children}</>
   }
 
