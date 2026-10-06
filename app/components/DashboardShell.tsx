@@ -297,6 +297,12 @@ export default function DashboardShell({
 
   const value: DashboardState = { context, profile, tierLimits, locationName, signOut }
 
+  // Pages that haven't been converted yet: share the data, but don't draw
+  // the sidebar, top bar or bottom navigation.
+  if (!chrome) {
+    return <DashboardCtx.Provider value={value}>{children}</DashboardCtx.Provider>
+  }
+
   return (
     <DashboardCtx.Provider value={value}>
       <style>{shellCss}</style>
