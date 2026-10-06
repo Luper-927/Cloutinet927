@@ -2,18 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
-import { getBusinessTier } from '../../../lib/tiers'
-import { getActingContext, logActivity } from '../../../lib/permissions'
+import { logActivity } from '../../../lib/permissions'
 import Link from 'next/link'
+import { useDashboard } from '../../components/DashboardShell'
 import {
-  loadingWrapStyle,
   loadingTextStyle,
-  noPermissionWrapStyle,
   noPermissionTextStyle,
-  pageWrapStyle,
-  headerBarStyle,
-  headerTitleStyle,
-  backLinkStyle,
   upgradeContentWrapStyle,
   upgradeIconStyle,
   upgradeHeadingStyle,
@@ -63,16 +57,41 @@ type PaymentRecord = {
   created_at: string
 }
 
+const pageTitleStyle: React.CSSProperties = {
+  fontSize: '22px',
+  fontWeight: 800,
+  color: '#0F172A',
+  margin: '0 0 14px',
+  letterSpacing: '-0.01em',
+}
+
+const requestsLinkStyle: React.CSSProperties = {
+  display: 'block',
+  textAlign: 'center',
+  padding: '12px',
+  marginBottom: '12px',
+  border: '1px solid #E2E8F0',
+  borderRadius: '8px',
+  background: '#fff',
+  color: '#0F172A',
+  fontSize: '14px',
+  fontWeight: 600,
+  textDecoration: 'none',
+}
+
 export default function PaymentsPage() {
+  const { context, tierLimits, locationName } = useDashboard()
+
+  const ownerId = context.ownerId
+  const actorName = context.employeeName || 'Owner'
+  const locationId = context.locationId
+
+  const noPermission = !context.permissions.payments
+  const hasAccess = !!tierLimits?.paymentsModule
+  const tierName = tierLimits?.name || 'Free'
+
   const [records, setRecords] = useState<PaymentRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const [hasAccess, setHasAccess] = useState(true)
-  const [noPermission, setNoPermission] = useState(false)
-  const [tierName, setTierName] = useState('Free')
-  const [ownerId, setOwnerId] = useState('')
-  const [actorName, setActorName] = useState('')
-  const [locationId, setLocationId] = useState<string | null>(null)
-  const [scopedLocationName, setScopedLocationName] = useState<string | null>(null)
 
   const [customerName, setCustomerName] = useState('')
   const [amount, setAmount] = useState('')
@@ -89,27 +108,7 @@ export default function PaymentsPage() {
   }, [])
 
   async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
-
-    const context = await getActingContext(userData.user.id)
-    if (!context) { window.location.href = '/onboarding'; return }
-
-    if (!context.permissions.payments) {
-      setNoPermission(true)
-      setLoading(false)
-      return
-    }
-
-    setOwnerId(context.ownerId)
-    setActorName(context.employeeName || 'Owner')
-    setLocationId(context.locationId)
-
-    const { limits } = await getBusinessTier(context.ownerId)
-    setTierName(limits.name)
-
-    if (!limits.paymentsModule) {
-      setHasAccess(false)
+    if (noPermission || !hasAccess) {
       setLoading(false)
       return
     }
@@ -117,27 +116,15 @@ export default function PaymentsPage() {
     let recordsQuery = supabase
       .from('payment_records')
       .select('id, customer_name, amount, currency, status, method, reference, note, created_at')
-      .eq('owner_id', context.ownerId)
+      .eq('owner_id', ownerId)
       .order('created_at', { ascending: false })
 
-    if (context.locationId) {
-      recordsQuery = recordsQuery.eq('location_id', context.locationId)
+    if (locationId) {
+      recordsQuery = recordsQuery.eq('location_id', locationId)
     }
 
     const { data } = await recordsQuery
     setRecords(data || [])
-
-    if (context.locationId) {
-      const locFields = 'business_name, address'
-      const { data: loc } = await supabase
-        .from('locations')
-        .select(locFields)
-        .eq('id', context.locationId)
-        .maybeSingle()
-      const locName = loc?.business_name || loc?.address
-      setScopedLocationName(locName || null)
-    }
-
     setLoading(false)
   }
 
@@ -172,7 +159,7 @@ export default function PaymentsPage() {
 
   if (loading) {
     return (
-      <div style={loadingWrapStyle}>
+      <div style={{ padding: '24px 0' }}>
         <p style={loadingTextStyle}>Loading...</p>
       </div>
     )
@@ -180,31 +167,26 @@ export default function PaymentsPage() {
 
   if (noPermission) {
     return (
-      <div style={noPermissionWrapStyle}>
-        <p style={noPermissionTextStyle}>You&rsquo;t have permission to view payments.</p>
+      <div style={{ padding: '24px 0' }}>
+        <p style={noPermissionTextStyle}>You don&rsquo;t have permission to view payments.</p>
       </div>
     )
   }
 
   if (!hasAccess) {
     return (
-      <div style={pageWrapStyle}>
-        <div style={headerBarStyle}>
-          <div style={headerTitleStyle}>Payments</div>
-          <Link href="/dashboard" style={backLinkStyle}>Back</Link>
-        </div>
-        <div style={upgradeContentWrapStyle}>
-          <div style={upgradeIconStyle}>💰</div>
-          <h2 style={upgradeHeadingStyle}>
-            Payment tracking needs Business or higher
-          </h2>
-          <p style={upgradeTextStyle}>
-            You&rsquo;re currently on the {tierName} plan. Upgrade to track money coming into your business.
-          </p>
-          <Link href="/dashboard/billing" style={upgradeButtonStyle}>
-            View Plans
-          </Link>
-        </div>
+      <div style={upgradeContentWrapStyle}>
+        <h1 style={pageTitleStyle}>Payments</h1>
+        <div style={upgradeIconStyle}>💰</div>
+        <h2 style={upgradeHeadingStyle}>
+          Payment tracking is not included in your plan
+        </h2>
+        <p style={upgradeTextStyle}>
+          You&rsquo;re currently on the {tierName} plan. Upgrade to track money coming into your business.
+        </p>
+        <Link href="/dashboard/billing" style={upgradeButtonStyle}>
+          View Plans
+        </Link>
       </div>
     )
   }
@@ -227,106 +209,104 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div style={pageWrapStyle}>
-      <div style={headerBarStyle}>
-        <div style={headerTitleStyle}>Payments</div>
-        <Link href="/dashboard" style={backLinkStyle}>Back</Link>
+    <div style={contentWrapStyle}>
+      <h1 style={pageTitleStyle}>Payments</h1>
+
+      {locationName && (
+        <div style={locationBannerStyle}>
+          📍 Showing payments for {locationName} only
+        </div>
+      )}
+
+      <div style={statsGridStyle}>
+        <div style={statCardGreenStyle}>
+          <div style={statLabelGreenStyle}>Money Received</div>
+          <div style={statValueGreenStyle}>₦{moneyReceived.toLocaleString()}</div>
+        </div>
+        <div style={statCardOrangeStyle}>
+          <div style={statLabelOrangeStyle}>Pending</div>
+          <div style={statValueOrangeStyle}>₦{pending.toLocaleString()}</div>
+        </div>
+        <div style={statCardNeutralStyle}>
+          <div style={statLabelNeutralStyle}>Transactions</div>
+          <div style={statValueNeutralStyle}>{records.length}</div>
+        </div>
+        <div style={statCardNeutralStyle}>
+          <div style={statLabelNeutralStyle}>This Month</div>
+          <div style={statValueNeutralStyle}>₦{thisMonth.toLocaleString()}</div>
+        </div>
       </div>
 
-      <div style={contentWrapStyle}>
+      <Link href="/dashboard/payments/requests" style={requestsLinkStyle}>
+        Payment requests
+      </Link>
 
-        {scopedLocationName && (
-          <div style={locationBannerStyle}>
-            📍 Showing payments for {scopedLocationName} only
-          </div>
-        )}
+      <button
+        onClick={() => setShowForm(!showForm)}
+        style={toggleFormButtonStyle}
+      >
+        {showForm ? 'Cancel' : '+ Record a Payment'}
+      </button>
 
-        <div style={statsGridStyle}>
-          <div style={statCardGreenStyle}>
-            <div style={statLabelGreenStyle}>Money Received</div>
-            <div style={statValueGreenStyle}>₦{moneyReceived.toLocaleString()}</div>
-          </div>
-          <div style={statCardOrangeStyle}>
-            <div style={statLabelOrangeStyle}>Pending</div>
-            <div style={statValueOrangeStyle}>₦{pending.toLocaleString()}</div>
-          </div>
-          <div style={statCardNeutralStyle}>
-            <div style={statLabelNeutralStyle}>Transactions</div>
-            <div style={statValueNeutralStyle}>{records.length}</div>
-          </div>
-          <div style={statCardNeutralStyle}>
-            <div style={statLabelNeutralStyle}>This Month</div>
-            <div style={statValueNeutralStyle}>₦{thisMonth.toLocaleString()}</div>
-          </div>
-        </div>
+      {showForm && (
+        <div style={formBoxStyle}>
+          <input placeholder="Customer name" value={customerName} onChange={e => setCustomerName(e.target.value)} style={inputStyle} />
+          <input placeholder="Amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
 
-        <button
-          onClick={() => setShowForm(!showForm)}
-          style={toggleFormButtonStyle}
-        >
-          {showForm ? 'Cancel' : '+ Record a Payment'}
-        </button>
-
-        {showForm && (
-          <div style={formBoxStyle}>
-            <input placeholder="Customer name" value={customerName} onChange={e => setCustomerName(e.target.value)} style={inputStyle} />
-            <input placeholder="Amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
-
-            <div style={statusRowStyle}>
-              {(['paid', 'pending', 'partial', 'failed', 'refunded', 'cancelled'] as const).map(s => (
-                <button
-                  key={s}
-                  onClick={() => setStatus(s)}
-                  style={statusButtonStyle(status === s)}
-                >{s}</button>
-              ))}
-            </div>
-
-            <input placeholder="Method (cash, transfer, POS...)" value={method} onChange={e => setMethod(e.target.value)} style={inputStyle} />
-            <input placeholder="Reference (optional)" value={reference} onChange={e => setReference(e.target.value)} style={inputStyle} />
-            <input placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ ...inputStyle, marginBottom: '12px' }} />
-
-            {error && (
-              <div style={errorBoxStyle}>
-                <p style={errorTextStyle}>{error}</p>
-              </div>
-            )}
-
-            <button
-              onClick={handleAdd}
-              disabled={saving}
-              style={saveButtonStyle(saving)}
-            >
-              {saving ? 'Saving...' : 'Save Record'}
-            </button>
-          </div>
-        )}
-
-        <div style={sectionLabelStyle}>
-          Recent Transactions
-        </div>
-
-        {records.length === 0 ? (
-          <p style={emptyTextStyle}>No payment records yet.</p>
-        ) : (
-          <div style={recordsListStyle}>
-            {records.map(r => (
-              <div key={r.id} style={recordCardStyle}>
-                <div>
-                  <div style={recordNameStyle}>{r.customer_name}</div>
-                  <div style={recordMetaStyle}>{new Date(r.created_at).toLocaleDateString()} {r.method ? '· ' + r.method : ''}</div>
-                  {r.reference && <div style={recordMetaStyle}>Ref: {r.reference}</div>}
-                  {r.note && <div style={recordMetaNoteStyle}>{r.note}</div>}
-                </div>
-                <div style={recordAmountWrapStyle}>
-                  <div style={recordAmountStyle}>{r.currency} {Number(r.amount).toLocaleString()}</div>
-                  <span style={statusBadgeStyle(statusColors[r.status]?.bg, statusColors[r.status]?.color)}>{r.status}</span>
-                </div>
-              </div>
+          <div style={statusRowStyle}>
+            {(['paid', 'pending', 'partial', 'failed', 'refunded', 'cancelled'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setStatus(s)}
+                style={statusButtonStyle(status === s)}
+              >{s}</button>
             ))}
           </div>
-        )}
+
+          <input placeholder="Method (cash, transfer, POS...)" value={method} onChange={e => setMethod(e.target.value)} style={inputStyle} />
+          <input placeholder="Reference (optional)" value={reference} onChange={e => setReference(e.target.value)} style={inputStyle} />
+          <input placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ ...inputStyle, marginBottom: '12px' }} />
+
+          {error && (
+            <div style={errorBoxStyle}>
+              <p style={errorTextStyle}>{error}</p>
+            </div>
+          )}
+
+          <button
+            onClick={handleAdd}
+            disabled={saving}
+            style={saveButtonStyle(saving)}
+          >
+            {saving ? 'Saving...' : 'Save Record'}
+          </button>
+        </div>
+      )}
+
+      <div style={sectionLabelStyle}>
+        Recent Transactions
       </div>
+
+      {records.length === 0 ? (
+        <p style={emptyTextStyle}>No payment records yet.</p>
+      ) : (
+        <div style={recordsListStyle}>
+          {records.map(r => (
+            <div key={r.id} style={recordCardStyle}>
+              <div>
+                <div style={recordNameStyle}>{r.customer_name}</div>
+                <div style={recordMetaStyle}>{new Date(r.created_at).toLocaleDateString()} {r.method ? '· ' + r.method : ''}</div>
+                {r.reference && <div style={recordMetaStyle}>Ref: {r.reference}</div>}
+                {r.note && <div style={recordMetaNoteStyle}>{r.note}</div>}
+              </div>
+              <div style={recordAmountWrapStyle}>
+                <div style={recordAmountStyle}>{r.currency} {Number(r.amount).toLocaleString()}</div>
+                <span style={statusBadgeStyle(statusColors[r.status]?.bg, statusColors[r.status]?.color)}>{r.status}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
