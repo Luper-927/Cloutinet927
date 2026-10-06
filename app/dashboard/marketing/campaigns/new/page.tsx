@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '../../../../../lib/supabase'
-import { getBusinessTier } from '../../../../../lib/tiers'
-import { getActingContext, ActingContext } from '../../../../../lib/permissions'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { supabase } from '../../../../../lib/supabase'
+import { useDashboard } from '../../../../components/DashboardShell'
 
 const OBJECTIVES = [
   'Get more enquiries',
@@ -16,51 +16,33 @@ const OBJECTIVES = [
 ]
 
 export default function NewCampaignPage() {
-  const [context, setContext] = useState<ActingContext | null>(null)
-  const [tierLimits, setTierLimits] = useState<any>(null)
-  const [checkingAccess, setCheckingAccess] = useState(true)
-  const [noPermission, setNoPermission] = useState(false)
+  const router = useRouter()
+  const { context, profile, tierLimits } = useDashboard()
+
+  const noPermission = !context.permissions.marketing
+  const hasAccess = !!tierLimits?.marketingAutomation
+  const tierName = tierLimits?.name || 'Free'
+
   const [name, setName] = useState('')
   const [objective, setObjective] = useState(OBJECTIVES[0])
   const [destinationType, setDestinationType] = useState<'product' | 'business'>('business')
   const [productId, setProductId] = useState('')
   const [products, setProducts] = useState<any[]>([])
-  const [profile, setProfile] = useState<any>(null)
   const [body, setBody] = useState('')
   const [cta, setCta] = useState('Message us on WhatsApp')
   const [generating, setGenerating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => { load() }, [])
-
-  async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
-
-    const ctx = await getActingContext(userData.user.id)
-    if (!ctx) { window.location.href = '/onboarding'; return }
-    setContext(ctx)
-
-    if (!ctx.permissions.marketing) {
-      setNoPermission(true)
-      setCheckingAccess(false)
-      return
-    }
-
-    const { limits } = await getBusinessTier(ctx.ownerId)
-    setTierLimits(limits)
-    setCheckingAccess(false)
-
-    if (!limits.marketingAutomation) return
-
-    const [{ data: profileData }, { data: productsData }] = await Promise.all([
-      supabase.from('profiles').select('*').eq('id', ctx.ownerId).single(),
-      supabase.from('products').select('id, name, price, currency, description').eq('user_id', ctx.ownerId).eq('is_published', true),
-    ])
-    setProfile(profileData)
-    setProducts(productsData || [])
-  }
+  useEffect(() => {
+    if (noPermission || !hasAccess) return
+    supabase
+      .from('products')
+      .select('id, name, price, currency, description')
+      .eq('user_id', context.ownerId)
+      .eq('is_published', true)
+      .then(({ data }) => setProducts(data || []))
+  }, [])
 
   async function generateCopy() {
     if (!name.trim()) { setError('Give your campaign a name first'); return }
@@ -108,7 +90,6 @@ export default function NewCampaignPage() {
 
   async function handleSave(status: 'draft' | 'active') {
     if (!name.trim()) { setError('Campaign name is required'); return }
-    if (!context) return
     setSaving(true)
     setError('')
 
@@ -136,107 +117,191 @@ export default function NewCampaignPage() {
     })
 
     setSaving(false)
-    window.location.href = '/dashboard/marketing'
-  }
-
-  if (checkingAccess) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
-      </div>
-    )
+    router.push('/dashboard/marketing')
   }
 
   if (noPermission) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to create campaigns.</p>
+      <div style={{ padding: '24px 0' }}>
+        <p style={mutedStyle}>You don&rsquo;t have permission to create campaigns.</p>
       </div>
     )
   }
 
-  if (!tierLimits?.marketingAutomation) {
+  if (!hasAccess) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-        <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>New Campaign</div>
-          <Link href="/dashboard/marketing" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Cancel</Link>
-        </div>
-        <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' as const }}>
-            <div style={{ fontSize: '28px', marginBottom: '10px' }}>📣</div>
-            <h2 style={{ color: '#0F172A', fontSize: '16px', marginBottom: '8px' }}>Marketing is a Growth plan feature</h2>
-            <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '20px', lineHeight: 1.5 }}>
-              Upgrade to the Growth plan or higher to create AI-generated campaigns.
-            </p>
-            <Link href="/dashboard/billing" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>
-              Upgrade to Growth
-            </Link>
-          </div>
+      <div style={wrapStyle}>
+        <Link href="/dashboard/marketing" style={backStyle}>Back to marketing</Link>
+        <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
+          <div style={{ fontSize: '28px', marginBottom: '10px' }}>📣</div>
+          <h2 style={{ color: '#0F172A', fontSize: '16px', marginBottom: '8px' }}>Marketing is not included in your plan</h2>
+          <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>
+            You&rsquo;re currently on the {tierName} plan. Upgrade to create AI-generated campaigns.
+          </p>
+          <Link href="/dashboard/billing" style={primaryButtonStyle}>View Plans</Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>New Campaign</div>
-        <Link href="/dashboard/marketing" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Cancel</Link>
+    <div style={wrapStyle}>
+      <Link href="/dashboard/marketing" style={backStyle}>Back to marketing</Link>
+      <h1 style={titleStyle}>New campaign</h1>
+
+      <label style={labelStyle}>Campaign name *</label>
+      <input placeholder="e.g. Weekend Furniture Sale" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+
+      <label style={labelStyle}>Objective</label>
+      <select value={objective} onChange={e => setObjective(e.target.value)} style={inputStyle}>
+        {OBJECTIVES.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+
+      <label style={labelStyle}>Promote</label>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <button onClick={() => setDestinationType('business')} style={{ ...toggleStyle, ...(destinationType === 'business' ? toggleActive : {}) }}>My business page</button>
+        <button onClick={() => setDestinationType('product')} style={{ ...toggleStyle, ...(destinationType === 'product' ? toggleActive : {}) }}>A specific product</button>
       </div>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
+      {destinationType === 'product' && (
+        <>
+          <label style={labelStyle}>Select product</label>
+          <select value={productId} onChange={e => setProductId(e.target.value)} style={inputStyle}>
+            <option value="">Choose a product</option>
+            {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        </>
+      )}
 
-        <label style={labelStyle}>Campaign Name *</label>
-        <input placeholder="e.g. Weekend Furniture Sale" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+      <label style={labelStyle}>Campaign message</label>
+      <textarea
+        placeholder="Write your promotional message..."
+        value={body}
+        onChange={e => setBody(e.target.value)}
+        style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+      />
+      <button onClick={generateCopy} disabled={generating} style={aiButtonStyle}>
+        {generating ? 'Generating...' : 'Generate copy with AI'}
+      </button>
 
-        <label style={labelStyle}>Objective</label>
-        <select value={objective} onChange={e => setObjective(e.target.value)} style={inputStyle}>
-          {OBJECTIVES.map(o => <option key={o} value={o}>{o}</option>)}
-        </select>
+      <label style={{ ...labelStyle, marginTop: '16px' }}>Call to action</label>
+      <input value={cta} onChange={e => setCta(e.target.value)} style={inputStyle} />
 
-        <label style={labelStyle}>Promote</label>
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-          <button onClick={() => setDestinationType('business')} style={{ ...toggleStyle, ...(destinationType === 'business' ? toggleActive : {}) }}>My Business Page</button>
-          <button onClick={() => setDestinationType('product')} style={{ ...toggleStyle, ...(destinationType === 'product' ? toggleActive : {}) }}>A Specific Product</button>
+      {error && (
+        <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
+          <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{error}</p>
         </div>
+      )}
 
-        {destinationType === 'product' && (
-          <>
-            <label style={labelStyle}>Select Product</label>
-            <select value={productId} onChange={e => setProductId(e.target.value)} style={inputStyle}>
-              <option value="">Choose a product</option>
-              {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </>
-        )}
-
-        <label style={labelStyle}>Campaign Message</label>
-        <textarea placeholder="Write your promotional message..." value={body} onChange={e => setBody(e.target.value)} style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' as const }} />
-        <button onClick={generateCopy} disabled={generating} style={aiButtonStyle}>
-          {generating ? '⏳ Generating...' : '✨ Generate Copy with AI'}
+      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+        <button
+          onClick={() => handleSave('draft')}
+          disabled={saving}
+          style={{ flex: 1, background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '13px', minHeight: '44px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          Save as draft
         </button>
-
-        <label style={{ ...labelStyle, marginTop: '16px' }}>Call to Action</label>
-        <input value={cta} onChange={e => setCta(e.target.value)} style={inputStyle} />
-
-        {error && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-            <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-          <button onClick={() => handleSave('draft')} disabled={saving} style={{ flex: 1, background: '#fff', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '13px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Save as Draft</button>
-          <button onClick={() => handleSave('active')} disabled={saving} style={{ flex: 1, background: '#0F172A', color: '#fff', border: 'none', borderRadius: '8px', padding: '13px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{saving ? 'Saving...' : 'Launch Campaign'}</button>
-        </div>
+        <button
+          onClick={() => handleSave('active')}
+          disabled={saving}
+          style={{ flex: 1, background: '#0F172A', color: '#fff', border: 'none', borderRadius: '8px', padding: '13px', minHeight: '44px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          {saving ? 'Saving...' : 'Launch campaign'}
+        </button>
       </div>
     </div>
   )
 }
 
-const labelStyle: React.CSSProperties = { display: 'block', color: '#475569', fontSize: '12px', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }
-const inputStyle: React.CSSProperties = { width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 14px', color: '#0F172A', fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }
-const aiButtonStyle: React.CSSProperties = { width: '100%', background: '#FFFBEB', color: '#92400E', border: '1px solid #FDE68A', borderRadius: '8px', padding: '11px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: '16px' }
-const toggleStyle: React.CSSProperties = { flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
-const toggleActive: React.CSSProperties = { background: '#0F172A', color: '#fff', border: '1px solid #0F172A' }
+const wrapStyle: React.CSSProperties = {
+  maxWidth: '480px',
+  margin: '0 auto',
+  fontFamily: 'Segoe UI, system-ui, sans-serif',
+}
+
+const backStyle: React.CSSProperties = {
+  display: 'inline-block',
+  color: '#475569',
+  fontSize: '13px',
+  textDecoration: 'none',
+  marginBottom: '12px',
+  padding: '6px 0',
+}
+
+const titleStyle: React.CSSProperties = {
+  fontSize: '22px',
+  fontWeight: 800,
+  color: '#0F172A',
+  margin: '0 0 18px',
+  letterSpacing: '-0.01em',
+}
+
+const mutedStyle: React.CSSProperties = { color: '#64748B', fontSize: '14px' }
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  color: '#475569',
+  fontSize: '13px',
+  fontWeight: 600,
+  marginBottom: '6px',
+}
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  background: '#fff',
+  border: '1px solid #E2E8F0',
+  borderRadius: '8px',
+  padding: '12px 14px',
+  color: '#0F172A',
+  fontSize: '14px',
+  marginBottom: '16px',
+  outline: 'none',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+}
+
+const aiButtonStyle: React.CSSProperties = {
+  width: '100%',
+  background: '#FFFBEB',
+  color: '#92400E',
+  border: '1px solid #FDE68A',
+  borderRadius: '8px',
+  padding: '11px',
+  minHeight: '44px',
+  fontSize: '14px',
+  fontWeight: 700,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  marginBottom: '16px',
+}
+
+const toggleStyle: React.CSSProperties = {
+  flex: 1,
+  padding: '10px',
+  minHeight: '44px',
+  borderRadius: '8px',
+  border: '1px solid #E2E8F0',
+  background: '#fff',
+  color: '#64748B',
+  fontSize: '13px',
+  fontWeight: 700,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+}
+
+const toggleActive: React.CSSProperties = {
+  background: '#0F172A',
+  color: '#fff',
+  border: '1px solid #0F172A',
+}
+
+const primaryButtonStyle: React.CSSProperties = {
+  display: 'inline-block',
+  background: '#0F172A',
+  color: '#fff',
+  padding: '12px 24px',
+  borderRadius: '8px',
+  textDecoration: 'none',
+  fontSize: '14px',
+  fontWeight: 700,
+}
