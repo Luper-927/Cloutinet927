@@ -2,16 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
-import { getBusinessTier } from '../../../lib/tiers'
-import { getActingContext } from '../../../lib/permissions'
 import Link from 'next/link'
+import { useDashboard } from '../../components/DashboardShell'
 import {
-  loadingWrapStyle,
   loadingTextStyle,
-  pageStyle,
-  headerStyle,
-  headerTitleStyle,
-  backLinkStyle,
   contentStyle,
   upgradeWrapStyle,
   upgradeEmojiStyle,
@@ -52,55 +46,36 @@ type Customer = {
   created_at: string
 }
 
-type LocationRow = {
-  business_name: string | null
-  address: string | null
-}
-
 const FOLLOW_UP_DAYS = 30
 const MS_PER_DAY = 1000 * 60 * 60 * 24
 
+const pageTitleStyle: React.CSSProperties = {
+  fontSize: '22px',
+  fontWeight: 800,
+  color: '#0F172A',
+  margin: '0 0 14px',
+  letterSpacing: '-0.01em',
+}
+
 export default function CustomersPage() {
+  const { context, tierLimits, locationName } = useDashboard()
+
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
-  const [hasAccess, setHasAccess] = useState(true)
-  const [noPermission, setNoPermission] = useState(false)
-  const [hasAdvanced, setHasAdvanced] = useState(false)
-  const [hasMarketing, setHasMarketing] = useState(false)
-  const [tierName, setTierName] = useState('Free')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
-  const [scopedLocationName, setScopedLocationName] = useState<string | null>(null)
+
+  const noPermission = !context.permissions.customers
+  const hasAccess = !!tierLimits?.customerRecords
+  const hasAdvanced = !!tierLimits?.advancedCustomers
+  const hasMarketing = !!tierLimits?.marketingAutomation
+  const tierName = tierLimits?.name || 'Free'
 
   useEffect(() => {
     load()
   }, [])
 
   async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) {
-      window.location.href = '/auth'
-      return
-    }
-
-    const context = await getActingContext(userData.user.id)
-    if (!context) {
-      window.location.href = '/onboarding'
-      return
-    }
-
-    if (!context.permissions.customers) {
-      setNoPermission(true)
-      setLoading(false)
-      return
-    }
-
-    const { limits } = await getBusinessTier(context.ownerId)
-    setTierName(limits.name)
-    setHasAdvanced(limits.advancedCustomers)
-    setHasMarketing(limits.marketingAutomation)
-
-    if (!limits.customerRecords) {
-      setHasAccess(false)
+    if (noPermission || !hasAccess) {
       setLoading(false)
       return
     }
@@ -121,18 +96,6 @@ export default function CustomersPage() {
 
     const { data } = await query
     setCustomers(data || [])
-
-    if (context.locationId) {
-      const locationFields = 'business_name, address'
-      const { data: loc } = await supabase
-        .from('locations')
-        .select<string, LocationRow>(locationFields)
-        .eq('id', context.locationId)
-        .maybeSingle()
-      const name = loc?.business_name || loc?.address
-      setScopedLocationName(name || null)
-    }
-
     setLoading(false)
   }
 
@@ -159,7 +122,7 @@ export default function CustomersPage() {
 
   if (loading) {
     return (
-      <div style={loadingWrapStyle}>
+      <div style={{ padding: '24px 0' }}>
         <p style={loadingTextStyle}>Loading...</p>
       </div>
     )
@@ -167,7 +130,7 @@ export default function CustomersPage() {
 
   if (noPermission) {
     return (
-      <div style={loadingWrapStyle}>
+      <div style={{ padding: '24px 0' }}>
         <p style={loadingTextStyle}>
           You don&rsquo;t have permission to view customers.
         </p>
@@ -177,21 +140,18 @@ export default function CustomersPage() {
 
   if (!hasAccess) {
     return (
-      <div style={pageStyle}>
-        <div style={headerStyle}>
-          <div style={headerTitleStyle}>Customers</div>
-          <Link href="/dashboard" style={backLinkStyle}>Back</Link>
-        </div>
+      <div style={contentStyle}>
+        <h1 style={pageTitleStyle}>Customers</h1>
         <div style={upgradeWrapStyle}>
           <div style={upgradeEmojiStyle}>👥</div>
           <h2 style={upgradeTitleStyle}>
-            Customer records need Essential or higher
+            Customer records are not included in your plan
           </h2>
           <p style={upgradeTextStyle}>
             You&rsquo;re currently on the {tierName} plan.
             Upgrade to save customer names, contacts,
             and notes so you never lose track of who
-            you&rsquo;ve sold to.
+            you work with.
           </p>
           <Link href="/dashboard/billing" style={upgradeButtonStyle}>
             View Plans
@@ -204,108 +164,103 @@ export default function CustomersPage() {
   const followUpCustomers = customers.filter(needsFollowUp)
 
   return (
-    <div style={pageStyle}>
-      <div style={headerStyle}>
-        <div style={headerTitleStyle}>Customers</div>
-        <Link href="/dashboard" style={backLinkStyle}>Back</Link>
-      </div>
+    <div style={contentStyle}>
+      <h1 style={pageTitleStyle}>Customers</h1>
 
-      <div style={contentStyle}>
-        {scopedLocationName && (
-          <div style={locationBannerStyle}>
-            📍 Showing customers for {scopedLocationName} only
-          </div>
-        )}
+      {locationName && (
+        <div style={locationBannerStyle}>
+          📍 Showing customers for {locationName} only
+        </div>
+      )}
 
-        <Link href="/dashboard/customers/new" style={addButtonStyle}>
-          + Add Customer
+      <Link href="/dashboard/customers/new" style={addButtonStyle}>
+        + Add Customer
+      </Link>
+
+      {hasMarketing && (
+        <Link
+          href="/dashboard/customers/message"
+          style={messageButtonStyle}
+        >
+          📢 Message Customers
         </Link>
+      )}
 
-        {hasMarketing && (
-          <Link
-            href="/dashboard/customers/message"
-            style={messageButtonStyle}
-          >
-            📢 Message Customers
-          </Link>
-        )}
-
-        {hasAdvanced && followUpCustomers.length > 0 && (
-          <div style={followUpBoxStyle}>
-            <div style={followUpTitleStyle}>
-              Needs Follow-Up ({followUpCustomers.length})
-            </div>
-            <p style={followUpTextStyle}>
-              These customers haven&rsquo;t been marked
-              as contacted in {FOLLOW_UP_DAYS}+ days.
-            </p>
+      {hasAdvanced && followUpCustomers.length > 0 && (
+        <div style={followUpBoxStyle}>
+          <div style={followUpTitleStyle}>
+            Needs Follow-Up ({followUpCustomers.length})
           </div>
-        )}
+          <p style={followUpTextStyle}>
+            These customers haven&rsquo;t been marked
+            as contacted in {FOLLOW_UP_DAYS}+ days.
+          </p>
+        </div>
+      )}
 
-        {customers.length === 0 ? (
-          <div style={emptyWrapStyle}>
-            <div style={emptyEmojiStyle}>👥</div>
-            <p style={emptyTextStyle}>
-              No customers yet. Add your first one above.
-            </p>
-          </div>
-        ) : (
-          <div style={listWrapStyle}>
-            {customers.map(c => {
-              const flagged = needsFollowUp(c)
-              const cardStyle = flagged
-                ? flaggedCardStyle
-                : normalCardStyle
-              return (
-                <div key={c.id} style={cardStyle}>
-                  <div style={nameStyle}>{c.name}</div>
-                  {c.phone && (
-                    <div style={detailStyle}>📞 {c.phone}</div>
-                  )}
-                  {c.email && (
-                    <div style={detailStyle}>✉️ {c.email}</div>
-                  )}
-                  {c.address && (
-                    <div style={detailStyle}>📍 {c.address}</div>
-                  )}
-                  {c.notes && (
-                    <div style={notesStyle}>{c.notes}</div>
-                  )}
+      {customers.length === 0 ? (
+        <div style={emptyWrapStyle}>
+          <div style={emptyEmojiStyle}>👥</div>
+          <p style={emptyTextStyle}>
+            No customers yet. Add your first one above.
+          </p>
+        </div>
+      ) : (
+        <div style={listWrapStyle}>
+          {customers.map(c => {
+            const flagged = needsFollowUp(c)
+            const cardStyle = flagged
+              ? flaggedCardStyle
+              : normalCardStyle
+            return (
+              <div key={c.id} style={cardStyle}>
+                <div style={nameStyle}>{c.name}</div>
+                {c.phone && (
+                  <div style={detailStyle}>📞 {c.phone}</div>
+                )}
+                {c.email && (
+                  <div style={detailStyle}>✉️ {c.email}</div>
+                )}
+                {c.address && (
+                  <div style={detailStyle}>📍 {c.address}</div>
+                )}
+                {c.notes && (
+                  <div style={notesStyle}>{c.notes}</div>
+                )}
 
-                  {hasAdvanced && c.tags && c.tags.length > 0 && (
-                    <div style={tagsWrapStyle}>
-                      {c.tags.map(tag => (
-                        <span key={tag} style={tagStyle}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {hasAdvanced && (
-                    <div style={contactedRowStyle}>
-                      <span style={contactedLabelStyle}>
-                        {c.last_contacted_at
-                          ? contactedLabel(c.last_contacted_at)
-                          : 'Never contacted'}
+                {hasAdvanced && c.tags && c.tags.length > 0 && (
+                  <div style={tagsWrapStyle}>
+                    {c.tags.map(tag => (
+                      <span key={tag} style={tagStyle}>
+                        {tag}
                       </span>
-                      <button
-                        onClick={() => markContacted(c.id)}
-                        disabled={updatingId === c.id}
-                        style={contactedButtonStyle}
-                      >
-                        {updatingId === c.id
-                          ? '...'
-                          : 'Mark Contacted'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+                    ))}
+                  </div>
+                )}
+
+                {hasAdvanced && (
+                  <div style={contactedRowStyle}>
+                    <span style={contactedLabelStyle}>
+                      {c.last_contacted_at
+                        ? contactedLabel(c.last_contacted_at)
+                        : 'Never contacted'}
+                    </span>
+                    <button
+                      onClick={() => markContacted(c.id)}
+                      disabled={updatingId === c.id}
+                      style={contactedButtonStyle}
+                    >
+                      {updatingId === c.id
+                        ? '...'
+                        : 'Mark Contacted'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
