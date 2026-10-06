@@ -3,9 +3,9 @@
 import { usePathname } from 'next/navigation'
 import DashboardShell from '../components/DashboardShell'
 
-// Pages that have been converted to the new shell. Add a path here each
-// time a page has had its own header/menu removed. Once every page under
-// /dashboard is converted, delete this list and always render the shell.
+// Pages that show the new navigation. Add a path here each time a page
+// has had its own header/menu removed. When every page is converted,
+// delete this list and pass chrome={true} (or remove the prop).
 const SHELL_PAGES = [
   '/dashboard',
   '/dashboard/customers',
@@ -14,10 +14,7 @@ const SHELL_PAGES = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const showChrome = !!pathname && SHELL_PAGES.includes(pathname)
 
-  if (!pathname || !SHELL_PAGES.includes(pathname)) {
-    return <>{children}</>
-  }
-
-  return <DashboardShell>{children}</DashboardShell>
+  return <DashboardShell chrome={showChrome}>{children}</DashboardShell>
 }
