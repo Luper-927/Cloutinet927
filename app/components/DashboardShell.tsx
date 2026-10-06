@@ -203,6 +203,14 @@ export default function DashboardShell({
   const perms = context.permissions
   const slug = profile?.business_slug
 
+  const value: DashboardState = { context, profile, tierLimits, locationName, signOut }
+
+  // Pages that haven't been converted yet: share the data, but don't draw
+  // the sidebar, top bar or bottom navigation.
+  if (!chrome) {
+    return <DashboardCtx.Provider value={value}>{children}</DashboardCtx.Provider>
+  }
+
   const groups: NavGroup[] = ([
     {
       title: 'Run',
@@ -227,8 +235,8 @@ export default function DashboardShell({
       items: [
         { href: '/dashboard#visibility', label: 'Visibility', icon: 'globe', show: !!context.isOwner },
         { href: slug ? '/store/' + slug : '/dashboard', label: 'Public page', icon: 'link', show: !!slug, external: true },
-        { href: '/dashboard/integrations', label: 'Integrations', icon: 'layers', show: !!tierLimits?.integrations },
-        { href: '/dashboard/api-keys', label: 'Developer and API', icon: 'code', show: !!context.isOwner },
+        { href: '/dashboard/integrations', label: 'Integrations', icon: 'layers', show: !!context.isOwner && !!tierLimits?.integrations },
+        { href: '/dashboard/api-keys', label: 'Developer and API', icon: 'code', show: !!context.isOwner && !!tierLimits?.integrations },
       ],
     },
     {
@@ -293,14 +301,6 @@ export default function DashboardShell({
         <span>{item.label}</span>
       </Link>
     )
-  }
-
-  const value: DashboardState = { context, profile, tierLimits, locationName, signOut }
-
-  // Pages that haven't been converted yet: share the data, but don't draw
-  // the sidebar, top bar or bottom navigation.
-  if (!chrome) {
-    return <DashboardCtx.Provider value={value}>{children}</DashboardCtx.Provider>
   }
 
   return (
