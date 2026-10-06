@@ -25,12 +25,18 @@ import {
   Megaphone,
   Plug,
   Zap,
+  Layers,
+  Workflow,
+  Sparkles,
+  Building2,
+  FileText,
+  ShieldCheck,
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cloutinet — Get Found on Google. Get More Customers.",
+  title: "Cloutinet — The Business Operating System",
   description:
-    "Cloutinet is Nigeria's business visibility operating system — a Google-searchable page, AI-powered marketing campaigns, and the tools to run and grow your business, all in one place.",
+    "Cloutinet is the operating system for modern companies — run your operations, teams, customers and growth from one connected platform.",
   alternates: {
     canonical: '/',
   },
@@ -42,10 +48,61 @@ export const viewport: Viewport = {
 };
 
 const NAV_LINKS = [
-  { label: "How it Works", href: "#how-it-works" },
-  { label: "Features", href: "#features" },
+  { label: "Platform", href: "#platform" },
+  { label: "AI", href: "#ai" },
   { label: "Pricing", href: "#pricing" },
   { label: "Testimonials", href: "#testimonials" },
+];
+
+const PROBLEM_TOOLS = [
+  "Customers", "Employees", "Payments", "Documents",
+  "Marketing", "Operations", "Analytics", "Automation",
+];
+
+const PLATFORM_AREAS = [
+  {
+    key: "run",
+    icon: Layers,
+    accent: "text-blue-400",
+    title: "RUN",
+    subtitle: "Operate the business",
+    items: ["Employees & Permissions", "Documents", "Locations", "AI Insights & Automation"],
+  },
+  {
+    key: "grow",
+    icon: TrendingUp,
+    accent: "text-emerald-400",
+    title: "GROW",
+    subtitle: "Build relationships and revenue",
+    items: ["Customers (CRM)", "Products & Commerce", "Payments", "Marketing Campaigns"],
+  },
+  {
+    key: "connect",
+    icon: Workflow,
+    accent: "text-amber-400",
+    title: "CONNECT",
+    subtitle: "Reach customers and systems",
+    items: ["Public Business Page", "Search Visibility", "WhatsApp Contact", "Developer API"],
+  },
+];
+
+const WORKFLOW_STEPS = [
+  "Customer discovers your business",
+  "Contacts you directly on WhatsApp",
+  "Enters your CRM automatically",
+  "Your team follows up and sends a payment request",
+  "Payment is recorded",
+  "Activity appears on your dashboard",
+  "AI surfaces what needs your attention",
+];
+
+const ENTERPRISE_CAPABILITIES = [
+  { icon: Building2, text: "Multiple business locations" },
+  { icon: Users, text: "Employee roles & permissions" },
+  { icon: FileText, text: "Centralized document storage" },
+  { icon: Zap, text: "AI-powered automation" },
+  { icon: Plug, text: "Developer API access" },
+  { icon: ShieldCheck, text: "Scales with your business" },
 ];
 
 const FEATURES = [
@@ -98,14 +155,14 @@ const FEATURES = [
   {
     icon: Plug,
     iconBg: "bg-cyan-100 text-cyan-600",
-    title: "Integrations",
-    description: "Connect WhatsApp Business API, social shops, analytics tools and custom webhooks.",
+    title: "Developer API",
+    description: "Query a business's visibility score programmatically, pay-as-you-go.",
   },
   {
-    icon: Star,
+    icon: Users,
     iconBg: "bg-amber-100 text-amber-600",
-    title: "Customer Reviews",
-    description: "Build trust with reviews from happy customers.",
+    title: "Employees & Permissions",
+    description: "Add team members with role-based access, scoped by location.",
   },
 ];
 
@@ -136,6 +193,7 @@ const PLANS = [
       "Up to 40 products or services",
       "Full visibility score + tips",
       "Customer records (CRM)",
+      "Trust-Score API access",
       "70 AI content generations/month",
     ],
     cta: "Start Startup Plan",
@@ -201,41 +259,14 @@ const API_PRICING = [
   { range: "10,001+ calls / month", price: "₦6", unit: "per call, or contact sales" },
 ];
 
-const STEPS = [
-  {
-    number: "1",
-    icon: ClipboardList,
-    iconBg: "bg-blue-50 text-blue-600",
-    title: "Create Your Page",
-    description:
-      "Tell us about your business and add your products, services and photos.",
-  },
-  {
-    number: "2",
-    icon: Rocket,
-    iconBg: "bg-blue-50 text-blue-600",
-    title: "Get Discovered",
-    description:
-      "We create your Google-searchable page and optimize it for visibility.",
-  },
-  {
-    number: "3",
-    icon: Users,
-    iconBg: "bg-blue-50 text-blue-600",
-    title: "Get More Customers",
-    description:
-      "Customers find you on Google and contact you on WhatsApp. You grow your business!",
-  },
-];
-
 const FOOTER_COLUMNS = [
   {
-    title: "Product",
+    title: "Platform",
     links: [
-      { label: "How it Works", href: "#how-it-works" },
-      { label: "Features", href: "#features" },
+      { label: "Run", href: "#platform" },
+      { label: "Grow", href: "#platform" },
+      { label: "Connect", href: "#platform" },
       { label: "Pricing", href: "#pricing" },
-      { label: "Check Score", href: "/checker" },
     ],
   },
   {
@@ -260,11 +291,15 @@ export default function Home() {
     <main className="min-h-screen w-full overflow-x-hidden bg-white">
       <Navbar />
       <Hero />
-      <Features />
+      <Problem />
+      <Platform />
+      <AiSection />
+      <WorkflowSection />
+      <VisibilitySection />
+      <Enterprise />
       <Pricing />
       <ApiPricing />
       <Testimonials />
-      <Steps />
       <FinalCta />
       <Footer />
     </main>
@@ -304,7 +339,7 @@ function Navbar() {
             href="/auth"
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
           >
-            Get Started
+            Start Free
           </a>
         </div>
 
@@ -319,7 +354,7 @@ function Navbar() {
             href="/auth"
             className="rounded-lg bg-blue-600 px-2.5 py-1.5 text-[11px] font-semibold text-white"
           >
-            Get Started
+            Start Free
           </a>
         </div>
       </div>
@@ -344,20 +379,19 @@ function Hero() {
       <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:gap-14 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8">
         <div className="text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-medium text-emerald-400 sm:mb-6 sm:px-4 sm:text-xs">
-            <span aria-hidden>🇳🇬</span>
-            Nigeria's Business Visibility Operating System
+            <Layers className="h-3 w-3" />
+            The Business Operating System
           </div>
 
-          <h1 className="text-4xl font-extrabold leading-[0.95] tracking-tight text-white xs:text-5xl sm:text-6xl lg:text-7xl xl:text-8xl">
-            Get Found on Google.
+          <h1 className="text-4xl font-extrabold leading-[0.95] tracking-tight text-white xs:text-5xl sm:text-6xl lg:text-7xl">
+            Run Your Business
             <br />
-            Get More <span className="text-emerald-400">Customers.</span>
+            From <span className="text-emerald-400">One Place.</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
-            Cloutinet is the operating system for your business's visibility —
-            a Google-searchable page, AI-powered marketing campaigns, and the
-            tools to run and grow your business, all in one place.
+            Cloutinet connects your operations, team, customers and growth into one
+            platform — so your business runs on a system, not ten disconnected tools.
           </p>
 
           <SearchBar />
@@ -367,11 +401,11 @@ function Hero() {
               href="/auth"
               className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
             >
-              Create Your Free Page
+              Start Free
               <ArrowRight className="h-4 w-4" />
             </a>
             <a
-              href="#how-it-works"
+              href="#platform"
               className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
             >
               <PlayCircle className="h-4 w-4" />
@@ -529,29 +563,74 @@ function ScoreCard() {
   );
 }
 
-function Features() {
+function Problem() {
   return (
-    <section id="features" className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 items-end gap-5 sm:gap-8 lg:grid-cols-2">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
-              <Star className="h-3 w-3 fill-current" />
-              ONE OPERATING SYSTEM
+    <section className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+          Your business shouldn't run across{" "}
+          <span className="text-blue-600">ten disconnected tools.</span>
+        </h2>
+        <p className="mt-4 text-sm leading-relaxed text-slate-500 sm:text-base">
+          Most companies piece together separate systems for every part of the business —
+          and none of them talk to each other.
+        </p>
+
+        <div className="mt-10 flex flex-wrap justify-center gap-2.5 sm:mt-14">
+          {PROBLEM_TOOLS.map((tool) => (
+            <span
+              key={tool}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-500"
+            >
+              {tool}
             </span>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-              Everything You Need to Get{" "}
-              <span className="text-blue-600">Discovered &amp; Grow</span>
-            </h2>
-          </div>
-          <p className="text-sm leading-relaxed text-slate-500 sm:text-base lg:text-right">
-            From your first Google-searchable page to marketing campaigns,
-            payments, and integrations — Cloutinet runs your business's
-            visibility end to end.
-          </p>
+          ))}
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+        <p className="mt-10 text-base font-semibold text-slate-900 sm:text-lg">
+          Cloutinet connects these workflows into one system.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function Platform() {
+  return (
+    <section id="platform" className="bg-white py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
+            <Layers className="h-3 w-3" />
+            ONE OPERATING SYSTEM
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
+            Every Part of Your Business, Connected
+          </h2>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:mt-14 md:grid-cols-3">
+          {PLATFORM_AREAS.map((area) => (
+            <div
+              key={area.key}
+              className="rounded-2xl border border-slate-100 bg-[#0A0E27] p-6 sm:p-7"
+            >
+              <area.icon className={`h-6 w-6 ${area.accent}`} />
+              <h3 className="mt-4 text-lg font-bold text-white">{area.title}</h3>
+              <p className="mt-1 text-sm text-slate-400">{area.subtitle}</p>
+              <ul className="mt-5 space-y-2.5">
+                {area.items.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-slate-300">
+                    <CheckCircle2 className={`mt-0.5 h-4 w-4 shrink-0 ${area.accent}`} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-14 grid grid-cols-1 gap-4 sm:mt-20 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
           {FEATURES.map((feature) => (
             <div
               key={feature.title}
@@ -574,9 +653,146 @@ function Features() {
   );
 }
 
+function AiSection() {
+  return (
+    <section id="ai" className="bg-[#0A0E27] py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-slate-300 sm:text-xs">
+          <Sparkles className="h-3 w-3" />
+          AI ACROSS YOUR BUSINESS
+        </span>
+        <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:mt-4 sm:text-3xl lg:text-4xl">
+          AI That Works Across Your Business
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-slate-400 sm:text-base">
+          Not just a content generator — AI that watches what's happening in your business
+          and tells you what needs attention.
+        </p>
+
+        <div className="mt-10 grid grid-cols-1 gap-4 text-left sm:mt-14 sm:grid-cols-3 sm:gap-5">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <p className="text-sm font-semibold text-white">Business Brief</p>
+            <p className="mt-2 text-sm text-slate-400">
+              Surfaces what changed in your business — traffic shifts, new activity, things worth knowing.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <p className="text-sm font-semibold text-white">Generated Content</p>
+            <p className="mt-2 text-sm text-slate-400">
+              AI-written taglines, product descriptions and marketing copy, tuned to your business.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <p className="text-sm font-semibold text-white">Visibility Guidance</p>
+            <p className="mt-2 text-sm text-slate-400">
+              Clear, scored recommendations for what to fix to improve how easily customers find you.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WorkflowSection() {
+  return (
+    <section className="bg-white py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
+            <Workflow className="h-3 w-3" />
+            CONNECTED, NOT SCATTERED
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
+            One Workflow, Start to Finish
+          </h2>
+        </div>
+
+        <div className="mt-10 sm:mt-14">
+          {WORKFLOW_STEPS.map((step, i) => (
+            <div key={step} className="flex items-start gap-4">
+              <div className="flex flex-col items-center">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                  {i + 1}
+                </span>
+                {i !== WORKFLOW_STEPS.length - 1 && (
+                  <span className="h-8 w-px bg-slate-200" />
+                )}
+              </div>
+              <p className="pb-6 pt-0.5 text-sm text-slate-600 sm:text-base">{step}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function VisibilitySection() {
+  return (
+    <section className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-700 sm:text-xs">
+              CONNECT
+            </span>
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
+              Make Your Business Accessible
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-slate-500 sm:text-base">
+              Every business on Cloutinet gets a Google-searchable page, product listings,
+              and a direct WhatsApp contact point — so customers, search engines and
+              other systems can find and reach you.
+            </p>
+            <a
+              href="/checker"
+              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+            >
+              Check Your Visibility
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+          <div className="mx-auto flex w-full max-w-xs justify-center">
+            <PhoneMockup />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Enterprise() {
+  return (
+    <section className="bg-white py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
+          <Building2 className="h-3 w-3" />
+          BUILT TO SCALE
+        </span>
+        <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
+          Grows With Your Company
+        </h2>
+
+        <div className="mt-10 grid grid-cols-1 gap-4 text-left sm:mt-14 sm:grid-cols-2 lg:grid-cols-3">
+          {ENTERPRISE_CAPABILITIES.map((cap) => (
+            <div
+              key={cap.text}
+              className="flex items-center gap-3 rounded-xl border border-slate-100 bg-[#F5F7FB] p-4"
+            >
+              <cap.icon className="h-5 w-5 shrink-0 text-blue-600" />
+              <span className="text-sm font-medium text-slate-700">{cap.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Pricing() {
   return (
-    <section id="pricing" className="bg-white py-14 sm:py-20 lg:py-28">
+    <section id="pricing" className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
@@ -586,7 +802,7 @@ function Pricing() {
             Plans for every stage of your business
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
-            Start free. Upgrade whenever you're ready for more customers.
+            Start free. Upgrade whenever you're ready to grow.
           </p>
         </div>
 
@@ -662,7 +878,7 @@ function Pricing() {
 
 function ApiPricing() {
   return (
-    <section className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
+    <section className="bg-white py-14 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold text-emerald-700 sm:text-xs">
@@ -670,19 +886,19 @@ function ApiPricing() {
             PAY AS YOU GO
           </span>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-            Trust-Score API
+            Developer OS: Trust-Score API
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
             Let your own systems check a business's Cloutinet visibility score programmatically. Only pay for what you actually call — no bundles, no waste.
           </p>
         </div>
 
-        <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white sm:mt-14">
+        <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-[#F5F7FB] sm:mt-14">
           {API_PRICING.map((tier, i) => (
             <div
               key={tier.range}
               className={`flex items-center justify-between px-6 py-4 sm:px-8 ${
-                i !== API_PRICING.length - 1 ? "border-b border-slate-100" : ""
+                i !== API_PRICING.length - 1 ? "border-b border-slate-200" : ""
               }`}
             >
               <span className="text-sm text-slate-600">{tier.range}</span>
@@ -726,7 +942,6 @@ function Testimonials() {
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:gap-5 md:grid-cols-3">
-            {/* Real customer quote — verified via Cloutinet feedback, name and words unchanged */}
             <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
               <Quote className="h-5 w-5 text-blue-400" />
               <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
@@ -757,7 +972,7 @@ function Testimonials() {
             <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
               <TrendingUp className="h-5 w-5 text-amber-400" />
               <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
-                Real analytics on every page view and WhatsApp click — no guessing whether your visibility spend is actually working.
+                Real analytics on every page view and WhatsApp click — no guessing whether things are actually working.
               </p>
               <div className="mt-6">
                 <p className="text-sm font-medium text-white">Real tracking</p>
@@ -771,131 +986,36 @@ function Testimonials() {
   );
 }
 
-function Steps() {
-  return (
-    <section id="how-it-works" className="bg-white pb-14 sm:pb-20 lg:pb-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
-            EASY 3-STEP PROCESS
-          </span>
-          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-            Get Started <span className="text-blue-600">in 3</span> Simple Steps
-          </h2>
-        </div>
-
-        <div className="relative mt-8 grid grid-cols-1 gap-8 sm:mt-16 sm:gap-10 md:grid-cols-3 md:gap-6">
-          <div
-            aria-hidden
-            className="absolute left-0 right-0 top-4 hidden border-t-2 border-dashed border-slate-200 md:block"
-          />
-          {STEPS.map((step) => (
-            <div key={step.number} className="relative text-left">
-              <div className="relative z-10 flex items-center gap-3 bg-white pr-4">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
-                  {step.number}
-                </span>
-              </div>
-              <div className={`mt-4 flex h-10 w-10 items-center justify-center rounded-xl sm:mt-5 sm:h-11 sm:w-11 ${step.iconBg}`}>
-                <step.icon className="h-5 w-5" />
-              </div>
-              <h3 className="mt-3 text-base font-semibold text-slate-900 sm:mt-4 sm:text-lg">
-                {step.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-500">
-                {step.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function FinalCta() {
   return (
-    <section id="get-started" className="bg-white pb-14 sm:pb-20 lg:pb-28">
+    <section className="bg-white pb-14 sm:pb-20 lg:pb-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
+        <div className="relative overflow-hidden rounded-2xl bg-[#0A0E27] px-5 py-10 text-center sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
           <div
             aria-hidden
             className="pointer-events-none absolute -left-20 -top-20 h-[400px] w-[400px] rounded-full bg-blue-700/25 blur-[110px]"
           />
-          <div className="relative grid grid-cols-1 items-center gap-8 sm:gap-12 lg:grid-cols-2">
-            <div className="text-center lg:text-left">
-              <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
-                Ready to Get More Customers?
-              </h2>
-              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 sm:mt-4 sm:text-base lg:mx-0">
-                Join businesses already growing with Cloutinet.
-              </p>
-              <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
-                <a
-                  href="/auth"
-                  className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
-                >
-                  Create Your Free Page
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-                <a
-                  href="/checker"
-                  className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
-                >
-                  Check Your Score Free
-                </a>
-              </div>
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  No Credit Card
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  Free to Join
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  Setup in 5 Minutes
-                </span>
-              </div>
-            </div>
-
-            <div className="relative mx-auto hidden h-64 w-full max-w-sm lg:block">
-              <div className="absolute right-6 top-2 w-40 rounded-2xl bg-white p-4 shadow-2xl">
-                <p className="text-[10px] font-medium text-slate-500">
-                  Visibility Score
-                </p>
-                <p className="mt-1 text-2xl font-bold text-emerald-500">85%</p>
-                <p className="text-[10px] font-medium text-emerald-500">
-                  Great Job!
-                </p>
-                <svg viewBox="0 0 100 30" className="mt-2 h-6 w-full text-emerald-500">
-                  <polyline
-                    points="0,25 20,20 40,22 60,10 80,12 100,2"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <div className="absolute bottom-2 left-2 w-44 rounded-2xl bg-white p-4 shadow-2xl">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4 text-emerald-500" />
-                  <p className="text-[10px] font-medium text-slate-500">
-                    New WhatsApp Messages
-                  </p>
-                </div>
-                <p className="mt-1 text-2xl font-bold text-slate-900">23</p>
-                <p className="text-[10px] font-medium text-emerald-500">
-                  +12% this week
-                </p>
-              </div>
-              <span className="absolute bottom-0 right-8 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 shadow-xl">
-                <MessageCircle className="h-6 w-6 text-white" />
-              </span>
+          <div className="relative">
+            <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+              Run Your Business From One Place
+            </h2>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 sm:mt-4 sm:text-base">
+              One connected system for operations, customers and growth.
+            </p>
+            <div className="mt-6 flex flex-col items-center gap-3 sm:mt-8 sm:flex-row sm:justify-center">
+              <a
+                href="/auth"
+                className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
+              >
+                Start Free
+                <ArrowRight className="h-4 w-4" />
+              </a>
+              <a
+                href="/checker"
+                className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
+              >
+                Check Your Score Free
+              </a>
             </div>
           </div>
         </div>
@@ -914,7 +1034,7 @@ function Footer() {
               <span className="text-lg font-black text-white">Cloutinet</span>
             </a>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-              Helping Nigerian businesses get found on Google and win more customers, every day.
+              The business operating system — run your operations, customers and growth from one place.
             </p>
           </div>
 
@@ -941,7 +1061,7 @@ function Footer() {
           <p className="text-xs text-slate-500">
             © {new Date().getFullYear()} Cloutinet. All rights reserved.
           </p>
-          <p className="text-xs text-slate-500">Made for Nigerian businesses 🇳🇬</p>
+          <p className="text-xs text-slate-500">Built for modern companies 🇳🇬</p>
         </div>
       </div>
     </footer>
