@@ -54,10 +54,7 @@ export default function EditEmployeePage() {
 
   useEffect(() => {
     // Only the business owner can edit permissions
-    if (!context.isOwner) {
-      router.replace('/dashboard')
-      return
-    }
+    if (!context.isOwner) { router.replace('/dashboard'); return }
     load()
   }, [employeeId])
 
@@ -69,11 +66,7 @@ export default function EditEmployeePage() {
       .eq('owner_id', context.ownerId)
       .maybeSingle()
 
-    if (fetchError || !data) {
-      setNotFound(true)
-      setLoading(false)
-      return
-    }
+    if (fetchError || !data) { setNotFound(true); setLoading(false); return }
 
     setEmployee(data)
     setRole(data.role === 'manager' ? 'manager' : 'staff')
@@ -111,196 +104,74 @@ export default function EditEmployeePage() {
     setSaved(true)
   }
 
-  if (!context.isOwner || loading) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>Loading...</p>
-      </div>
-    )
-  }
+  if (!context.isOwner || loading) return <div className="ui-wrap"><p className="ui-sub">Loading...</p></div>
 
   if (notFound || !employee) {
     return (
-      <div style={wrapStyle}>
-        <Link href="/dashboard/employees" style={backStyle}>Back to employees</Link>
-        <p style={mutedStyle}>Employee not found.</p>
+      <div className="ui-wrap">
+        <Link href="/dashboard/employees" className="ui-back">Back to employees</Link>
+        <p className="ui-sub">Employee not found.</p>
       </div>
     )
   }
 
   return (
-    <div style={wrapStyle}>
-      <Link href="/dashboard/employees" style={backStyle}>Back to employees</Link>
-      <h1 style={titleStyle}>Edit permissions</h1>
+    <div className="ui-wrap">
+      <Link href="/dashboard/employees" className="ui-back">Back to employees</Link>
+      <h1 className="ui-title">Edit permissions</h1>
 
       <div style={{ marginBottom: '20px' }}>
-        <div style={{ fontWeight: 700, fontSize: '16px', color: '#0F172A' }}>{employee.name || employee.email}</div>
-        <div style={{ fontSize: '13px', color: '#64748B', overflowWrap: 'anywhere' }}>{employee.email}</div>
+        <div className="ui-name" style={{ fontSize: '17px' }}>{employee.name || employee.email}</div>
+        <div className="ui-meta" style={{ overflowWrap: 'anywhere' }}>{employee.email}</div>
       </div>
 
-      <label style={labelStyle}>Role</label>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-        <button
-          onClick={() => { setRole('manager'); setSaved(false) }}
-          style={{ ...toggleStyle, ...(role === 'manager' ? toggleActive : {}) }}
-        >
-          Manager
-        </button>
-        <button
-          onClick={() => { setRole('staff'); setSaved(false) }}
-          style={{ ...toggleStyle, ...(role === 'staff' ? toggleActive : {}) }}
-        >
-          Staff
-        </button>
+      <label className="ui-label">Role</label>
+      <div className="ui-pills" style={{ marginBottom: '24px' }}>
+        <button onClick={() => { setRole('manager'); setSaved(false) }} className={'ui-pill' + (role === 'manager' ? ' is-on' : '')}>Manager</button>
+        <button onClick={() => { setRole('staff'); setSaved(false) }} className={'ui-pill' + (role === 'staff' ? ' is-on' : '')}>Staff</button>
       </div>
 
       {locations.length > 0 && (
         <>
-          <label style={labelStyle}>Location</label>
-          <select
-            value={locationId}
-            onChange={e => { setLocationId(e.target.value); setSaved(false) }}
-            style={selectStyle}
-          >
+          <label className="ui-label">Location</label>
+          <select className="ui-input" value={locationId} onChange={e => { setLocationId(e.target.value); setSaved(false) }}>
             <option value="">All locations</option>
             {locations.map(loc => (
-              <option key={loc.id} value={loc.id}>
-                {loc.business_name || loc.address}
-              </option>
+              <option key={loc.id} value={loc.id}>{loc.business_name || loc.address}</option>
             ))}
           </select>
         </>
       )}
 
-      <label style={labelStyle}>Permissions</label>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+      <label className="ui-label">Permissions</label>
+      <div className="ui-list" style={{ marginBottom: '24px' }}>
         {PERMISSION_ORDER.map(key => (
           <label
             key={key}
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '10px',
-              border: '1px solid #E2E8F0',
-              borderRadius: '10px',
-              padding: '12px',
-              cursor: 'pointer',
-              background: permissions[key] ? '#F1F5F9' : '#fff',
-            }}
+            className="ui-card"
+            style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', padding: '12px', background: permissions[key] ? 'rgba(59,130,246,.12)' : undefined }}
           >
             <input
               type="checkbox"
               checked={!!permissions[key]}
               onChange={() => togglePermission(key)}
-              style={{ marginTop: '2px', width: '16px', height: '16px', flexShrink: 0 }}
+              style={{ marginTop: '2px', width: '16px', height: '16px', flexShrink: 0, accentColor: '#2563EB' }}
             />
-            <span style={{ fontSize: '14px', color: '#0F172A', lineHeight: 1.4 }}>{PERMISSION_LABELS[key]}</span>
+            <span style={{ fontSize: '14px', color: '#E2E8F0', lineHeight: 1.4 }}>{PERMISSION_LABELS[key]}</span>
           </label>
         ))}
       </div>
 
-      {error && (
-        <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
-          <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{error}</p>
-        </div>
-      )}
-
+      {error && <div className="ui-error"><p>{error}</p></div>}
       {saved && (
-        <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
-          <p style={{ color: '#166534', fontSize: '13px', margin: 0, fontWeight: 600 }}>Saved.</p>
+        <div className="ui-card" style={{ marginBottom: '16px', borderColor: 'rgba(52,211,153,.4)' }}>
+          <p style={{ color: '#34D399', fontSize: '13px', margin: 0, fontWeight: 600 }}>Saved.</p>
         </div>
       )}
 
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        style={{
-          width: '100%',
-          background: '#0F172A',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '14px',
-          cursor: 'pointer',
-          fontSize: '15px',
-          fontWeight: 700,
-          fontFamily: 'inherit',
-          opacity: saving ? 0.7 : 1,
-        }}
-      >
+      <button onClick={handleSave} disabled={saving} className="ui-btn ui-block">
         {saving ? 'Saving...' : 'Save changes'}
       </button>
     </div>
   )
-}
-
-const wrapStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  fontFamily: 'Segoe UI, system-ui, sans-serif',
-}
-
-const backStyle: React.CSSProperties = {
-  display: 'inline-block',
-  color: '#475569',
-  fontSize: '13px',
-  textDecoration: 'none',
-  marginBottom: '12px',
-  padding: '6px 0',
-}
-
-const titleStyle: React.CSSProperties = {
-  fontSize: '22px',
-  fontWeight: 800,
-  color: '#0F172A',
-  margin: '0 0 14px',
-  letterSpacing: '-0.01em',
-}
-
-const mutedStyle: React.CSSProperties = {
-  color: '#64748B',
-  fontSize: '14px',
-}
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  color: '#475569',
-  fontSize: '13px',
-  fontWeight: 600,
-  marginBottom: '10px',
-}
-
-const toggleStyle: React.CSSProperties = {
-  flex: 1,
-  padding: '10px',
-  minHeight: '44px',
-  borderRadius: '8px',
-  border: '1px solid #E2E8F0',
-  background: '#fff',
-  color: '#64748B',
-  fontSize: '14px',
-  fontWeight: 700,
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-}
-
-const toggleActive: React.CSSProperties = {
-  background: '#0F172A',
-  color: '#fff',
-  border: '1px solid #0F172A',
-}
-
-const selectStyle: React.CSSProperties = {
-  width: '100%',
-  background: '#fff',
-  border: '1px solid #E2E8F0',
-  borderRadius: '8px',
-  padding: '12px 14px',
-  color: '#0F172A',
-  fontSize: '14px',
-  marginBottom: '24px',
-  outline: 'none',
-  fontFamily: 'inherit',
-  boxSizing: 'border-box',
-  appearance: 'auto',
 }
