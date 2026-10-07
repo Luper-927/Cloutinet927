@@ -1,5 +1,19 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
 import DashboardShell from '../components/DashboardShell'
 
+// Pages already restyled for the dark theme. Add a path here each time a page
+// is converted. Pages not listed still work: they show on a white panel inside
+// the dark frame until they are converted. When every page is converted,
+// delete this list and always pass dark.
+const DARK_PAGES = [
+  '/dashboard',
+]
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return <DashboardShell>{children}</DashboardShell>
+  const pathname = usePathname()
+  const dark = !!pathname && DARK_PAGES.includes(pathname)
+
+  return <DashboardShell dark={dark}>{children}</DashboardShell>
 }
