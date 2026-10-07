@@ -21,10 +21,7 @@ export default function MarketingPage() {
   useEffect(() => { load() }, [])
 
   async function load() {
-    if (noPermission || !hasAccess) {
-      setLoading(false)
-      return
-    }
+    if (noPermission || !hasAccess) { setLoading(false); return }
 
     const { data: campaignData } = await supabase
       .from('campaigns')
@@ -53,33 +50,20 @@ export default function MarketingPage() {
     setLoading(false)
   }
 
-  if (loading) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>Loading...</p>
-      </div>
-    )
-  }
+  if (loading) return <div className="ui-wrap"><p className="ui-sub">Loading...</p></div>
 
   if (noPermission) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>You don&rsquo;t have permission to view marketing.</p>
-      </div>
-    )
+    return <div className="ui-wrap"><p className="ui-sub">You don&rsquo;t have permission to view marketing.</p></div>
   }
 
   if (!hasAccess) {
     return (
-      <div style={wrapStyle}>
-        <h1 style={titleStyle}>Marketing</h1>
-        <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
-          <div style={{ fontSize: '28px', marginBottom: '10px' }}>📣</div>
-          <h2 style={{ color: '#0F172A', fontSize: '16px', marginBottom: '8px' }}>Marketing is not included in your plan</h2>
-          <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>
-            You&rsquo;re currently on the {tierName} plan. Upgrade to create AI-generated promotional campaigns and track views, clicks, and WhatsApp conversions.
-          </p>
-          <Link href="/dashboard/billing" style={primaryButtonStyle}>View Plans</Link>
+      <div className="ui-wrap">
+        <h1 className="ui-title">Marketing</h1>
+        <div className="ui-upgrade">
+          <h2>Marketing is not included in your plan</h2>
+          <p>You&rsquo;re currently on the {tierName} plan. Upgrade to create AI-generated promotional campaigns and track views, clicks, and WhatsApp conversions.</p>
+          <Link href="/dashboard/billing" className="ui-btn">View plans</Link>
         </div>
       </div>
     )
@@ -101,122 +85,70 @@ export default function MarketingPage() {
   const hasEnoughData = campaigns.length > 0 && totals.views > 0
 
   return (
-    <div style={wrapStyle}>
-      <h1 style={titleStyle}>Marketing</h1>
+    <div className="ui-wrap">
+      <h1 className="ui-title">Marketing</h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
-        <div style={countCardStyle}>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: '#D97706' }}>{activeCampaigns.length}</div>
-          <div style={{ fontSize: '12px', color: '#64748B' }}>Active</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '18px' }}>
+        <div className="ui-stat ui-stat-warn" style={{ textAlign: 'center' }}>
+          <div className="ui-stat-value">{activeCampaigns.length}</div>
+          <div className="ui-stat-label">Active</div>
         </div>
-        <div style={countCardStyle}>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: '#64748B' }}>{draftCampaigns.length}</div>
-          <div style={{ fontSize: '12px', color: '#64748B' }}>Drafts</div>
+        <div className="ui-stat" style={{ textAlign: 'center' }}>
+          <div className="ui-stat-value">{draftCampaigns.length}</div>
+          <div className="ui-stat-label">Drafts</div>
         </div>
-        <div style={countCardStyle}>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F766E' }}>{completedCampaigns.length}</div>
-          <div style={{ fontSize: '12px', color: '#64748B' }}>Completed</div>
+        <div className="ui-stat ui-stat-good" style={{ textAlign: 'center' }}>
+          <div className="ui-stat-value">{completedCampaigns.length}</div>
+          <div className="ui-stat-label">Completed</div>
         </div>
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
-        <div style={{ fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '10px' }}>Overview</div>
+      <div className="ui-card" style={{ marginBottom: '20px' }}>
+        <div className="ui-meta" style={{ marginBottom: '8px' }}>Overview</div>
         {!hasEnoughData ? (
-          <p style={{ fontSize: '13px', color: '#94A3B8', margin: 0 }}>Not enough data yet</p>
+          <p className="ui-meta" style={{ margin: 0 }}>Not enough data yet</p>
         ) : (
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '14px', color: '#334155' }}>
-            <span>Views: <b>{totals.views}</b></span>
-            <span>CTA clicks: <b>{totals.ctaClicks}</b></span>
-            <span>WhatsApp: <b>{totals.whatsappClicks}</b></span>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '14px', color: '#CBD5E1' }}>
+            <span>Views: <b style={{ color: '#fff' }}>{totals.views}</b></span>
+            <span>CTA clicks: <b style={{ color: '#fff' }}>{totals.ctaClicks}</b></span>
+            <span>WhatsApp: <b style={{ color: '#fff' }}>{totals.whatsappClicks}</b></span>
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', margin: 0 }}>Campaigns</h2>
-        <Link href="/dashboard/marketing/campaigns/new" style={smallPrimaryStyle}>+ New campaign</Link>
+      <div className="ui-between" style={{ alignItems: 'center', marginBottom: '12px' }}>
+        <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#fff', margin: 0 }}>Campaigns</h2>
+        <Link href="/dashboard/marketing/campaigns/new" className="ui-btn ui-btn-sm">+ New campaign</Link>
       </div>
 
       {campaigns.length === 0 ? (
-        <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '30px', textAlign: 'center' }}>
-          <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '12px' }}>No campaigns yet</p>
-          <Link href="/dashboard/marketing/campaigns/new" style={primaryButtonStyle}>Create your first campaign</Link>
+        <div className="ui-card" style={{ textAlign: 'center', padding: '28px' }}>
+          <p className="ui-sub" style={{ marginBottom: '14px' }}>No campaigns yet</p>
+          <Link href="/dashboard/marketing/campaigns/new" className="ui-btn">Create your first campaign</Link>
         </div>
       ) : (
-        campaigns.map(c => {
-          const s = eventStats[c.id] || { views: 0, ctaClicks: 0, whatsappClicks: 0 }
-          return (
-            <div key={c.id} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', marginBottom: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginBottom: '6px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>{c.name}</span>
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  padding: '2px 10px',
-                  borderRadius: '999px',
-                  height: 'fit-content',
-                  background: c.status === 'active' ? '#FFFBEB' : c.status === 'completed' ? '#F0FDFA' : '#F8FAFC',
-                  color: c.status === 'active' ? '#D97706' : c.status === 'completed' ? '#0F766E' : '#64748B',
-                }}>{c.status}</span>
+        <div className="ui-list">
+          {campaigns.map(c => {
+            const s = eventStats[c.id] || { views: 0, ctaClicks: 0, whatsappClicks: 0 }
+            return (
+              <div key={c.id} className="ui-card">
+                <div className="ui-between">
+                  <span className="ui-name">{c.name}</span>
+                  <span className={'ui-badge ' + (c.status === 'active' ? 'ui-badge-warn' : c.status === 'completed' ? 'ui-badge-good' : 'ui-badge-mute')}>
+                    {c.status}
+                  </span>
+                </div>
+                <div className="ui-meta" style={{ margin: '4px 0 8px' }}>{c.objective}</div>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '12px', color: '#94A3B8' }}>
+                  <span>{s.views} views</span>
+                  <span>{s.ctaClicks} CTA clicks</span>
+                  <span>{s.whatsappClicks} WhatsApp</span>
+                </div>
               </div>
-              <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '6px' }}>{c.objective}</div>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '12px', color: '#64748B' }}>
-                <span>{s.views} views</span>
-                <span>{s.ctaClicks} CTA clicks</span>
-                <span>{s.whatsappClicks} WhatsApp</span>
-              </div>
-            </div>
-          )
-        })
+            )
+          })}
+        </div>
       )}
     </div>
   )
-}
-
-const wrapStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  fontFamily: 'Segoe UI, system-ui, sans-serif',
-}
-
-const titleStyle: React.CSSProperties = {
-  fontSize: '22px',
-  fontWeight: 800,
-  color: '#0F172A',
-  margin: '0 0 14px',
-  letterSpacing: '-0.01em',
-}
-
-const mutedStyle: React.CSSProperties = {
-  color: '#64748B',
-  fontSize: '14px',
-}
-
-const countCardStyle: React.CSSProperties = {
-  background: '#fff',
-  border: '1px solid #E2E8F0',
-  borderRadius: '10px',
-  padding: '12px',
-  textAlign: 'center',
-}
-
-const primaryButtonStyle: React.CSSProperties = {
-  display: 'inline-block',
-  background: '#0F172A',
-  color: '#fff',
-  padding: '12px 24px',
-  borderRadius: '8px',
-  textDecoration: 'none',
-  fontSize: '14px',
-  fontWeight: 700,
-}
-
-const smallPrimaryStyle: React.CSSProperties = {
-  background: '#0F172A',
-  color: '#fff',
-  padding: '10px 16px',
-  borderRadius: '8px',
-  textDecoration: 'none',
-  fontSize: '13px',
-  fontWeight: 700,
 }
