@@ -1,23 +1,39 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { supabase } from '../../../../lib/supabase'
-import { getActingContext, logActivity } from '../../../../lib/permissions'
-import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
+import { supabase } from '../../../../lib/supabase'
+import { logActivity } from '../../../../lib/permissions'
+import DashboardShell, { useDashboard } from '../../../components/DashboardShell'
+import { uiCss } from '../../../dashboard/ui'
 
 export default function EditProductPage() {
+  return (
+    <>
+      <style>{uiCss}</style>
+      <DashboardShell>
+        <EditProductForm />
+      </DashboardShell>
+    </>
+  )
+}
+
+function EditProductForm() {
+  const router = useRouter()
   const params = useParams()
   const productId = params.id as string
+  const { context } = useDashboard()
 
-  const [ownerId, setOwnerId] = useState('')
-  const [actorName, setActorName] = useState('')
-  const [locationId, setLocationId] = useState<string | null>(null)
+  const ownerId = context.ownerId
+  const actorName = context.employeeName || 'Owner'
+  const locationId = context.locationId
+  const noAccess = !context.permissions.products
+
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [error, setError] = useState('')
-  const [noAccess, setNoAccess] = useState(false)
 
   const [pName, setPName] = useState('')
   const [pPrice, setPPrice] = useState('')
@@ -27,48 +43,25 @@ export default function EditProductPage() {
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    load()
-  }, [])
+  useEffect(() => { load() }, [])
 
   async function load() {
-    const { data: userData } = await supabase.auth.getUser()
-    const currentUser = userData?.user
-    if (!currentUser) {
-      window.location.href = '/auth'
-      return
-    }
-
-    const context = await getActingContext(currentUser.id)
-    if (!context) {
-      window.location.href = '/onboarding'
-      return
-    }
-
-    if (!context.permissions.products) {
-      setNoAccess(true)
-      setLoading(false)
-      return
-    }
-
-    setOwnerId(context.ownerId)
-    setActorName(context.employeeName || 'Owner')
-    setLocationId(context.locationId)
+    if (noAccess) { setLoading(false); return }
 
     let productQuery = supabase
       .from('products')
       .select('*')
       .eq('id', productId)
-      .eq('user_id', context.ownerId)
+      .eq('user_id', ownerId)
 
-    if (context.locationId) {
-      productQuery = productQuery.eq('location_id', context.locationId)
+    if (locationId) {
+      productQuery = productQuery.eq('location_id', locationId)
     }
 
     const { data: product } = await productQuery.single()
 
     if (!product) {
-      window.location.href = '/dashboard'
+      router.replace('/dashboard')
       return
     }
 
@@ -89,7 +82,6 @@ export default function EditProductPage() {
   }
 
   async function handleSave() {
-    if (!ownerId) return
     if (!pName.trim()) {
       setError('Product name is required')
       return
@@ -146,96 +138,62 @@ export default function EditProductPage() {
 
     await logActivity(ownerId, actorName, 'updated', 'product', pName)
 
-    window.location.href = '/dashboard'
-  }
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#0F172A', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</div>
-      </div>
-    )
+    router.push('/dashboard')
   }
 
   if (noAccess) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to manage products.</p>
-      </div>
-    )
+    return <div className="ui-wrap"><p className="ui-sub">You don&rsquo;t have permission to manage products.</p></div>
+  }
+
+  if (loading) {
+    return <div className="ui-wrap"><p className="ui-sub">Loading...</p></div>
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
+    <div className="ui-wrap">
+      <Link href="/dashboard" className="ui-back">Back to dashboard</Link>
+      <h1 className="ui-title">Edit product</h1>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: '#0F172A' }}>
-        <Link href="/dashboard" style={{ color: '#94A3B8', textDecoration: 'none', fontSize: '13px' }}>← Dashboard</Link>
-        <div style={{ color: '#fff', fontWeight: 700, fontSize: '14px' }}>Edit Product</div>
-        <div style={{ width: '60px' }}></div>
+      <div
+        onClick={() => fileRef.current?.click()}
+        style={{
+          border: '1px dashed rgba(255,255,255,.25)', borderRadius: '16px',
+          minHeight: '120px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', overflow: 'hidden', background: 'rgba(255,255,255,.04)', marginBottom: '16px',
+        }}
+      >
+        {pImage ? (
+          <img src={pImage} alt="Product" style={{ width: '100%', maxHeight: '220px', objectFit: 'cover' }} />
+        ) : (
+          <span style={{ color: '#94A3B8', fontSize: '14px' }}>Tap to add a photo</span>
+        )}
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageSelect} />
+
+      <label className="ui-label">Product or service name *</label>
+      <input className="ui-input" placeholder="e.g. Rice 50kg bag" value={pName} onChange={e => setPName(e.target.value)} />
+
+      <label className="ui-label">Price</label>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <select className="ui-input" value={pCurrency} onChange={e => setPCurrency(e.target.value)} style={{ marginBottom: 0, width: '120px', flexShrink: 0 }}>
+          <option value="NGN">NGN ₦</option>
+          <option value="USD">USD $</option>
+          <option value="GBP">GBP £</option>
+          <option value="EUR">EUR €</option>
+          <option value="GHS">GHS ₵</option>
+        </select>
+        <input className="ui-input" placeholder="Price" value={pPrice} onChange={e => setPPrice(e.target.value)} type="number" style={{ marginBottom: 0, flex: 1 }} />
       </div>
 
-      <div style={{ maxWidth: '420px', margin: '0 auto', padding: '16px' }}>
+      <label className="ui-label">Description</label>
+      <textarea className="ui-input" placeholder="Short description" value={pDesc} onChange={e => setPDesc(e.target.value)} style={{ minHeight: '110px' }} />
 
-        <label
-          onClick={() => fileRef.current?.click()}
-          style={{ display: 'block', marginBottom: '14px' }}
-        >
-          <div style={{
-            border: '1px dashed #E2E8F0', borderRadius: '10px',
-            height: pImage ? 'auto' : '120px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', overflow: 'hidden', background: '#F8FAFC'
-          }}>
-            {pImage ? (
-              <img src={pImage} style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ color: '#64748B', fontSize: '13px' }}>📷 Tap to add photo</span>
-            )}
-          </div>
-        </label>
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageSelect} />
+      {error && <div className="ui-error"><p>{error}</p></div>}
 
-        <label style={labelStyle}>Product / Service Name *</label>
-        <input placeholder="e.g. Rice 50kg bag" value={pName} onChange={e => setPName(e.target.value)} style={inputStyle} />
-
-        <label style={labelStyle}>Price</label>
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-          <select value={pCurrency} onChange={e => setPCurrency(e.target.value)} style={{ ...inputStyle, marginBottom: 0, width: '90px' }}>
-            <option value="NGN">NGN ₦</option>
-            <option value="USD">USD $</option>
-            <option value="GBP">GBP £</option>
-            <option value="EUR">EUR €</option>
-            <option value="GHS">GHS ₵</option>
-          </select>
-          <input placeholder="Price" value={pPrice} onChange={e => setPPrice(e.target.value)} style={{ ...inputStyle, marginBottom: 0, flex: 1 }} type="number" />
-        </div>
-
-        <label style={labelStyle}>Description</label>
-        <textarea placeholder="Short description" value={pDesc} onChange={e => setPDesc(e.target.value)} style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} />
-
-        {error && <p style={{ color: '#dc2626', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
-
-        <button onClick={handleSave} disabled={saving} style={{
-          width: '100%', background: '#0F172A',
-          color: '#fff', border: 'none', borderRadius: '8px',
-          padding: '14px', cursor: 'pointer', fontSize: '15px', fontWeight: 700,
-          fontFamily: 'inherit', opacity: saving ? 0.7 : 1
-        }}>
-          {uploadingImage ? 'Uploading image...' : saving ? 'Saving...' : 'Save Changes'}
-        </button>
-      </div>
+      <button onClick={handleSave} disabled={saving} className="ui-btn ui-block">
+        {uploadingImage ? 'Uploading image...' : saving ? 'Saving...' : 'Save changes'}
+      </button>
     </div>
   )
-}
-
-const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#475569', fontSize: '12px',
-  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase'
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
-  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
-  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
-  boxSizing: 'border-box'
 }
