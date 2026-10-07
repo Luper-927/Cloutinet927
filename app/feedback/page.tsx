@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '../../lib/supabase'
 import Link from 'next/link'
+import { supabase } from '../../lib/supabase'
+import { PublicNav } from '../components/PublicChrome'
 
 export default function FeedbackPage() {
   const [name, setName] = useState('')
@@ -33,87 +34,127 @@ export default function FeedbackPage() {
 
   if (done) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-        <div style={{ textAlign: 'center', maxWidth: '320px' }}>
-          <div style={{ width: '60px', height: '60px', background: '#F0FDF4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '28px' }}>✓</div>
-          <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', marginBottom: '8px' }}>Thank You</h2>
-          <p style={{ color: '#64748B', fontSize: '14px', marginBottom: '24px' }}>Your feedback helps us improve Cloutinet for every business owner.</p>
-          <Link href="/" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>Back to Cloutinet</Link>
+      <div style={pageStyle}>
+        <PublicNav />
+        <div style={{ maxWidth: '360px', margin: '0 auto', padding: '72px 20px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.02em', color: '#fff', margin: '0 0 10px' }}>Thank you</h2>
+          <p style={{ color: '#94A3B8', fontSize: '15px', margin: '0 0 24px', lineHeight: 1.5 }}>
+            Your feedback helps us improve Cloutinet for every business owner.
+          </p>
+          <Link href="/" style={primaryLinkStyle}>Back to Cloutinet</Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-      <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <div style={{ width: '28px', height: '28px', background: '#0F172A', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>C</div>
-          <span style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>Cloutinet</span>
-        </Link>
-      </nav>
+    <div style={pageStyle}>
+      <PublicNav />
 
-      <div style={{ maxWidth: '420px', margin: '0 auto', padding: '24px 16px' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '6px', color: '#0F172A' }}>Share Your Feedback</h1>
-        <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '24px' }}>Help us make Cloutinet better for every business owner.</p>
+      <div style={{ maxWidth: '460px', margin: '0 auto', padding: '32px 16px 56px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-0.02em', color: '#fff', margin: '0 0 8px', lineHeight: 1.15 }}>Share your feedback</h1>
+        <p style={{ color: '#94A3B8', fontSize: '14px', margin: '0 0 24px', lineHeight: 1.5 }}>Help us make Cloutinet better for every business owner.</p>
 
-        <label style={labelStyle}>Your Name (optional)</label>
-        <input placeholder="e.g. Emeka" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+        <div style={cardStyle}>
+          <label style={labelStyle}>Your name (optional)</label>
+          <input placeholder="e.g. Emeka" value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
 
-        <label style={labelStyle}>Business Type</label>
-        <select value={businessType} onChange={e => setBusinessType(e.target.value)} style={inputStyle}>
-          <option value="">Select your business type</option>
-          <option value="Restaurant / Food">Restaurant / Food</option>
-          <option value="Salon / Barber">Salon / Barber</option>
-          <option value="Shop / Retail">Shop / Retail</option>
-          <option value="Fashion">Fashion</option>
-          <option value="Real Estate">Real Estate</option>
-          <option value="Church / Ministry">Church / Ministry</option>
-          <option value="Furniture / Interior">Furniture / Interior</option>
-          <option value="Electronics">Electronics</option>
-          <option value="Health / Pharmacy">Health / Pharmacy</option>
-          <option value="Other">Other</option>
-        </select>
+          <label style={labelStyle}>Business type</label>
+          <select value={businessType} onChange={e => setBusinessType(e.target.value)} style={{ ...inputStyle, colorScheme: 'dark' }}>
+            <option value="">Select your business type</option>
+            <option value="Restaurant / Food">Restaurant / Food</option>
+            <option value="Salon / Barber">Salon / Barber</option>
+            <option value="Shop / Retail">Shop / Retail</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Church / Ministry">Church / Ministry</option>
+            <option value="Furniture / Interior">Furniture / Interior</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Health / Pharmacy">Health / Pharmacy</option>
+            <option value="Other">Other</option>
+          </select>
 
-        <label style={labelStyle}>Rating *</label>
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-          {[1, 2, 3, 4, 5].map(star => (
-            <button key={star} onClick={() => setRating(star)} style={{
-              width: '44px', height: '44px', borderRadius: '8px',
-              border: '1px solid ' + (rating >= star ? '#0F172A' : '#E2E8F0'),
-              background: rating >= star ? '#0F172A' : '#fff',
-              color: rating >= star ? '#fff' : '#94A3B8',
-              fontSize: '16px', cursor: 'pointer', fontFamily: 'inherit'
-            }}>{star}</button>
-          ))}
+          <label style={labelStyle}>Rating *</label>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            {[1, 2, 3, 4, 5].map(star => (
+              <button
+                key={star}
+                onClick={() => setRating(star)}
+                aria-label={star + ' out of 5'}
+                style={{
+                  width: '48px', height: '48px', borderRadius: '8px',
+                  border: '1px solid ' + (rating >= star ? '#2563EB' : 'rgba(255,255,255,0.15)'),
+                  background: rating >= star ? '#2563EB' : 'transparent',
+                  color: rating >= star ? '#fff' : '#94A3B8',
+                  fontSize: '16px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit'
+                }}
+              >{star}</button>
+            ))}
+          </div>
+
+          <label style={labelStyle}>What do you like about Cloutinet?</label>
+          <textarea placeholder="e.g. Easy to use, my products show on Google..." value={liked} onChange={e => setLiked(e.target.value)} style={{ ...inputStyle, minHeight: '96px', resize: 'vertical' }} />
+
+          <label style={labelStyle}>What needs improvement?</label>
+          <textarea placeholder="e.g. I wish I could add more photos..." value={improvement} onChange={e => setImprovement(e.target.value)} style={{ ...inputStyle, minHeight: '96px', resize: 'vertical' }} />
+
+          {error && (
+            <div style={{ background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.35)', borderRadius: '10px', padding: '10px 14px', marginBottom: '14px' }}>
+              <p style={{ color: '#FCA5A5', fontSize: '13px', margin: 0 }}>{error}</p>
+            </div>
+          )}
+
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            style={{
+              width: '100%', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '8px',
+              padding: '14px', minHeight: '48px', cursor: 'pointer', fontSize: '15px', fontWeight: 600,
+              fontFamily: 'inherit', opacity: saving ? 0.7 : 1
+            }}
+          >
+            {saving ? 'Submitting...' : 'Submit feedback'}
+          </button>
         </div>
-
-        <label style={labelStyle}>What do you like about Cloutinet?</label>
-        <textarea placeholder="e.g. Easy to use, my products show on Google..." value={liked} onChange={e => setLiked(e.target.value)} style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} />
-
-        <label style={labelStyle}>What needs improvement?</label>
-        <textarea placeholder="e.g. I wish I could add more photos..." value={improvement} onChange={e => setImprovement(e.target.value)} style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} />
-
-        {error && <p style={{ color: '#ff4444', fontSize: '12px', marginBottom: '12px' }}>{error}</p>}
-
-        <button onClick={handleSubmit} disabled={saving} style={{
-          width: '100%', background: '#0F172A', color: '#fff', border: 'none', borderRadius: '8px',
-          padding: '14px', cursor: 'pointer', fontSize: '14px', fontWeight: 700,
-          fontFamily: 'inherit', opacity: saving ? 0.7 : 1
-        }}>
-          {saving ? 'Submitting...' : 'Submit Feedback'}
-        </button>
       </div>
     </div>
   )
 }
 
+const pageStyle: React.CSSProperties = {
+  minHeight: '100vh',
+  color: '#E2E8F0',
+  fontFamily: 'inherit',
+  backgroundColor: '#0A0E27',
+  backgroundImage:
+    'radial-gradient(ellipse 700px 420px at 12% -8%, rgba(29,78,216,0.30), transparent 70%), radial-gradient(ellipse 600px 500px at 100% 0%, rgba(37,99,235,0.18), transparent 70%)',
+  backgroundRepeat: 'no-repeat',
+}
+
+const cardStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: '16px',
+  padding: '20px',
+}
+
+const primaryLinkStyle: React.CSSProperties = {
+  display: 'inline-block',
+  background: '#2563EB',
+  color: '#fff',
+  padding: '12px 24px',
+  borderRadius: '8px',
+  textDecoration: 'none',
+  fontSize: '14px',
+  fontWeight: 600,
+}
+
 const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#475569', fontSize: '12px', fontWeight: 700, marginBottom: '6px'
+  display: 'block', color: '#CBD5E1', fontSize: '13px', fontWeight: 600, marginBottom: '6px'
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
-  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
-  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit'
+  width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.14)',
+  borderRadius: '8px', padding: '12px 14px', minHeight: '46px', color: '#fff',
+  fontSize: '16px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box'
 }
