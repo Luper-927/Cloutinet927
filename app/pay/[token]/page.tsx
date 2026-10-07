@@ -41,49 +41,71 @@ export default function PublicPaymentRequestPage({ params }: { params: { token: 
     }
   }
 
+  const shell = (children: React.ReactNode) => (
+    <div style={pageStyle}>
+      <div style={cardStyle}>{children}</div>
+      <div style={{ marginTop: '20px', fontSize: '13px', color: '#64748B' }}>Powered by Cloutinet</div>
+    </div>
+  )
+
   if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
-      </div>
-    )
+    return shell(<p style={{ color: '#94A3B8', fontSize: '14px', margin: 0, textAlign: 'center' }}>Loading...</p>)
   }
 
   if (!details?.found) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-        <p style={{ color: '#64748B', fontSize: '14px' }}>This payment request could not be found.</p>
-      </div>
-    )
+    return shell(<p style={{ color: '#94A3B8', fontSize: '14px', margin: 0, textAlign: 'center' }}>This payment request could not be found.</p>)
   }
 
-  return (
-    <div style={{ minHeight: '100vh', background: '#F8FAFC', fontFamily: 'Segoe UI, system-ui, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ maxWidth: '380px', width: '100%', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '32px 24px', textAlign: 'center' as const }}>
-        <div style={{ fontSize: '13px', color: '#64748B', marginBottom: '4px' }}>{details.business_name}</div>
-        <div style={{ fontSize: '32px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-          {details.currency} {Number(details.amount).toLocaleString()}
-        </div>
-        {details.description && <div style={{ fontSize: '13px', color: '#64748B', marginBottom: '16px' }}>{details.description}</div>}
-        {details.due_date && <div style={{ fontSize: '11px', color: '#94A3B8', marginBottom: '20px' }}>Due: {new Date(details.due_date).toLocaleDateString()}</div>}
-
-        {details.status === 'paid' ? (
-          <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', padding: '14px', color: '#166534', fontWeight: 700, fontSize: '14px' }}>
-            ✅ This payment has been marked as paid
-          </div>
-        ) : (
-          <div>
-            {payError && <div style={{ color: '#B91C1C', fontSize: '12px', marginBottom: '10px' }}>{payError}</div>}
-            <button
-              onClick={handlePay}
-              disabled={submitting}
-              style={{ width: '100%', background: submitting ? '#93C5FD' : '#2563EB', color: '#fff', border: 'none', borderRadius: '8px', padding: '13px', fontSize: '14px', fontWeight: 700, cursor: submitting ? 'default' : 'pointer' }}
-            >
-              {submitting ? 'Starting payment...' : 'Pay Now'}
-            </button>
-          </div>
-        )}
+  return shell(
+    <div style={{ textAlign: 'center' }}>
+      <div style={{ fontSize: '14px', color: '#94A3B8', marginBottom: '6px' }}>{details.business_name}</div>
+      <div style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-0.02em', color: '#fff', marginBottom: '10px' }}>
+        {details.currency} {Number(details.amount).toLocaleString()}
       </div>
+      {details.description && <div style={{ fontSize: '14px', color: '#CBD5E1', marginBottom: '14px', lineHeight: 1.5 }}>{details.description}</div>}
+      {details.due_date && <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '22px' }}>Due {new Date(details.due_date).toLocaleDateString()}</div>}
+
+      {details.status === 'paid' ? (
+        <div style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '10px', padding: '14px', color: '#34D399', fontWeight: 700, fontSize: '14px' }}>
+          This payment has been marked as paid
+        </div>
+      ) : (
+        <div>
+          {payError && <div style={{ color: '#FCA5A5', fontSize: '13px', marginBottom: '12px' }}>{payError}</div>}
+          <button
+            onClick={handlePay}
+            disabled={submitting}
+            style={{ width: '100%', background: '#2563EB', color: '#fff', border: 'none', borderRadius: '8px', padding: '14px', minHeight: '48px', fontSize: '15px', fontWeight: 600, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.7 : 1, fontFamily: 'inherit' }}
+          >
+            {submitting ? 'Starting payment...' : 'Pay now'}
+          </button>
+          <p style={{ fontSize: '12px', color: '#64748B', margin: '12px 0 0' }}>Payments are processed by Paystack.</p>
+        </div>
+      )}
     </div>
   )
+}
+
+const pageStyle: React.CSSProperties = {
+  minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '20px',
+  fontFamily: 'inherit',
+  backgroundColor: '#0A0E27',
+  backgroundImage:
+    'radial-gradient(ellipse 700px 500px at 10% -10%, rgba(29,78,216,0.35), transparent 70%), radial-gradient(ellipse 600px 600px at 100% 0%, rgba(37,99,235,0.28), transparent 70%)',
+  backgroundRepeat: 'no-repeat',
+}
+
+const cardStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: '16px',
+  padding: '32px 24px',
+  width: '100%',
+  maxWidth: '400px',
+  boxSizing: 'border-box',
 }
