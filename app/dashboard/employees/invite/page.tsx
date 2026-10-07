@@ -42,21 +42,17 @@ export default function InviteEmployeePage() {
   const [role, setRole] = useState<'staff' | 'manager'>('staff')
   const [permissions, setPermissions] = useState(DEFAULT_STAFF_PERMISSIONS)
   const [locations, setLocations] = useState<LocationOption[]>([])
-  const [locationId, setLocationId] = useState<string>('') // '' means "all locations"
+  const [locationId, setLocationId] = useState<string>('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [inviteLink, setInviteLink] = useState('')
   const [emailSent, setEmailSent] = useState(false)
-
   const [checkingSeats, setCheckingSeats] = useState(true)
   const [seatsUsed, setSeatsUsed] = useState(0)
   const [seatsFull, setSeatsFull] = useState(false)
 
   useEffect(() => {
-    if (noPermission || planBlocked) {
-      setCheckingSeats(false)
-      return
-    }
+    if (noPermission || planBlocked) { setCheckingSeats(false); return }
     loadLocations()
     checkSeats()
   }, [])
@@ -76,12 +72,9 @@ export default function InviteEmployeePage() {
         .from('employees')
         .select('id', { count: 'exact', head: true })
         .eq('owner_id', ownerId)
-
       const used = count ?? 0
       setSeatsUsed(used)
-      if (used >= seatLimit) {
-        setSeatsFull(true)
-      }
+      if (used >= seatLimit) setSeatsFull(true)
     }
     setCheckingSeats(false)
   }
@@ -96,21 +89,16 @@ export default function InviteEmployeePage() {
   }
 
   async function handleInvite() {
-    if (!name.trim() || !email.trim()) {
-      setError('Name and email are required')
-      return
-    }
+    if (!name.trim() || !email.trim()) { setError('Name and email are required'); return }
     setSaving(true)
     setError('')
 
-    // Re-check right before insert too, guards against two invites
-    // being sent in quick succession from different tabs/sessions.
+    // Re-check right before insert, in case two invites are sent quickly.
     if (seatLimit !== null) {
       const { count } = await supabase
         .from('employees')
         .select('id', { count: 'exact', head: true })
         .eq('owner_id', ownerId)
-
       if ((count ?? 0) >= seatLimit) {
         setSaving(false)
         setSeatsFull(true)
@@ -134,11 +122,7 @@ export default function InviteEmployeePage() {
 
     if (saveError) {
       setSaving(false)
-      if (saveError.code === '23505') {
-        setError('You\u2019ve already invited someone with this email.')
-      } else {
-        setError(saveError.message)
-      }
+      setError(saveError.code === '23505' ? 'You\u2019ve already invited someone with this email.' : saveError.message)
       return
     }
 
@@ -151,10 +135,7 @@ export default function InviteEmployeePage() {
     try {
       const res = await fetch('/api/employees/send-invite', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
         body: JSON.stringify({
           name,
           email: email.trim().toLowerCase(),
@@ -165,41 +146,26 @@ export default function InviteEmployeePage() {
       })
       if (res.ok) setEmailSent(true)
     } catch (e) {
-      // Link is still shown below regardless. The email is a bonus, not a blocker.
+      // The link is still shown below. The email is a bonus, not a blocker.
     }
 
     setSaving(false)
   }
 
-  if (checkingSeats) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>Loading...</p>
-      </div>
-    )
-  }
+  if (checkingSeats) return <div className="ui-wrap"><p className="ui-sub">Loading...</p></div>
 
   if (noPermission) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>You don&rsquo;t have permission to invite employees.</p>
-      </div>
-    )
+    return <div className="ui-wrap"><p className="ui-sub">You don&rsquo;t have permission to invite employees.</p></div>
   }
 
   if (planBlocked) {
     return (
-      <div style={wrapStyle}>
-        <Link href="/dashboard/employees" style={backStyle}>Back to employees</Link>
-        <div style={{ padding: '36px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: '36px', marginBottom: '12px' }}>🧑‍💼</div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-            Team management is not included in your plan
-          </h2>
-          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.5, marginBottom: '24px' }}>
-            You&rsquo;re currently on the {tierName} plan. Upgrade to invite staff and managers.
-          </p>
-          <Link href="/dashboard/billing" style={upgradeButtonStyle}>View Plans</Link>
+      <div className="ui-wrap">
+        <Link href="/dashboard/employees" className="ui-back">Back to employees</Link>
+        <div className="ui-upgrade">
+          <h2>Team management is not included in your plan</h2>
+          <p>You&rsquo;re currently on the {tierName} plan. Upgrade to invite staff and managers.</p>
+          <Link href="/dashboard/billing" className="ui-btn">View plans</Link>
         </div>
       </div>
     )
@@ -207,18 +173,12 @@ export default function InviteEmployeePage() {
 
   if (seatsFull) {
     return (
-      <div style={wrapStyle}>
-        <Link href="/dashboard/employees" style={backStyle}>Back to employees</Link>
-        <div style={{ padding: '36px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: '36px', marginBottom: '12px' }}>👥</div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-            You&rsquo;ve used all {seatLimit} employee seats
-          </h2>
-          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.5, marginBottom: '24px' }}>
-            Your {tierName} plan includes {seatLimit} employee seat{seatLimit === 1 ? '' : 's'}. You currently have {seatsUsed}.
-            Upgrade to add more team members.
-          </p>
-          <Link href="/dashboard/billing" style={upgradeButtonStyle}>View Plans</Link>
+      <div className="ui-wrap">
+        <Link href="/dashboard/employees" className="ui-back">Back to employees</Link>
+        <div className="ui-upgrade">
+          <h2>You&rsquo;ve used all {seatLimit} employee seats</h2>
+          <p>Your {tierName} plan includes {seatLimit} employee seat{seatLimit === 1 ? '' : 's'}. You currently have {seatsUsed}. Upgrade to add more team members.</p>
+          <Link href="/dashboard/billing" className="ui-btn">View plans</Link>
         </div>
       </div>
     )
@@ -226,193 +186,76 @@ export default function InviteEmployeePage() {
 
   if (inviteLink) {
     return (
-      <div style={wrapStyle}>
-        <div style={{ padding: '24px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: '36px', marginBottom: '12px' }}>✅</div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '10px' }}>
-            {emailSent ? `Email sent to ${name}` : 'Share this invite link'}
-          </h2>
-          <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '20px', lineHeight: 1.5 }}>
+      <div className="ui-wrap">
+        <div className="ui-upgrade">
+          <h2>{emailSent ? `Email sent to ${name}` : 'Share this invite link'}</h2>
+          <p>
             {emailSent
               ? `We emailed the invitation to ${email}. You can also share the link below directly, for example on WhatsApp.`
               : `We couldn\u2019t confirm the email was sent. Share this link with ${name} directly (WhatsApp, SMS, etc.) as a backup.`}
           </p>
-          <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px', fontSize: '12px', color: '#0F172A', wordBreak: 'break-all', marginBottom: '20px', textAlign: 'left' }}>
+          <div className="ui-card" style={{ fontSize: '12px', color: '#E2E8F0', wordBreak: 'break-all', textAlign: 'left', marginBottom: '20px' }}>
             {inviteLink}
           </div>
-          <Link href="/dashboard/employees" style={upgradeButtonStyle}>Back to employees</Link>
+          <Link href="/dashboard/employees" className="ui-btn">Back to employees</Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={wrapStyle}>
-      <Link href="/dashboard/employees" style={backStyle}>Back to employees</Link>
-      <h1 style={titleStyle}>Invite employee</h1>
+    <div className="ui-wrap">
+      <Link href="/dashboard/employees" className="ui-back">Back to employees</Link>
+      <h1 className="ui-title">Invite employee</h1>
 
       {seatLimit !== null && (
-        <p style={{ fontSize: '13px', color: '#64748B', fontWeight: 600, marginBottom: '16px' }}>
-          {seatsUsed} of {seatLimit} employee seats used ({tierName} plan)
-        </p>
+        <p className="ui-sub">{seatsUsed} of {seatLimit} employee seats used ({tierName} plan)</p>
       )}
 
-      <label style={labelStyle}>Name *</label>
-      <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Amaka Johnson" style={inputStyle} />
+      <label className="ui-label">Name *</label>
+      <input className="ui-input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Amaka Johnson" />
 
-      <label style={labelStyle}>Email *</label>
-      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="employee@example.com" type="email" style={inputStyle} />
+      <label className="ui-label">Email *</label>
+      <input className="ui-input" value={email} onChange={e => setEmail(e.target.value)} placeholder="employee@example.com" type="email" />
 
-      <label style={labelStyle}>Role</label>
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-        <button onClick={() => handleRoleChange('staff')} style={roleButtonStyle(role === 'staff')}>Staff</button>
-        <button onClick={() => handleRoleChange('manager')} style={roleButtonStyle(role === 'manager')}>Manager</button>
+      <label className="ui-label">Role</label>
+      <div className="ui-pills" style={{ marginBottom: '20px' }}>
+        <button onClick={() => handleRoleChange('staff')} className={'ui-pill' + (role === 'staff' ? ' is-on' : '')}>Staff</button>
+        <button onClick={() => handleRoleChange('manager')} className={'ui-pill' + (role === 'manager' ? ' is-on' : '')}>Manager</button>
       </div>
 
       {locations.length > 0 && (
         <>
-          <label style={labelStyle}>Location</label>
-          <select
-            value={locationId}
-            onChange={e => setLocationId(e.target.value)}
-            style={{ ...inputStyle, appearance: 'auto' }}
-          >
+          <label className="ui-label">Location</label>
+          <select className="ui-input" value={locationId} onChange={e => setLocationId(e.target.value)}>
             <option value="">All locations</option>
             {locations.map(loc => (
-              <option key={loc.id} value={loc.id}>
-                {loc.business_name || loc.address}
-              </option>
+              <option key={loc.id} value={loc.id}>{loc.business_name || loc.address}</option>
             ))}
           </select>
         </>
       )}
 
-      <label style={labelStyle}>Permissions</label>
-      <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '4px', marginBottom: '20px' }}>
+      <label className="ui-label">Permissions</label>
+      <div className="ui-card" style={{ padding: '6px', marginBottom: '20px' }}>
         {Object.entries(PERMISSION_LABELS).map(([key, label]) => (
-          <label key={key} style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '10px 12px',
-            minHeight: '44px',
-            fontSize: '14px',
-            color: '#0F172A',
-            cursor: 'pointer',
-          }}>
+          <label key={key} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', minHeight: '44px', fontSize: '14px', color: '#E2E8F0', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={permissions[key] || false}
               onChange={() => togglePermission(key)}
-              style={{ width: '16px', height: '16px' }}
+              style={{ width: '16px', height: '16px', accentColor: '#2563EB' }}
             />
             {label}
           </label>
         ))}
       </div>
 
-      {error && (
-        <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-          <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{error}</p>
-        </div>
-      )}
+      {error && <div className="ui-error"><p>{error}</p></div>}
 
-      <button
-        onClick={handleInvite}
-        disabled={saving}
-        style={{
-          width: '100%',
-          background: '#0F172A',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '14px',
-          cursor: 'pointer',
-          fontSize: '15px',
-          fontWeight: 700,
-          fontFamily: 'inherit',
-          opacity: saving ? 0.7 : 1,
-        }}
-      >
+      <button onClick={handleInvite} disabled={saving} className="ui-btn ui-block">
         {saving ? 'Sending...' : 'Send invitation'}
       </button>
     </div>
   )
-}
-
-function roleButtonStyle(active: boolean): React.CSSProperties {
-  return {
-    flex: 1,
-    padding: '10px',
-    minHeight: '44px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: 700,
-    border: '1px solid ' + (active ? '#0F172A' : '#E2E8F0'),
-    background: active ? '#0F172A' : '#fff',
-    color: active ? '#fff' : '#0F172A',
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-  }
-}
-
-const wrapStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  fontFamily: 'Segoe UI, system-ui, sans-serif',
-}
-
-const backStyle: React.CSSProperties = {
-  display: 'inline-block',
-  color: '#475569',
-  fontSize: '13px',
-  textDecoration: 'none',
-  marginBottom: '12px',
-  padding: '6px 0',
-}
-
-const titleStyle: React.CSSProperties = {
-  fontSize: '22px',
-  fontWeight: 800,
-  color: '#0F172A',
-  margin: '0 0 14px',
-  letterSpacing: '-0.01em',
-}
-
-const mutedStyle: React.CSSProperties = {
-  color: '#64748B',
-  fontSize: '14px',
-}
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  color: '#475569',
-  fontSize: '13px',
-  fontWeight: 600,
-  marginBottom: '6px',
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  background: '#fff',
-  border: '1px solid #E2E8F0',
-  borderRadius: '8px',
-  padding: '12px 14px',
-  color: '#0F172A',
-  fontSize: '14px',
-  marginBottom: '16px',
-  outline: 'none',
-  fontFamily: 'inherit',
-  boxSizing: 'border-box',
-}
-
-const upgradeButtonStyle: React.CSSProperties = {
-  display: 'inline-block',
-  background: '#0F172A',
-  color: '#fff',
-  borderRadius: '8px',
-  padding: '12px 24px',
-  fontSize: '14px',
-  fontWeight: 700,
-  textDecoration: 'none',
 }
