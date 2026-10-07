@@ -5,29 +5,19 @@ import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { useDashboard } from '../../components/DashboardShell'
 
-interface Plan {
-  id: string
-  name: string
-  price_ngn: number
-}
+interface Plan { id: string; name: string; price_ngn: number }
+interface Subscription { plan_id: string; status: string; current_period_end: string | null }
 
-interface Subscription {
-  plan_id: string
-  status: string
-  current_period_end: string | null
-}
-
-const TIER_STYLE: Record<string, { accent: string; tint: string; label: string }> = {
-  free:       { accent: '#64748B', tint: '#F8FAFC', label: 'Getting started' },
-  startup:    { accent: '#0F766E', tint: '#F0FDFA', label: 'Early-stage' },
-  growth_v2:  { accent: '#D97706', tint: '#FFFBEB', label: 'Recommended' },
-  scale:      { accent: '#C2410C', tint: '#FFF7ED', label: 'Multiple locations' },
-  enterprise: { accent: '#4C1D95', tint: '#FAF5FF', label: 'Custom' },
-  // Legacy: only ever shown as someone's current plan, never in "Available plans"
-  essential:  { accent: '#0F766E', tint: '#F0FDFA', label: 'Legacy plan' },
-  growth:     { accent: '#D97706', tint: '#FFFBEB', label: 'Legacy plan' },
-  business:   { accent: '#C2410C', tint: '#FFF7ED', label: 'Legacy plan' },
-  advanced:   { accent: '#4C1D95', tint: '#FAF5FF', label: 'Legacy plan' },
+const TIER_STYLE: Record<string, { accent: string; label: string }> = {
+  free:       { accent: '#94A3B8', label: 'Getting started' },
+  startup:    { accent: '#2DD4BF', label: 'Early-stage' },
+  growth_v2:  { accent: '#FBBF24', label: 'Recommended' },
+  scale:      { accent: '#FB923C', label: 'Multiple locations' },
+  enterprise: { accent: '#A78BFA', label: 'Custom' },
+  essential:  { accent: '#2DD4BF', label: 'Legacy plan' },
+  growth:     { accent: '#FBBF24', label: 'Legacy plan' },
+  business:   { accent: '#FB923C', label: 'Legacy plan' },
+  advanced:   { accent: '#A78BFA', label: 'Legacy plan' },
 }
 
 const RECOMMENDED_PLAN_ID = 'growth_v2'
@@ -43,15 +33,10 @@ function BillingContent() {
   const [upgrading, setUpgrading] = useState<string | null>(null)
   const [banner, setBanner] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
 
-  useEffect(() => {
-    init()
-  }, [])
+  useEffect(() => { init() }, [])
 
   async function init() {
-    if (!context.isOwner) {
-      setLoading(false)
-      return
-    }
+    if (!context.isOwner) { setLoading(false); return }
 
     await loadPlansAndSubscription()
 
@@ -60,9 +45,7 @@ function BillingContent() {
     }
 
     const reference = searchParams.get('reference') || searchParams.get('trxref')
-    if (reference) {
-      await verifyPayment(reference)
-    }
+    if (reference) await verifyPayment(reference)
 
     setLoading(false)
   }
@@ -79,10 +62,8 @@ function BillingContent() {
     const sub = subData || { plan_id: 'free', status: 'active', current_period_end: null }
     setSubscription(sub)
 
-    // The current plan might be a legacy or inactive one (for example a
-    // subscriber from before the plan change). Fetch it directly rather than
-    // relying on the active-only list, so the top section never shows "Free"
-    // for someone who is actually paying.
+    // The current plan may be a legacy or inactive one, so fetch it directly
+    // rather than relying on the active-only list.
     if (sub.plan_id === 'free') {
       setCurrentPlanDetails({ id: 'free', name: 'Free', price_ngn: 0 })
     } else {
@@ -91,10 +72,7 @@ function BillingContent() {
         setCurrentPlanDetails(fromActive)
       } else {
         const { data: legacyPlan } = await supabase
-          .from('plans')
-          .select('id, name, price_ngn')
-          .eq('id', sub.plan_id)
-          .maybeSingle()
+          .from('plans').select('id, name, price_ngn').eq('id', sub.plan_id).maybeSingle()
         setCurrentPlanDetails(legacyPlan || { id: sub.plan_id, name: sub.plan_id, price_ngn: 0 })
       }
     }
@@ -108,10 +86,7 @@ function BillingContent() {
     try {
       const response = await fetch('/api/payments/verify', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ reference }),
       })
       const data = await response.json()
@@ -141,10 +116,7 @@ function BillingContent() {
     try {
       const response = await fetch('/api/payments/initialize', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ plan_id: planId }),
       })
       const data = await response.json()
@@ -162,26 +134,15 @@ function BillingContent() {
   }
 
   if (!context.isOwner) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={{ color: '#64748B', fontSize: '14px' }}>Only the business owner can manage billing.</p>
-      </div>
-    )
+    return <div className="ui-wrap"><p className="ui-sub">Only the business owner can manage billing.</p></div>
   }
 
   if (loading) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={{ color: '#64748B', fontSize: '14px' }}>Loading...</p>
-      </div>
-    )
+    return <div className="ui-wrap"><p className="ui-sub">Loading...</p></div>
   }
 
   const currentPlanId = subscription?.plan_id || 'free'
 
-  // The ladder is built from whatever plans exist (the active list, plus the
-  // current plan if it is a legacy one) sorted by price, so it never goes
-  // stale when plans change.
   const ladderPlans = [...plans]
   if (currentPlanDetails && !ladderPlans.find(p => p.id === currentPlanDetails.id)) {
     ladderPlans.push(currentPlanDetails)
@@ -189,168 +150,87 @@ function BillingContent() {
   ladderPlans.sort((a, b) => a.price_ngn - b.price_ngn)
   const currentIndex = ladderPlans.findIndex(p => p.id === currentPlanId)
 
-  const currentStyle = TIER_STYLE[currentPlanId] || TIER_STYLE.free
+  const priceLabel = (p: Plan) => (p.price_ngn === 0 ? 'Free' : '₦' + p.price_ngn.toLocaleString() + '/mo')
+
+  function PlanCard({ plan, isCurrent, canUpgrade }: { plan: Plan; isCurrent: boolean; canUpgrade: boolean }) {
+    const style = TIER_STYLE[plan.id] || TIER_STYLE.free
+    return (
+      <div className="ui-card" style={{ marginBottom: '12px', borderLeft: '4px solid ' + style.accent, borderColor: isCurrent ? style.accent : undefined }}>
+        <div className="ui-between">
+          <div>
+            <span className="ui-name">{plan.name}</span>
+            {plan.id === RECOMMENDED_PLAN_ID && !isCurrent && (
+              <span className="ui-badge ui-badge-warn" style={{ marginLeft: '8px' }}>Recommended</span>
+            )}
+            <div className="ui-meta">{style.label}</div>
+          </div>
+          <span className="ui-name" style={{ whiteSpace: 'nowrap' }}>{priceLabel(plan)}</span>
+        </div>
+
+        {isCurrent ? (
+          <div style={{ marginTop: '12px', textAlign: 'center', padding: '10px', border: '1px solid ' + style.accent, borderRadius: '8px', fontSize: '14px', fontWeight: 700, color: style.accent }}>
+            Current plan
+          </div>
+        ) : canUpgrade && plan.price_ngn > 0 ? (
+          <button
+            onClick={() => handleUpgrade(plan.id)}
+            disabled={upgrading === plan.id}
+            className="ui-btn ui-block"
+            style={{ marginTop: '12px' }}
+          >
+            {upgrading === plan.id ? 'Redirecting to payment...' : 'Upgrade to ' + plan.name}
+          </button>
+        ) : null}
+      </div>
+    )
+  }
 
   return (
-    <div style={wrapStyle}>
-      <h1 style={titleStyle}>Billing</h1>
+    <div className="ui-wrap">
+      <h1 className="ui-title">Billing</h1>
 
       {banner && (
-        <div style={{
-          background: banner.type === 'success' ? '#F0FDF4' : banner.type === 'error' ? '#FEF2F2' : '#EFF6FF',
-          border: '1px solid ' + (banner.type === 'success' ? '#BBF7D0' : banner.type === 'error' ? '#FECACA' : '#BFDBFE'),
-          borderRadius: '10px',
-          padding: '14px',
-          marginBottom: '20px',
-        }}>
-          <p style={{
-            color: banner.type === 'success' ? '#166534' : banner.type === 'error' ? '#dc2626' : '#1D4ED8',
-            fontSize: '14px',
-            margin: 0,
-            fontWeight: 600,
-          }}>{banner.message}</p>
+        <div
+          className="ui-card"
+          style={{
+            marginBottom: '20px',
+            borderColor: banner.type === 'success' ? 'rgba(52,211,153,.4)' : banner.type === 'error' ? 'rgba(248,113,113,.4)' : 'rgba(96,165,250,.4)',
+          }}
+        >
+          <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: banner.type === 'success' ? '#34D399' : banner.type === 'error' ? '#F87171' : '#93C5FD' }}>
+            {banner.message}
+          </p>
         </div>
       )}
 
-      <div style={{ background: '#0F172A', borderRadius: '14px', padding: '22px', marginBottom: '24px' }}>
-        <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', fontWeight: 600, marginBottom: '6px' }}>Current plan</div>
-        <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>
+      <div className="ui-card" style={{ marginBottom: '24px', padding: '22px', background: 'linear-gradient(135deg, rgba(37,99,235,.25), rgba(10,14,39,0) 70%), rgba(255,255,255,.04)' }}>
+        <div className="ui-meta">Current plan</div>
+        <div style={{ fontSize: '26px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', margin: '4px 0' }}>
           {currentPlanDetails?.name || 'Free'}
         </div>
         {subscription?.current_period_end && (
-          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
-            Renews {new Date(subscription.current_period_end).toLocaleDateString()}
-          </div>
+          <div className="ui-meta">Renews {new Date(subscription.current_period_end).toLocaleDateString()}</div>
         )}
-
         {ladderPlans.length > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '16px' }}>
+          <div style={{ display: 'flex', gap: '4px', marginTop: '16px' }}>
             {ladderPlans.map((p, i) => (
-              <div key={p.id} style={{
-                flex: 1,
-                height: '5px',
-                borderRadius: '3px',
-                background: i <= currentIndex ? '#E7A93D' : 'rgba(255,255,255,0.2)',
-              }} />
+              <div key={p.id} style={{ flex: 1, height: '5px', borderRadius: '3px', background: i <= currentIndex ? '#34D399' : 'rgba(255,255,255,.15)' }} />
             ))}
           </div>
         )}
       </div>
 
-      <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A', marginBottom: '14px' }}>Available plans</h2>
+      <div className="ui-section-label" style={{ marginTop: 0 }}>Available plans</div>
 
-      {plans.map(plan => {
-        const isCurrent = plan.id === currentPlanId
-        const style = TIER_STYLE[plan.id] || TIER_STYLE.free
-        return (
-          <div key={plan.id} style={{
-            border: '1px solid ' + (isCurrent ? style.accent : '#E2E8F0'),
-            borderLeft: '4px solid ' + style.accent,
-            borderRadius: '10px',
-            padding: '16px',
-            marginBottom: '12px',
-            background: isCurrent ? style.tint : '#fff',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', marginBottom: '4px' }}>
-              <div>
-                <span style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>{plan.name}</span>
-                {plan.id === RECOMMENDED_PLAN_ID && !isCurrent && (
-                  <span style={{
-                    marginLeft: '8px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    color: style.accent,
-                    background: style.tint,
-                    border: '1px solid ' + style.accent,
-                    borderRadius: '999px',
-                    padding: '2px 8px',
-                  }}>Recommended</span>
-                )}
-                <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '2px' }}>{style.label}</div>
-              </div>
-              <span style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap' }}>
-                {plan.price_ngn === 0 ? 'Free' : '₦' + plan.price_ngn.toLocaleString() + '/mo'}
-              </span>
-            </div>
+      {plans.map(plan => (
+        <PlanCard key={plan.id} plan={plan} isCurrent={plan.id === currentPlanId} canUpgrade />
+      ))}
 
-            {isCurrent ? (
-              <div style={{
-                marginTop: '10px',
-                textAlign: 'center',
-                padding: '10px',
-                background: '#fff',
-                border: '1px solid ' + style.accent,
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: 700,
-                color: style.accent,
-              }}>
-                Current plan
-              </div>
-            ) : plan.price_ngn === 0 ? null : (
-              <button
-                onClick={() => handleUpgrade(plan.id)}
-                disabled={upgrading === plan.id}
-                style={{
-                  marginTop: '10px',
-                  width: '100%',
-                  minHeight: '44px',
-                  padding: '11px',
-                  background: style.accent,
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  opacity: upgrading === plan.id ? 0.6 : 1,
-                }}
-              >
-                {upgrading === plan.id ? 'Redirecting to payment...' : 'Upgrade to ' + plan.name}
-              </button>
-            )}
-          </div>
-        )
-      })}
-
-      {/* If the current plan is a legacy one hidden from new signups,
-          show it here too so it isn't invisible on this page. */}
       {currentPlanDetails && !plans.find(p => p.id === currentPlanDetails.id) && (
-        <div style={{
-          border: '1px solid ' + currentStyle.accent,
-          borderLeft: '4px solid ' + currentStyle.accent,
-          borderRadius: '10px',
-          padding: '16px',
-          marginBottom: '12px',
-          background: currentStyle.tint,
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-            <div>
-              <span style={{ fontSize: '15px', fontWeight: 700, color: '#0F172A' }}>{currentPlanDetails.name}</span>
-              <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '2px' }}>{currentStyle.label}</div>
-            </div>
-            <span style={{ fontSize: '15px', fontWeight: 800, color: '#0F172A', whiteSpace: 'nowrap' }}>
-              {currentPlanDetails.price_ngn === 0 ? 'Free' : '₦' + currentPlanDetails.price_ngn.toLocaleString() + '/mo'}
-            </span>
-          </div>
-          <div style={{
-            marginTop: '10px',
-            textAlign: 'center',
-            padding: '10px',
-            background: '#fff',
-            border: '1px solid ' + currentStyle.accent,
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: 700,
-            color: currentStyle.accent,
-          }}>
-            Current plan
-          </div>
-        </div>
+        <PlanCard plan={currentPlanDetails} isCurrent canUpgrade={false} />
       )}
 
-      <p style={{ fontSize: '12px', color: '#94A3B8', textAlign: 'center', marginTop: '20px', lineHeight: 1.5 }}>
+      <p className="ui-meta" style={{ textAlign: 'center', marginTop: '20px', lineHeight: 1.5 }}>
         Payments are securely processed by Paystack. Your card details are never stored on Cloutinet&rsquo;s servers.
       </p>
     </div>
@@ -359,26 +239,8 @@ function BillingContent() {
 
 export default function BillingPage() {
   return (
-    <Suspense fallback={
-      <div style={{ padding: '24px 0' }}>
-        <p style={{ color: '#64748B', fontSize: '14px' }}>Loading...</p>
-      </div>
-    }>
+    <Suspense fallback={<div className="ui-wrap"><p className="ui-sub">Loading...</p></div>}>
       <BillingContent />
     </Suspense>
   )
-}
-
-const wrapStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  fontFamily: 'Segoe UI, system-ui, sans-serif',
-}
-
-const titleStyle: React.CSSProperties = {
-  fontSize: '22px',
-  fontWeight: 800,
-  color: '#0F172A',
-  margin: '0 0 14px',
-  letterSpacing: '-0.01em',
 }
