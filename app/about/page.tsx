@@ -1,68 +1,82 @@
 import Link from 'next/link'
+import { PublicNav, PublicFooter } from '../components/PublicChrome'
+
+export const metadata = {
+  title: 'About | Cloutinet',
+  description: 'Cloutinet is the Business Operating System: one connected platform for operations, customers, payments and growth.',
+}
+
+const AREAS = [
+  {
+    title: 'Run',
+    items: ['Employees with roles and permissions', 'Documents in one place', 'An activity log of who did what', 'An AI assistant that answers questions about your business'],
+  },
+  {
+    title: 'Grow',
+    items: ['Customer records and follow-up flags', 'Payment requests and payment records', 'Products and services with photos and prices', 'Marketing campaigns with AI-generated copy'],
+  },
+  {
+    title: 'Connect',
+    items: ['A public business page that search engines can find', 'WhatsApp and call buttons, with views and taps tracked', 'Integrations with analytics, messaging and webhooks', 'A developer API and a Trust-Score API'],
+  },
+]
 
 export default function AboutPage() {
   return (
-    <div style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#fff', color: '#0F172A' }}>
+    <div style={{ fontFamily: 'inherit', background: '#fff', color: '#0F172A', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <PublicNav />
 
-      <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <div style={{ width: '28px', height: '28px', background: '#0F172A', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>C</div>
-          <span style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>Cloutinet</span>
-        </Link>
-        <Link href="/auth" style={{ background: '#0F172A', color: '#fff', padding: '8px 16px', borderRadius: '6px', textDecoration: 'none', fontSize: '13px', fontWeight: 600 }}>Get Started Free</Link>
-      </nav>
+      <section style={{ maxWidth: '640px', margin: '0 auto', padding: '48px 20px', flex: 1, width: '100%', boxSizing: 'border-box' }}>
+        <div style={{ color: '#2563EB', fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>Our story</div>
+        <h1 style={{ fontSize: '34px', fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 18px', lineHeight: 1.15 }}>
+          One connected system for running your business
+        </h1>
 
-      <section style={{ maxWidth: '580px', margin: '0 auto', padding: '40px 20px' }}>
-
-        <div style={{ color: '#475569', fontSize: '11px', fontWeight: 700, letterSpacing: '2px', marginBottom: '10px', textTransform: 'uppercase' }}>Our Story</div>
-        <h1 style={{ fontSize: '28px', fontWeight: 800, marginBottom: '16px', lineHeight: 1.2, color: '#0F172A' }}>Built So No Business Stays Invisible</h1>
-        <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          We built Cloutinet because we believe businesses shouldn't stay invisible just because they lack the budget for an agency or a full marketing team. A business's ability to be found online shouldn't depend on how big it is — from a single-owner startup to an established enterprise, everyone deserves real digital visibility.
+        <p style={paragraphStyle}>
+          We built Cloutinet because running a business shouldn&apos;t depend on stitching together a dozen disconnected tools, or on having the budget for an agency or a full operations team. From a single-owner startup to an established company, every business deserves the same connected foundation.
         </p>
-        <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          Our vision for Cloutinet goes beyond a simple directory — we want it to become a complete business visibility operating system. A place where any business, at any scale, can establish a real digital presence, become discoverable on Google, showcase what they sell, reach customers directly, and grow through tools that work automatically in the background.
+        <p style={paragraphStyle}>
+          Cloutinet is a business operating system: one place to run your operations, teams, customers, payments and growth, with a public business presence that makes your business accessible to customers, search engines and other systems.
         </p>
-        <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '20px' }}>
-          That means building Cloutinet to be fast, lightweight, and built to scale — from independent shops and service providers to retail chains, distributors, manufacturers, and enterprises across Nigeria and other emerging markets, where data is expensive and every second of load time matters.
+        <p style={paragraphStyle}>
+          We build it to be fast, lightweight and ready to scale, from independent shops and service providers to companies with several locations, across Nigeria and other emerging markets, where data is expensive and every second of load time matters.
         </p>
-        <p style={{ color: '#475569', fontSize: '15px', lineHeight: 1.7, marginBottom: '32px' }}>
-          At its core, Cloutinet is infrastructure. The technology should do the complicated work — visibility, discoverability, automation — so businesses can spend their time on what actually matters: serving their customers.
+        <p style={{ ...paragraphStyle, marginBottom: '32px' }}>
+          At its core, Cloutinet is infrastructure. The technology should do the complicated work, such as connecting your records, tracking activity and keeping your public page discoverable, so you can spend your time serving customers.
         </p>
 
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '24px', marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>What Cloutinet Does</h2>
-          {[
-            'Creates a free Google-searchable page for your business',
-            'Lists your products and services with photos and prices',
-            'Connects customers directly to you via WhatsApp',
-            'Tracks how many people view your page and contact you',
-            'Built for African businesses of every size — from independent startups to established enterprises',
-          ].map(item => (
-            <div key={item} style={{ display: 'flex', gap: '10px', marginBottom: '12px', alignItems: 'flex-start' }}>
-              <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#0F172A', marginTop: '9px', flexShrink: 0 }}></div>
-              <span style={{ color: '#475569', fontSize: '14px', lineHeight: 1.5 }}>{item}</span>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.01em', margin: '0 0 14px' }}>What Cloutinet does today</h2>
+        <div style={{ display: 'grid', gap: '12px', marginBottom: '36px' }}>
+          {AREAS.map(area => (
+            <div key={area.title} style={{ background: '#F5F7FB', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '20px' }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '10px' }}>{area.title}</div>
+              {area.items.map(item => (
+                <div key={item} style={{ display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'flex-start' }}>
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#2563EB', marginTop: '9px', flexShrink: 0 }} />
+                  <span style={{ color: '#475569', fontSize: '14px', lineHeight: 1.5 }}>{item}</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
 
-        <div style={{ textAlign: 'center' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: '#0F172A' }}>Ready to grow your business?</h3>
-          <p style={{ color: '#64748B', fontSize: '13px', marginBottom: '16px' }}>Join businesses of every size already getting found on Google with Cloutinet.</p>
-          <Link href="/auth" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>Create Your Free Page →</Link>
+        <div style={{ background: '#0A0E27', borderRadius: '16px', padding: '28px 20px', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.01em', margin: '0 0 8px', color: '#fff' }}>Run your business from one place.</h3>
+          <p style={{ color: '#94A3B8', fontSize: '14px', margin: '0 0 18px' }}>Start free and add more as you grow.</p>
+          <Link href="/auth" style={{ display: 'inline-block', background: '#2563EB', color: '#fff', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}>
+            Start Free
+          </Link>
         </div>
-
       </section>
 
-      <footer style={{ padding: '24px 20px', textAlign: 'center', borderTop: '1px solid #E2E8F0', marginTop: '20px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>Cloutinet</div>
-        <p style={{ color: '#94A3B8', fontSize: '11px', marginTop: '6px' }}>© 2026 Cloutinet. Create. Share. Grow.</p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '12px' }}>
-          <Link href="/feedback" style={{ color: '#475569', fontSize: '12px', textDecoration: 'none' }}>Feedback</Link>
-          <Link href="/privacy" style={{ color: '#475569', fontSize: '12px', textDecoration: 'none' }}>Privacy Policy</Link>
-          <Link href="/terms" style={{ color: '#475569', fontSize: '12px', textDecoration: 'none' }}>Terms</Link>
-        </div>
-      </footer>
-
+      <PublicFooter />
     </div>
   )
+}
+
+const paragraphStyle: React.CSSProperties = {
+  color: '#475569',
+  fontSize: '16px',
+  lineHeight: 1.7,
+  margin: '0 0 20px',
 }
