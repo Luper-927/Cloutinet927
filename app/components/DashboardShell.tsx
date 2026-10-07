@@ -76,48 +76,56 @@ function Icon({ name }: { name: string }) {
   )
 }
 
+/* Dark theme that matches the Cloutinet homepage:
+   navy #0A0E27, blue-600 buttons, emerald accents, translucent white panels,
+   16px panel radius, same font as the rest of the site. */
 const shellCss = `
-.cn-shell{min-height:100vh;background:#F8FAFC;color:#0F172A;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+.cn-shell{min-height:100vh;color:#E2E8F0;font-family:inherit;background-color:#0A0E27;background-image:radial-gradient(ellipse 700px 420px at 12% -8%,rgba(29,78,216,.30),transparent 70%),radial-gradient(ellipse 600px 500px at 100% 0%,rgba(37,99,235,.18),transparent 70%);background-repeat:no-repeat}
 .cn-shell *{box-sizing:border-box}
 .cn-side{display:none}
-.cn-top{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:#fff;border-bottom:1px solid #E2E8F0;min-height:56px}
+.cn-top{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:rgba(10,14,39,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);min-height:56px}
 .cn-top-left{display:flex;align-items:center;gap:8px;min-width:0}
-.cn-biz{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cn-chip{font-size:12px;color:#475569;background:#F1F5F9;border-radius:999px;padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px}
+.cn-biz{font-weight:700;font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cn-chip{font-size:12px;color:#CBD5E1;background:rgba(255,255,255,.08);border-radius:999px;padding:3px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px}
 .cn-acct{position:relative;flex-shrink:0}
-.cn-avatar{width:36px;height:36px;border-radius:50%;border:none;background:#0F172A;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
-.cn-menu{position:absolute;right:0;top:44px;min-width:190px;background:#fff;border:1px solid #E2E8F0;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.12);padding:6px;z-index:60}
-.cn-menu a,.cn-menu button{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:8px;border:none;background:transparent;color:#0F172A;font-size:14px;font-family:inherit;text-decoration:none;cursor:pointer;min-height:40px}
-.cn-menu a:hover,.cn-menu button:hover{background:#F1F5F9}
-.cn-menu .cn-danger{color:#DC2626}
+.cn-avatar{width:36px;height:36px;border-radius:50%;border:none;background:#2563EB;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+.cn-avatar:hover{background:#3B82F6}
+.cn-menu{position:absolute;right:0;top:44px;min-width:190px;background:#0F1433;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.45);padding:6px;z-index:60}
+.cn-menu a,.cn-menu button{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:8px;border:none;background:transparent;color:#E2E8F0;font-size:14px;font-family:inherit;text-decoration:none;cursor:pointer;min-height:40px}
+.cn-menu a:hover,.cn-menu button:hover{background:rgba(255,255,255,.07)}
+.cn-menu .cn-danger{color:#F87171}
 .cn-scrim{position:fixed;inset:0;z-index:50;background:transparent}
 .cn-main{padding:16px 16px 96px}
-.cn-bottom{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;background:#fff;border-top:1px solid #E2E8F0;padding-bottom:env(safe-area-inset-bottom)}
-.cn-bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 2px;min-height:56px;font-size:11px;color:#64748B;text-decoration:none;background:transparent;border:none;font-family:inherit;cursor:pointer}
-.cn-bn.is-active{color:#0F172A;font-weight:700}
-.cn-bn.is-active svg{color:#FF6B35}
-.cn-sheet-bg{position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.5)}
-.cn-sheet{position:absolute;left:0;right:0;bottom:0;max-height:82vh;overflow-y:auto;background:#fff;border-radius:16px 16px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom))}
-.cn-grip{width:36px;height:4px;border-radius:2px;background:#CBD5E1;margin:6px auto 8px}
-.cn-sheet-group{font-size:13px;font-weight:700;color:#64748B;margin:14px 0 2px}
-.cn-sheet-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px 8px;min-height:48px;border-radius:8px;font-size:15px;color:#0F172A;text-decoration:none;background:transparent;border:none;font-family:inherit;text-align:left;cursor:pointer}
-.cn-sheet-item:hover{background:#F1F5F9}
-.cn-sheet-item.is-active{font-weight:700}
-.cn-sheet-item.cn-danger{color:#DC2626}
+.cn-legacy{background:#fff;color:#0F172A;border-radius:16px;padding:20px 16px;max-width:640px;margin:0 auto;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.cn-bottom{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;background:rgba(10,14,39,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.08);padding-bottom:env(safe-area-inset-bottom)}
+.cn-bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 2px;min-height:56px;font-size:11px;color:#94A3B8;text-decoration:none;background:transparent;border:none;font-family:inherit;cursor:pointer}
+.cn-bn.is-active{color:#fff;font-weight:700}
+.cn-bn.is-active svg{color:#60A5FA}
+.cn-sheet-bg{position:fixed;inset:0;z-index:70;background:rgba(2,6,23,.65)}
+.cn-sheet{position:absolute;left:0;right:0;bottom:0;max-height:82vh;overflow-y:auto;background:#0F1433;border-top:1px solid rgba(255,255,255,.1);border-radius:20px 20px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom))}
+.cn-grip{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.2);margin:6px auto 8px}
+.cn-sheet-group{font-size:13px;font-weight:700;color:#94A3B8;margin:14px 0 2px}
+.cn-sheet-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px 8px;min-height:48px;border-radius:8px;font-size:15px;color:#E2E8F0;text-decoration:none;background:transparent;border:none;font-family:inherit;text-align:left;cursor:pointer}
+.cn-sheet-item:hover{background:rgba(255,255,255,.06)}
+.cn-sheet-item.is-active{color:#fff;font-weight:700}
+.cn-sheet-item.is-active svg{color:#60A5FA}
+.cn-sheet-item.cn-danger{color:#F87171}
 .cn-brand{padding:4px 12px 14px}
-.cn-brand-name{font-size:18px;font-weight:800;color:#fff}
-.cn-brand-sub{font-size:12px;color:#94A3B8;margin-top:2px}
-.cn-group-title{font-size:13px;font-weight:700;color:#94A3B8;padding:16px 12px 4px}
-.cn-link{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:8px;color:#CBD5E1;font-size:14px;font-weight:600;text-decoration:none;background:transparent;border:none;font-family:inherit;cursor:pointer;text-align:left}
-.cn-link:hover{background:rgba(255,255,255,.07);color:#fff}
-.cn-link.is-active{background:rgba(255,255,255,.12);color:#fff}
-.cn-side-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)}
-.cn-link:focus-visible,.cn-bn:focus-visible,.cn-sheet-item:focus-visible,.cn-avatar:focus-visible,.cn-menu a:focus-visible,.cn-menu button:focus-visible{outline:2px solid #FF6B35;outline-offset:2px}
-.cn-loading{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;color:#0F172A;font-size:14px;font-family:'Segoe UI',system-ui,sans-serif}
+.cn-brand-name{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.01em}
+.cn-brand-sub{font-size:12px;color:#64748B;margin-top:2px}
+.cn-group-title{font-size:13px;font-weight:700;color:#64748B;padding:16px 12px 4px}
+.cn-link{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:8px;color:#94A3B8;font-size:14px;font-weight:600;text-decoration:none;background:transparent;border:none;font-family:inherit;cursor:pointer;text-align:left}
+.cn-link:hover{background:rgba(255,255,255,.06);color:#fff}
+.cn-link.is-active{background:rgba(59,130,246,.15);color:#fff}
+.cn-link.is-active svg{color:#60A5FA}
+.cn-side-foot{margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+.cn-link:focus-visible,.cn-bn:focus-visible,.cn-sheet-item:focus-visible,.cn-avatar:focus-visible,.cn-menu a:focus-visible,.cn-menu button:focus-visible{outline:2px solid #60A5FA;outline-offset:2px}
+.cn-loading{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0A0E27;color:#94A3B8;font-size:14px;font-family:inherit}
 @media (min-width:900px){
-  .cn-side{display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;width:232px;background:#0F172A;padding:18px 12px;overflow-y:auto;z-index:40}
+  .cn-side{display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;width:232px;background:#0A0E27;border-right:1px solid rgba(255,255,255,.07);padding:18px 12px;overflow-y:auto;z-index:40}
   .cn-top{margin-left:232px;padding:10px 32px}
   .cn-main{margin-left:232px;padding:28px 32px 48px}
+  .cn-legacy{padding:28px 24px}
   .cn-bottom,.cn-sheet-bg{display:none}
 }
 @media (prefers-reduced-motion:no-preference){
@@ -129,9 +137,11 @@ const shellCss = `
 export default function DashboardShell({
   children,
   chrome = true,
+  dark = true,
 }: {
   children: ReactNode
   chrome?: boolean
+  dark?: boolean
 }) {
   const pathname = usePathname()
   const [context, setContext] = useState<ActingContext | null>(null)
@@ -205,8 +215,6 @@ export default function DashboardShell({
 
   const value: DashboardState = { context, profile, tierLimits, locationName, signOut }
 
-  // Pages that haven't been converted yet: share the data, but don't draw
-  // the sidebar, top bar or bottom navigation.
   if (!chrome) {
     return <DashboardCtx.Provider value={value}>{children}</DashboardCtx.Provider>
   }
@@ -326,7 +334,7 @@ export default function DashboardShell({
           ))}
 
           <div className="cn-side-foot">
-            <button className="cn-link" onClick={signOut} style={{ color: '#FCA5A5' }}>
+            <button className="cn-link" onClick={signOut} style={{ color: '#F87171' }}>
               <span>Sign out</span>
             </button>
           </div>
@@ -364,7 +372,9 @@ export default function DashboardShell({
           </div>
         </header>
 
-        <main className="cn-main">{children}</main>
+        <main className="cn-main">
+          {dark ? children : <div className="cn-legacy">{children}</div>}
+        </main>
 
         <nav className="cn-bottom" aria-label="Quick navigation">
           <Link href="/dashboard" className={'cn-bn' + (isActive(pathname, '/dashboard') ? ' is-active' : '')}>
