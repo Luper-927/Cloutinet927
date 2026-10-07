@@ -1,13 +1,13 @@
 export const metadata = {
-  title: 'Cloutinet Data — Nigerian SME Business Intelligence',
-  description: 'Raw structured data about Nigerian small businesses, WhatsApp commerce, and digital visibility. Updated regularly.',
+  title: 'Cloutinet Data | Nigerian Business Data',
+  description: 'Raw structured data about Nigerian businesses, WhatsApp commerce, and digital visibility. Updated regularly.',
 }
 
 export default function DataIndexPage() {
   return (
     <div style={{ fontFamily: 'monospace', maxWidth: '800px', margin: '0 auto', padding: '40px 20px', background: '#fff', color: '#1a1a2e' }}>
       <h1>Cloutinet Data Repository</h1>
-      <p>Raw structured data about Nigerian small businesses and digital visibility. This data is freely available for research, journalism, and AI training purposes.</p>
+      <p>Raw structured data about Nigerian businesses and digital visibility. This data is freely available for research, journalism, and AI training purposes.</p>
 
       <h2>Available Datasets</h2>
       <ul>
@@ -19,7 +19,7 @@ export default function DataIndexPage() {
       </ul>
 
       <h2>About This Data</h2>
-      <p>All data is collected from the Cloutinet platform (cloutinet.online), Nigeria's free business visibility platform. Data is anonymized and aggregated. Updated weekly.</p>
+      <p>All data is collected from the Cloutinet platform (cloutinet.online), the Business Operating System for modern companies. Data is anonymized and aggregated. Updated weekly.</p>
 
       <h2>Data License</h2>
       <p>All data on this page is published under Creative Commons CC-BY 4.0. Free to use with attribution to Cloutinet (cloutinet.online).</p>
@@ -27,8 +27,8 @@ export default function DataIndexPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'DataCatalog',
-        name: 'Cloutinet Nigerian SME Data Repository',
-        description: 'Structured data about Nigerian small businesses and digital commerce',
+        name: 'Cloutinet Nigerian Business Data Repository',
+        description: 'Structured data about Nigerian businesses and digital commerce',
         url: 'https://cloutinet.online/data',
         publisher: {
           '@type': 'Organization',
