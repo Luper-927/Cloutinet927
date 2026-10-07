@@ -40,7 +40,6 @@ export default function DocumentsPage() {
 
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
-
   const [activeCategory, setActiveCategory] = useState('all')
   const [search, setSearch] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -52,10 +51,7 @@ export default function DocumentsPage() {
   useEffect(() => { load() }, [])
 
   async function load() {
-    if (noPermission || !hasAccess) {
-      setLoading(false)
-      return
-    }
+    if (noPermission || !hasAccess) { setLoading(false); return }
 
     let docsQuery = supabase
       .from('documents')
@@ -63,9 +59,7 @@ export default function DocumentsPage() {
       .eq('owner_id', ownerId)
       .order('created_at', { ascending: false })
 
-    if (locationId) {
-      docsQuery = docsQuery.eq('location_id', locationId)
-    }
+    if (locationId) docsQuery = docsQuery.eq('location_id', locationId)
 
     const { data } = await docsQuery
     setDocuments(data || [])
@@ -86,9 +80,7 @@ export default function DocumentsPage() {
 
     setUploading(true)
 
-    // Folder = ownerId. This is the exact convention the storage RLS
-    // policies check against, so getting this right matters for security,
-    // not just organization.
+    // Folder = ownerId. This is the convention the storage security rules check.
     const filePath = ownerId + '/' + Date.now() + '-' + file.name
 
     const { error: uploadError } = await supabase.storage
@@ -101,9 +93,6 @@ export default function DocumentsPage() {
       return
     }
 
-    // We store the storage path and create a fresh, short-lived signed URL
-    // each time someone views the document (see handleView). file_url is
-    // kept only as a legacy fallback for older rows.
     const { error: saveError } = await supabase.from('documents').insert({
       owner_id: ownerId,
       location_id: locationId,
@@ -126,7 +115,6 @@ export default function DocumentsPage() {
 
   async function handleView(doc: Document) {
     if (!doc.file_path) {
-      // Older row from before signed URLs: best-effort fallback.
       window.open(doc.file_url, '_blank')
       return
     }
@@ -135,7 +123,6 @@ export default function DocumentsPage() {
     const { data, error } = await supabase.storage
       .from('business-documents')
       .createSignedUrl(doc.file_path, 60)
-
     setViewingId(null)
 
     if (error || !data?.signedUrl) {
@@ -155,35 +142,20 @@ export default function DocumentsPage() {
     load()
   }
 
-  if (loading) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>Loading...</p>
-      </div>
-    )
-  }
+  if (loading) return <div className="ui-wrap"><p className="ui-sub">Loading...</p></div>
 
   if (noPermission) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>You don&rsquo;t have permission to view documents.</p>
-      </div>
-    )
+    return <div className="ui-wrap"><p className="ui-sub">You don&rsquo;t have permission to view documents.</p></div>
   }
 
   if (!hasAccess) {
     return (
-      <div style={wrapStyle}>
-        <h1 style={titleStyle}>Documents</h1>
-        <div style={{ padding: '36px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: '36px', marginBottom: '12px' }}>📁</div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-            Documents are not included in your plan
-          </h2>
-          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.5, marginBottom: '24px' }}>
-            You&rsquo;re currently on the {tierName} plan. Upgrade to store invoices, contracts, and business documents in one place.
-          </p>
-          <Link href="/dashboard/billing" style={upgradeButtonStyle}>View Plans</Link>
+      <div className="ui-wrap">
+        <h1 className="ui-title">Documents</h1>
+        <div className="ui-upgrade">
+          <h2>Documents are not included in your plan</h2>
+          <p>You&rsquo;re currently on the {tierName} plan. Upgrade to store invoices, contracts, and business documents in one place.</p>
+          <Link href="/dashboard/billing" className="ui-btn">View plans</Link>
         </div>
       </div>
     )
@@ -196,106 +168,53 @@ export default function DocumentsPage() {
   })
 
   return (
-    <div style={wrapStyle}>
-      <h1 style={titleStyle}>Documents</h1>
+    <div className="ui-wrap">
+      <h1 className="ui-title">Documents</h1>
 
-      {locationName && (
-        <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '12px', color: '#0369A1', fontWeight: 600 }}>
-          📍 Showing documents for {locationName} only
-        </div>
-      )}
+      {locationName && <div className="ui-banner">Showing documents for {locationName} only</div>}
 
-      <input
-        placeholder="Search documents..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        style={{ ...inputStyle, marginBottom: '12px' }}
-      />
+      <input className="ui-input tight" placeholder="Search documents..." value={search} onChange={e => setSearch(e.target.value)} />
 
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+      <div className="ui-pills">
         {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            style={{
-              padding: '6px 12px',
-              minHeight: '32px',
-              borderRadius: '999px',
-              fontSize: '12px',
-              fontWeight: 700,
-              border: '1px solid ' + (activeCategory === cat ? '#0F172A' : '#E2E8F0'),
-              background: activeCategory === cat ? '#0F172A' : '#fff',
-              color: activeCategory === cat ? '#fff' : '#0F172A',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              textTransform: 'capitalize',
-            }}
-          >{cat}</button>
+          <button key={cat} onClick={() => setActiveCategory(cat)} className={'ui-pill' + (activeCategory === cat ? ' is-on' : '')}>
+            {cat}
+          </button>
         ))}
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
-        <select value={pendingCategory} onChange={e => setPendingCategory(e.target.value)} style={{ ...inputStyle, marginBottom: '8px' }}>
+      <div className="ui-card" style={{ marginBottom: '20px' }}>
+        <select className="ui-input tight" value={pendingCategory} onChange={e => setPendingCategory(e.target.value)}>
           {CATEGORIES.filter(c => c !== 'all').map(cat => (
             <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
           ))}
         </select>
-        <button
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          style={{
-            width: '100%',
-            background: '#0F172A',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '12px',
-            minHeight: '44px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 700,
-            fontFamily: 'inherit',
-            opacity: uploading ? 0.7 : 1,
-          }}
-        >
+        <button onClick={() => fileRef.current?.click()} disabled={uploading} className="ui-btn ui-block">
           {uploading ? 'Uploading...' : '+ Upload document'}
         </button>
         <input ref={fileRef} type="file" onChange={handleFileSelect} style={{ display: 'none' }} accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,image/*" />
-        <p style={{ fontSize: '12px', color: '#94A3B8', marginTop: '6px' }}>PDF, Word, Excel, CSV, or images. Max 10 MB.</p>
+        <p className="ui-meta" style={{ margin: '8px 0 0' }}>PDF, Word, Excel, CSV, or images. Max 10 MB.</p>
       </div>
 
-      {error && (
-        <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '16px' }}>
-          <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{error}</p>
-        </div>
-      )}
+      {error && <div className="ui-error"><p>{error}</p></div>}
 
       {filtered.length === 0 ? (
-        <p style={{ color: '#64748B', fontSize: '13px', textAlign: 'center', padding: '20px' }}>No documents found.</p>
+        <div className="ui-empty">No documents found.</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="ui-list">
           {filtered.map(doc => (
-            <div key={doc.id} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div key={doc.id} className="ui-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</div>
-                <div style={{ fontSize: '12px', color: '#94A3B8', textTransform: 'capitalize' }}>
+                <div className="ui-name" style={{ fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.name}</div>
+                <div className="ui-meta" style={{ textTransform: 'capitalize' }}>
                   {doc.category} · {formatSize(doc.file_size_bytes)} · {new Date(doc.created_at).toLocaleDateString()}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '6px', flexShrink: 0, marginLeft: '8px' }}>
-                <button
-                  onClick={() => handleView(doc)}
-                  disabled={viewingId === doc.id}
-                  style={{ fontSize: '12px', padding: '6px 12px', minHeight: '32px', borderRadius: '6px', background: '#0F172A', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                >
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                <button onClick={() => handleView(doc)} disabled={viewingId === doc.id} className="ui-btn ui-btn-sm">
                   {viewingId === doc.id ? '...' : 'View'}
                 </button>
-                <button
-                  onClick={() => handleDelete(doc)}
-                  style={{ fontSize: '12px', padding: '6px 12px', minHeight: '32px', borderRadius: '6px', background: 'transparent', color: '#DC2626', border: '1px solid #FCA5A5', cursor: 'pointer', fontFamily: 'inherit' }}
-                >
-                  Delete
-                </button>
+                <button onClick={() => handleDelete(doc)} className="ui-btn ui-btn-danger ui-btn-sm">Delete</button>
               </div>
             </div>
           ))}
@@ -303,47 +222,4 @@ export default function DocumentsPage() {
       )}
     </div>
   )
-}
-
-const wrapStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  fontFamily: 'Segoe UI, system-ui, sans-serif',
-}
-
-const titleStyle: React.CSSProperties = {
-  fontSize: '22px',
-  fontWeight: 800,
-  color: '#0F172A',
-  margin: '0 0 14px',
-  letterSpacing: '-0.01em',
-}
-
-const mutedStyle: React.CSSProperties = {
-  color: '#64748B',
-  fontSize: '14px',
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  background: '#fff',
-  border: '1px solid #E2E8F0',
-  borderRadius: '8px',
-  padding: '10px 12px',
-  color: '#0F172A',
-  fontSize: '14px',
-  outline: 'none',
-  fontFamily: 'inherit',
-  boxSizing: 'border-box',
-}
-
-const upgradeButtonStyle: React.CSSProperties = {
-  display: 'inline-block',
-  background: '#0F172A',
-  color: '#fff',
-  borderRadius: '8px',
-  padding: '12px 24px',
-  fontSize: '14px',
-  fontWeight: 700,
-  textDecoration: 'none',
 }
