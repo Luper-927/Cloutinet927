@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '../../lib/supabase'
 
 const categories = [
@@ -37,6 +38,37 @@ export default function OnboardingPage() {
   const [generatingServices, setGeneratingServices] = useState(false)
   const [error, setError] = useState('')
   const [savedSlug, setSavedSlug] = useState<string | null>(null)
+  const [isEdit, setIsEdit] = useState(false)
+
+  // If this person already has a business profile, fill the form with it so
+  // "Edit business profile" doesn't open a blank form.
+  useEffect(() => { loadExisting() }, [])
+
+  async function loadExisting() {
+    const { data: userData } = await supabase.auth.getUser()
+    if (!userData.user) return
+
+    const { data } = await supabase
+      .from('profiles')
+      .select('business_name, business_category, phone, location, tagline, business_hours, services, facebook_url, instagram_url, youtube_url, tiktok_url')
+      .eq('id', userData.user.id)
+      .maybeSingle()
+
+    if (data && data.business_name) {
+      setBusinessName(data.business_name || '')
+      setCategory(data.business_category || '')
+      setPhone(data.phone || '')
+      setLocation(data.location || '')
+      setTagline(data.tagline || '')
+      setHours(data.business_hours || '')
+      setServices(data.services || '')
+      setFacebook(data.facebook_url || '')
+      setInstagram(data.instagram_url || '')
+      setYoutube(data.youtube_url || '')
+      setTiktok(data.tiktok_url || '')
+      setIsEdit(true)
+    }
+  }
 
   async function generateTagline() {
     if (!businessName || !category) {
@@ -140,9 +172,9 @@ export default function OnboardingPage() {
     setSaving(false)
     if (saveError) { setError(saveError.message); return }
 
-   // Fire-and-forget: tell Google to re-check the sitemap, and directly
-    // request indexing for the new business page. Doesn't block the
-    // redirect if either fails or is slow.
+    // Fire-and-forget: tell Google to re-check the sitemap, and directly
+    // request indexing for the business page. Doesn't block the
+    // next step if either fails or is slow.
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
 
@@ -161,181 +193,269 @@ export default function OnboardingPage() {
 
   if (savedSlug) {
     const storeUrl = 'https://cloutinet.online/store/' + savedSlug
-    const shareText = 'My business ' + businessName + ' is now on Google! Check it out: ' + storeUrl
+    const shareText = businessName + ' is on Cloutinet. Take a look: ' + storeUrl
     const whatsappShareLink = 'https://wa.me/?text=' + encodeURIComponent(shareText)
 
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-        <div style={{ background: '#0F172A', padding: '16px 20px' }}>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>Cloutinet</div>
+      <div style={pageStyle}>
+        <div style={topBarStyle}>
+          <span style={wordmarkStyle}>Cloutinet</span>
         </div>
 
-        <div style={{ maxWidth: '480px', margin: '0 auto', padding: '40px 16px', textAlign: 'center' as const }}>
-          <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎉</div>
-          <h1 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-            Your page is live!
-          </h1>
-          <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px', lineHeight: 1.5 }}>
-            {businessName} is now searchable on Google. Share it now while it's fresh — customers who see it today could message you today.
+        <div style={{ ...contentStyle, textAlign: 'center', paddingTop: '48px' }}>
+          <h1 style={{ ...titleStyle, marginBottom: '10px' }}>Your business profile is ready</h1>
+          <p style={{ ...subtitleStyle, marginBottom: '24px' }}>
+            {businessName} now has a public page. Search engines can find it, though it can take a while to appear in results. Share the link so people can reach you.
           </p>
 
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px', marginBottom: '20px', wordBreak: 'break-all' as const }}>
-            <a href={storeUrl} style={{ color: '#0F172A', fontSize: '13px', fontWeight: 600, textDecoration: 'underline' }}>{storeUrl}</a>
+          <div style={{ ...cardStyle, marginBottom: '20px', wordBreak: 'break-all' }}>
+            <a href={storeUrl} style={{ color: '#fff', fontSize: '14px', fontWeight: 600, textDecoration: 'underline' }}>{storeUrl}</a>
           </div>
+
+          <button
+            onClick={() => { window.location.href = '/dashboard' }}
+            style={{ ...primaryButtonStyle, width: '100%', marginBottom: '12px' }}
+          >
+            Go to your dashboard
+          </button>
 
           <a
             href={whatsappShareLink}
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              background: '#16A34A', color: '#fff', padding: '15px',
-              borderRadius: '8px', textDecoration: 'none', fontSize: '15px', fontWeight: 700, marginBottom: '12px'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '48px',
+              background: 'rgba(52,211,153,0.12)',
+              border: '1px solid rgba(52,211,153,0.35)',
+              color: '#34D399',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontSize: '14px',
+              fontWeight: 600,
             }}
           >
-            Share to WhatsApp Status
+            Share on WhatsApp
           </a>
-
-          <button
-            onClick={() => { window.location.href = '/dashboard' }}
-            style={{
-              width: '100%', background: '#fff', color: '#64748B', border: '1px solid #E2E8F0',
-              borderRadius: '8px', padding: '13px', cursor: 'pointer',
-              fontSize: '13px', fontWeight: 600, fontFamily: 'inherit'
-            }}
-          >
-            Skip for now, go to Dashboard
-          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-      <div style={{ background: '#0F172A', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>Cloutinet</div>
-        <div style={{ fontSize: '12px', color: '#94A3B8' }}>Business Setup</div>
+    <div style={pageStyle}>
+      <div style={topBarStyle}>
+        <span style={wordmarkStyle}>Cloutinet</span>
+        {isEdit ? (
+          <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Back to dashboard</Link>
+        ) : (
+          <span style={{ fontSize: '13px', color: '#94A3B8' }}>Business setup</span>
+        )}
       </div>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
-        <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>Set Up Your Business</h1>
-        <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px' }}>Fill in your details to create your free Google-searchable business page.</p>
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>{isEdit ? 'Edit business profile' : 'Set up your business'}</h1>
+        <p style={subtitleStyle}>
+          Tell us about your business. This creates your business profile and your public page, which search engines can find.
+        </p>
 
-        <label style={labelStyle}>Business Name *</label>
-        <input
-          placeholder="e.g. Lax Furniture"
-          value={businessName}
-          onChange={e => setBusinessName(e.target.value)}
-          style={inputStyle}
-        />
+        <div style={cardStyle}>
+          <label style={labelStyle}>Business name *</label>
+          <input
+            placeholder="e.g. Lax Furniture"
+            value={businessName}
+            onChange={e => setBusinessName(e.target.value)}
+            style={inputStyle}
+          />
 
-        <label style={labelStyle}>Business Category *</label>
-        <select value={category} onChange={e => setCategory(e.target.value)} style={inputStyle}>
-          <option value="">Select your category</option>
-          {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-        </select>
+          <label style={labelStyle}>Business category *</label>
+          <select value={category} onChange={e => setCategory(e.target.value)} style={{ ...inputStyle, colorScheme: 'dark' }}>
+            <option value="">Select your category</option>
+            {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
 
-        <label style={labelStyle}>Phone / WhatsApp Number *</label>
-        <input
-          placeholder="e.g. 08012345678"
-          value={phone}
-          onChange={e => setPhone(e.target.value)}
-          style={inputStyle}
-        />
+          <label style={labelStyle}>Phone / WhatsApp number *</label>
+          <input
+            placeholder="e.g. 08012345678"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            style={inputStyle}
+          />
 
-        <label style={labelStyle}>Location (City, State)</label>
-        <input
-          placeholder="e.g. Port Harcourt, Rivers State"
-          value={location}
-          onChange={e => setLocation(e.target.value)}
-          style={inputStyle}
-        />
+          <label style={labelStyle}>Location (city, state)</label>
+          <input
+            placeholder="e.g. Port Harcourt, Rivers State"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            style={inputStyle}
+          />
 
-        <label style={labelStyle}>Tagline</label>
-        <input
-          placeholder="A short description of your business"
-          value={tagline}
-          onChange={e => setTagline(e.target.value)}
-          style={inputStyle}
-        />
-        <button
-          onClick={generateTagline}
-          disabled={generatingTagline}
-          style={aiButtonStyle}
-        >
-          {generatingTagline ? '⏳ Generating...' : '✨ Generate SEO Tagline with AI'}
-        </button>
+          <label style={labelStyle}>Tagline</label>
+          <input
+            placeholder="A short description of your business"
+            value={tagline}
+            onChange={e => setTagline(e.target.value)}
+            style={{ ...inputStyle, marginBottom: '10px' }}
+          />
+          <button
+            onClick={generateTagline}
+            disabled={generatingTagline}
+            style={aiButtonStyle}
+          >
+            {generatingTagline ? 'Generating...' : 'Generate tagline with AI'}
+          </button>
 
-        <label style={{ ...labelStyle, marginTop: '16px' }}>Business Hours</label>
-        <input
-          placeholder="e.g. Mon-Sat 8am-6pm"
-          value={hours}
-          onChange={e => setHours(e.target.value)}
-          style={inputStyle}
-        />
+          <label style={labelStyle}>Business hours</label>
+          <input
+            placeholder="e.g. Mon-Sat 8am-6pm"
+            value={hours}
+            onChange={e => setHours(e.target.value)}
+            style={inputStyle}
+          />
 
-        <label style={labelStyle}>Services & Products</label>
-        <textarea
-          placeholder="e.g. Rice, Beans, Palm Oil, Garri"
-          value={services}
-          onChange={e => setServices(e.target.value)}
-          style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' as const }}
-        />
-        <button
-          onClick={generateServices}
-          disabled={generatingServices}
-          style={aiButtonStyle}
-        >
-          {generatingServices ? '⏳ Generating...' : '✨ Generate Services with AI'}
-        </button>
+          <label style={labelStyle}>Services and products</label>
+          <textarea
+            placeholder="e.g. Rice, Beans, Palm Oil, Garri"
+            value={services}
+            onChange={e => setServices(e.target.value)}
+            style={{ ...inputStyle, minHeight: '96px', resize: 'vertical', marginBottom: '10px' }}
+          />
+          <button
+            onClick={generateServices}
+            disabled={generatingServices}
+            style={aiButtonStyle}
+          >
+            {generatingServices ? 'Generating...' : 'Generate services with AI'}
+          </button>
 
-        <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px', marginTop: '16px', marginBottom: '20px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginBottom: '12px' }}>Social Media Links (Optional)</div>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>Social media links (optional)</div>
           <input placeholder="Facebook URL" value={facebook} onChange={e => setFacebook(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
           <input placeholder="Instagram URL" value={instagram} onChange={e => setInstagram(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
           <input placeholder="YouTube URL" value={youtube} onChange={e => setYoutube(e.target.value)} style={{ ...inputStyle, marginBottom: '10px' }} />
-          <input placeholder="TikTok URL" value={tiktok} onChange={e => setTiktok(e.target.value)} style={{ ...inputStyle, marginBottom: '0' }} />
+          <input placeholder="TikTok URL" value={tiktok} onChange={e => setTiktok(e.target.value)} style={{ ...inputStyle, marginBottom: '20px' }} />
+
+          {error && (
+            <div style={{ background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.35)', borderRadius: '10px', padding: '12px', marginBottom: '12px' }}>
+              <p style={{ color: '#FCA5A5', fontSize: '13px', margin: 0 }}>{error}</p>
+            </div>
+          )}
+
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{ ...primaryButtonStyle, width: '100%', opacity: saving ? 0.7 : 1 }}
+          >
+            {saving ? 'Saving...' : isEdit ? 'Save changes' : 'Save and view my page'}
+          </button>
         </div>
-
-        {error && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-            <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
-          </div>
-        )}
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            width: '100%', background: '#0F172A', color: '#fff', border: 'none',
-            borderRadius: '8px', padding: '14px', cursor: 'pointer',
-            fontSize: '15px', fontWeight: 700, fontFamily: 'inherit',
-            opacity: saving ? 0.7 : 1
-          }}
-        >
-          {saving ? 'Saving...' : 'Save & View My Page'}
-        </button>
       </div>
     </div>
   )
 }
 
+const pageStyle: React.CSSProperties = {
+  minHeight: '100vh',
+  color: '#E2E8F0',
+  fontFamily: 'inherit',
+  backgroundColor: '#0A0E27',
+  backgroundImage:
+    'radial-gradient(ellipse 700px 420px at 12% -8%, rgba(29,78,216,0.30), transparent 70%), radial-gradient(ellipse 600px 500px at 100% 0%, rgba(37,99,235,0.18), transparent 70%)',
+  backgroundRepeat: 'no-repeat',
+}
+
+const topBarStyle: React.CSSProperties = {
+  padding: '16px 20px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  borderBottom: '1px solid rgba(255,255,255,0.08)',
+}
+
+const wordmarkStyle: React.CSSProperties = {
+  fontSize: '20px',
+  fontWeight: 900,
+  letterSpacing: '-0.01em',
+  color: '#fff',
+}
+
+const contentStyle: React.CSSProperties = {
+  maxWidth: '520px',
+  margin: '0 auto',
+  padding: '28px 16px 48px',
+}
+
+const titleStyle: React.CSSProperties = {
+  fontSize: '28px',
+  fontWeight: 800,
+  letterSpacing: '-0.02em',
+  color: '#fff',
+  margin: '0 0 8px',
+  lineHeight: 1.15,
+}
+
+const subtitleStyle: React.CSSProperties = {
+  fontSize: '14px',
+  color: '#94A3B8',
+  margin: '0 0 20px',
+  lineHeight: 1.5,
+}
+
+const cardStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: '16px',
+  padding: '20px',
+}
+
 const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#475569', fontSize: '12px',
-  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase'
+  display: 'block',
+  color: '#CBD5E1',
+  fontSize: '13px',
+  fontWeight: 600,
+  marginBottom: '6px',
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
-  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
-  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
-  boxSizing: 'border-box'
+  width: '100%',
+  background: 'rgba(255,255,255,0.05)',
+  border: '1px solid rgba(255,255,255,0.14)',
+  borderRadius: '8px',
+  padding: '12px 14px',
+  minHeight: '46px',
+  color: '#fff',
+  fontSize: '16px',
+  marginBottom: '16px',
+  outline: 'none',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+}
+
+const primaryButtonStyle: React.CSSProperties = {
+  background: '#2563EB',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '8px',
+  padding: '14px',
+  minHeight: '48px',
+  cursor: 'pointer',
+  fontSize: '15px',
+  fontWeight: 600,
+  fontFamily: 'inherit',
 }
 
 const aiButtonStyle: React.CSSProperties = {
-  width: '100%', background: '#F0FDF4', color: '#166534',
-  border: '1px solid #BBF7D0', borderRadius: '8px', padding: '11px',
-  fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-  fontFamily: 'inherit', marginBottom: '16px'
+  width: '100%',
+  background: 'rgba(52,211,153,0.10)',
+  color: '#34D399',
+  border: '1px solid rgba(52,211,153,0.30)',
+  borderRadius: '8px',
+  padding: '11px',
+  minHeight: '44px',
+  fontSize: '14px',
+  fontWeight: 600,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  marginBottom: '20px',
 }
