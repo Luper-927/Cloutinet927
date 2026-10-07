@@ -52,7 +52,7 @@ export default function AuthPage() {
         body: JSON.stringify({
           to: email,
           subject: 'Welcome to Cloutinet',
-          html: `<html><body style="font-family:sans-serif;padding:20px;background:#f5f5f5"><div style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden"><div style="background:#0F172A;padding:24px;text-align:center"><div style="font-size:22px;font-weight:800;color:#fff">Cloutinet</div></div><div style="padding:24px"><h2 style="color:#0F172A">Welcome!</h2><p style="color:#64748B">Your free business page is ready to set up.</p><a href="https://cloutinet.online/dashboard" style="display:block;text-align:center;background:#0F172A;color:#fff;padding:12px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:16px">Go to Dashboard</a></div></div></body></html>`
+          html: `<html><body style="font-family:sans-serif;padding:20px;background:#f5f5f5"><div style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden"><div style="background:#0A0E27;padding:24px;text-align:center"><div style="font-size:22px;font-weight:800;color:#fff">Cloutinet</div></div><div style="padding:24px"><h2 style="color:#0F172A">Welcome!</h2><p style="color:#64748B">Your Cloutinet account is ready. Set up your business profile to get started.</p><a href="https://cloutinet.online/dashboard" style="display:block;text-align:center;background:#2563EB;color:#fff;padding:12px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:16px">Go to Dashboard</a></div></div></body></html>`
         })
       })
       fetch('/api/send-email', {
@@ -68,31 +68,25 @@ export default function AuthPage() {
     window.location.href = '/dashboard'
   }
 
+  const submit = () => (mode === 'login' ? handleLogin() : handleSignup())
+
   return (
-    <div style={{
-      minHeight: '100vh', background: '#0F172A',
-      display: 'flex', flexDirection: 'column' as const,
-      alignItems: 'center', justifyContent: 'center',
-      padding: '20px', fontFamily: 'Segoe UI, system-ui, sans-serif'
-    }}>
+    <div style={pageStyle}>
       <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-        <div style={{ fontSize: '28px', fontWeight: 900, color: '#fff' }}>Cloutinet</div>
-        <p style={{ color: '#94A3B8', fontSize: '14px', marginTop: '6px' }}>
-          {mode === 'login' ? 'Welcome back' : "Nigeria's free business visibility platform"}
+        <div style={{ fontSize: '30px', fontWeight: 900, letterSpacing: '-0.01em', color: '#fff' }}>Cloutinet</div>
+        <p style={{ color: '#94A3B8', fontSize: '14px', margin: '8px 0 0' }}>
+          {mode === 'login' ? 'Welcome back' : 'Run your business from one connected platform'}
         </p>
       </div>
 
-      <div style={{
-        background: '#fff', borderRadius: '12px',
-        padding: '28px 24px', width: '100%', maxWidth: '400px',
-      }}>
-        <div style={{ display: 'flex', background: '#F8FAFC', borderRadius: '8px', padding: '4px', marginBottom: '24px' }}>
+      <div style={cardStyle}>
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '10px', padding: '4px', marginBottom: '24px' }}>
           {(['signup', 'login'] as const).map(m => (
             <button key={m} onClick={() => { setMode(m); setError('') }} style={{
-              flex: 1, padding: '10px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-              fontSize: '14px', fontWeight: 700,
-              background: mode === m ? '#0F172A' : 'transparent',
-              color: mode === m ? '#fff' : '#64748B',
+              flex: 1, padding: '10px', minHeight: '44px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              fontSize: '14px', fontWeight: 600,
+              background: mode === m ? '#2563EB' : 'transparent',
+              color: mode === m ? '#fff' : '#94A3B8',
               fontFamily: 'inherit'
             }}>
               {m === 'signup' ? 'Sign Up Free' : 'Log In'}
@@ -101,122 +95,148 @@ export default function AuthPage() {
         </div>
 
         {mode === 'signup' && (
-          <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', padding: '10px 14px', marginBottom: '20px' }}>
-            <p style={{ color: '#166534', fontSize: '13px', margin: 0, fontWeight: 600 }}>✓ Free forever — No credit card required</p>
+          <div style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '10px', padding: '10px 14px', marginBottom: '20px' }}>
+            <p style={{ color: '#34D399', fontSize: '13px', margin: 0, fontWeight: 600 }}>Free plan available. No credit card required.</p>
           </div>
         )}
 
-        <label style={labelStyle}>Email Address</label>
+        <label style={labelStyle}>Email address</label>
         <input
           placeholder="Enter your email address"
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && (mode === 'login' ? handleLogin() : handleSignup())}
+          onKeyDown={e => e.key === 'Enter' && submit()}
           style={inputStyle}
         />
 
         <label style={labelStyle}>Password</label>
-        <div style={{ position: 'relative' as const, marginBottom: '16px' }}>
+        <div style={{ position: 'relative', marginBottom: '16px' }}>
           <input
             placeholder={mode === 'signup' ? 'Create a password (min 6 characters)' : 'Enter your password'}
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={e => setPassword(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && (mode === 'login' ? handleLogin() : handleSignup())}
-            style={{ ...inputStyle, marginBottom: 0, paddingRight: '44px' }}
+            onKeyDown={e => e.key === 'Enter' && submit()}
+            style={{ ...inputStyle, marginBottom: 0, paddingRight: '64px' }}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
-            style={eyeButtonStyle}
+            style={toggleStyle}
           >
-            {showPassword ? '🙈' : '👁️'}
+            {showPassword ? 'Hide' : 'Show'}
           </button>
         </div>
 
         {mode === 'signup' && (
           <>
-            <label style={labelStyle}>Confirm Password</label>
-            <div style={{ position: 'relative' as const, marginBottom: '16px' }}>
+            <label style={labelStyle}>Confirm password</label>
+            <div style={{ position: 'relative', marginBottom: '16px' }}>
               <input
                 placeholder="Re-enter your password"
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSignup()}
-                style={{ ...inputStyle, marginBottom: 0, paddingRight: '44px' }}
+                style={{ ...inputStyle, marginBottom: 0, paddingRight: '64px' }}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                style={eyeButtonStyle}
+                style={toggleStyle}
               >
-                {showConfirmPassword ? '🙈' : '👁️'}
+                {showConfirmPassword ? 'Hide' : 'Show'}
               </button>
             </div>
           </>
         )}
 
         {error && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px' }}>
-            <p style={{ color: '#dc2626', fontSize: '13px', margin: 0 }}>{error}</p>
+          <div style={{ background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.35)', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px' }}>
+            <p style={{ color: '#FCA5A5', fontSize: '13px', margin: 0 }}>{error}</p>
           </div>
         )}
 
         <button
-          onClick={mode === 'login' ? handleLogin : handleSignup}
+          onClick={submit}
           disabled={loading}
           style={{
-            width: '100%', padding: '14px',
-            background: loading ? '#94A3B8' : '#0F172A',
+            width: '100%', padding: '14px', minHeight: '48px',
+            background: '#2563EB',
             border: 'none', borderRadius: '8px', color: '#fff',
-            fontSize: '15px', fontWeight: 700,
+            fontSize: '15px', fontWeight: 600,
             cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.6 : 1,
             fontFamily: 'inherit', marginBottom: '16px'
           }}
         >
           {loading ? 'Please wait...' : mode === 'login' ? 'Log In' : 'Create Free Account'}
         </button>
 
-        <p style={{ textAlign: 'center', fontSize: '13px', color: '#64748B', margin: 0 }}>
+        <p style={{ textAlign: 'center', fontSize: '13px', color: '#94A3B8', margin: 0 }}>
           {mode === 'signup' ? 'Already have an account? ' : "Don't have an account? "}
-          <span
-            onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}
-            style={{ color: '#0F172A', fontWeight: 700, cursor: 'pointer' }}
+          <button
+            type="button"
+            onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError('') }}
+            style={{ background: 'transparent', border: 'none', padding: 0, color: '#60A5FA', fontWeight: 700, cursor: 'pointer', fontSize: '13px', fontFamily: 'inherit' }}
           >
             {mode === 'signup' ? 'Log In' : 'Sign Up Free'}
-          </span>
+          </button>
         </p>
       </div>
 
-      <p style={{ fontSize: '12px', color: '#475569', marginTop: '20px', textAlign: 'center' }}>
+      <p style={{ fontSize: '12px', color: '#64748B', marginTop: '20px', textAlign: 'center' }}>
         By signing up you agree to our{' '}
-        <a href="/terms" style={{ color: '#94A3B8', textDecoration: 'none' }}>Terms</a>
+        <a href="/terms" style={{ color: '#94A3B8', textDecoration: 'underline' }}>Terms</a>
         {' '}and{' '}
-        <a href="/privacy" style={{ color: '#94A3B8', textDecoration: 'none' }}>Privacy Policy</a>
+        <a href="/privacy" style={{ color: '#94A3B8', textDecoration: 'underline' }}>Privacy Policy</a>
       </p>
     </div>
   )
 }
 
+const pageStyle: React.CSSProperties = {
+  minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '20px',
+  fontFamily: 'inherit',
+  backgroundColor: '#0A0E27',
+  backgroundImage:
+    'radial-gradient(ellipse 700px 500px at 10% -10%, rgba(29,78,216,0.35), transparent 70%), radial-gradient(ellipse 600px 600px at 100% 0%, rgba(37,99,235,0.28), transparent 70%)',
+  backgroundRepeat: 'no-repeat',
+}
+
+const cardStyle: React.CSSProperties = {
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.10)',
+  borderRadius: '16px',
+  padding: '28px 24px',
+  width: '100%',
+  maxWidth: '400px',
+  boxSizing: 'border-box',
+}
+
 const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#0F172A', fontSize: '13px',
-  fontWeight: 700, marginBottom: '6px'
+  display: 'block', color: '#CBD5E1', fontSize: '13px',
+  fontWeight: 600, marginBottom: '6px'
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
-  borderRadius: '8px', padding: '13px 14px', color: '#0F172A',
-  fontSize: '15px', marginBottom: '16px', outline: 'none',
-  fontFamily: 'inherit', boxSizing: 'border-box' as const
+  width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.14)',
+  borderRadius: '8px', padding: '13px 14px', minHeight: '48px', color: '#fff',
+  fontSize: '16px', marginBottom: '16px', outline: 'none',
+  fontFamily: 'inherit', boxSizing: 'border-box'
 }
 
-const eyeButtonStyle: React.CSSProperties = {
-  position: 'absolute' as const, right: '10px', top: '50%',
+const toggleStyle: React.CSSProperties = {
+  position: 'absolute', right: '6px', top: '50%',
   transform: 'translateY(-50%)', background: 'transparent',
-  border: 'none', cursor: 'pointer', fontSize: '16px',
-  padding: '4px', lineHeight: 1
+  border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 600,
+  color: '#60A5FA', padding: '10px', fontFamily: 'inherit'
 }
