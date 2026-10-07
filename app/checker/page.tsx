@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '../../lib/supabase'
 import { calculateVisibilityScore } from '../../lib/visibility-score'
-import Link from 'next/link'
 
 export default function CheckerPage() {
   const [businessName, setBusinessName] = useState('')
@@ -58,33 +58,30 @@ export default function CheckerPage() {
   }
 
   function getScoreColor(score: number) {
-    if (score >= 70) return '#00aa55'
-    if (score >= 40) return '#FF6B35'
-    return '#ff4444'
+    if (score >= 70) return '#059669'
+    if (score >= 40) return '#D97706'
+    return '#DC2626'
   }
 
   function getScoreLabel(score: number) {
-    if (score >= 70) return 'Good Visibility'
-    if (score >= 40) return 'Moderate Visibility'
-    if (score > 0) return 'Poor Visibility'
+    if (score >= 70) return 'Good visibility'
+    if (score >= 40) return 'Moderate visibility'
+    if (score > 0) return 'Poor visibility'
     return 'No Google Business Profile'
   }
 
   return (
-    <div style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#fff', color: '#0F172A', minHeight: '100vh' }}>
+    <div style={pageStyle}>
 
-      <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <div style={{ width: '28px', height: '28px', background: '#0F172A', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>C</div>
-          <span style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>Cloutinet</span>
-        </Link>
-        <Link href="/auth" style={{ background: '#0F172A', color: '#fff', padding: '8px 16px', borderRadius: '6px', textDecoration: 'none', fontSize: '13px', fontWeight: 600 }}>Get Started Free</Link>
+      <nav style={navStyle}>
+        <Link href="/" style={wordmarkStyle}>Cloutinet</Link>
+        <Link href="/auth" style={navButtonStyle}>Start Free</Link>
       </nav>
 
-      <section style={{ background: '#0F172A', padding: '50px 20px', textAlign: 'center', color: '#fff' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>Business Visibility Checker</h1>
-        <p style={{ fontSize: '14px', color: '#94A3B8', maxWidth: '420px', margin: '0 auto 24px' }}>
-          Check how visible any business is on Google — free, no signup needed.
+      <section style={heroStyle}>
+        <h1 style={heroTitleStyle}>Business Visibility Checker</h1>
+        <p style={heroTextStyle}>
+          Check how visible any business is on Google. Free, no signup needed.
         </p>
 
         <div style={{ maxWidth: '440px', margin: '0 auto' }}>
@@ -93,185 +90,360 @@ export default function CheckerPage() {
             value={businessName}
             onChange={e => setBusinessName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && checkVisibility()}
-            style={{ width: '100%', padding: '14px 16px', borderRadius: '8px', border: 'none', fontSize: '15px', marginBottom: '10px', outline: 'none', color: '#0F172A', boxSizing: 'border-box' as const }}
+            style={heroInputStyle}
           />
           <input
             placeholder="City e.g. Port Harcourt, Lagos, Abuja"
             value={city}
             onChange={e => setCity(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && checkVisibility()}
-            style={{ width: '100%', padding: '14px 16px', borderRadius: '8px', border: 'none', fontSize: '15px', marginBottom: '12px', outline: 'none', color: '#0F172A', boxSizing: 'border-box' as const }}
+            style={heroInputStyle}
           />
           <button
             onClick={checkVisibility}
             disabled={loading || !businessName.trim()}
             style={{
-              width: '100%', padding: '14px',
-              background: loading ? 'rgba(255,255,255,0.5)' : '#fff',
-              color: '#0F172A', border: 'none', borderRadius: '8px',
-              fontSize: '15px', fontWeight: 700, cursor: 'pointer',
-              boxSizing: 'border-box' as const
+              ...primaryButtonStyle,
+              width: '100%',
+              opacity: loading || !businessName.trim() ? 0.6 : 1,
             }}
           >
-            {loading ? 'Checking Google...' : 'Check Visibility Score'}
+            {loading ? 'Checking Google...' : 'Check visibility score'}
           </button>
         </div>
       </section>
 
       {result && (
-        <section style={{ maxWidth: '520px', margin: '0 auto', padding: '32px 20px' }}>
+        <section style={resultsWrapStyle}>
 
           <div style={{
-            background: result.googleData.onCloutinetSearch ? '#F0FDF4' : '#F8FAFC',
-            border: result.googleData.onCloutinetSearch ? '1px solid #BBF7D0' : '1px solid #E2E8F0',
-            borderRadius: '12px', padding: '16px', marginBottom: '16px'
+            ...cardStyle,
+            background: result.googleData.onCloutinetSearch ? '#F0FDF4' : '#fff',
+            borderColor: result.googleData.onCloutinetSearch ? '#BBF7D0' : '#E2E8F0',
           }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '8px' }}>Cloutinet Page Search Status</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>{result.googleData.onCloutinetSearch ? '✅' : 'ℹ️'}</span>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: result.googleData.onCloutinetSearch ? '#166534' : '#475569' }}>
-                {result.googleData.onCloutinetSearch
-                  ? 'This business\u2019s Cloutinet page is showing up in Google Search'
-                  : 'No Cloutinet page found in Google Search for this business'}
-              </span>
-            </div>
-            <div style={{ fontSize: '12px', color: '#64748B', marginTop: '6px' }}>
+            <div style={cardLabelStyle}>Cloutinet page search status</div>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: result.googleData.onCloutinetSearch ? '#166534' : '#334155' }}>
               {result.googleData.onCloutinetSearch
-                ? 'A new Cloutinet page for this business is already ranking on Google.'
+                ? 'This business\u2019s Cloutinet page is showing up in Google Search'
+                : 'No Cloutinet page found in Google Search for this business'}
+            </div>
+            <div style={{ fontSize: '13px', color: '#64748B', marginTop: '6px', lineHeight: 1.5 }}>
+              {result.googleData.onCloutinetSearch
+                ? 'A Cloutinet page for this business is already ranking on Google.'
                 : result.cloutProfile
-                  ? 'This business has a Cloutinet page, but it may still be indexing — new pages can take 1-2 weeks to appear on Google.'
-                  : 'This just checks for a Cloutinet page — not the business\u2019s overall Google presence. See their real Google Business Profile below.'}
+                  ? 'This business has a Cloutinet page, but it may still be indexing. New pages can take 1-2 weeks to appear on Google.'
+                  : 'This only checks for a Cloutinet page, not the business\u2019s overall Google presence. See their Google Business Profile below.'}
             </div>
           </div>
 
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '12px' }}>Google Business Profile</div>
+          <div style={cardStyle}>
+            <div style={cardLabelStyle}>Google Business Profile</div>
 
             {result.googleData.found ? (
               <div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '14px' }}>
-                  <div style={{ fontSize: '48px', fontWeight: 800, color: getScoreColor(result.googleData.googleScore) }}>{result.googleData.googleScore}</div>
+                  <div style={{ fontSize: '48px', fontWeight: 800, letterSpacing: '-0.02em', color: getScoreColor(result.googleData.googleScore) }}>{result.googleData.googleScore}</div>
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: getScoreColor(result.googleData.googleScore) }}>{getScoreLabel(result.googleData.googleScore)}</div>
-                    <div style={{ fontSize: '11px', color: '#94A3B8' }}>out of 100</div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: getScoreColor(result.googleData.googleScore) }}>{getScoreLabel(result.googleData.googleScore)}</div>
+                    <div style={{ fontSize: '12px', color: '#94A3B8' }}>out of 100</div>
                   </div>
                 </div>
 
-                <div style={{ fontWeight: 700, fontSize: '15px', marginBottom: '8px', color: '#0F172A' }}>{result.googleData.business.name}</div>
-                {result.googleData.business.address && <div style={{ fontSize: '12px', color: '#475569', marginBottom: '4px' }}>📍 {result.googleData.business.address}</div>}
-                {result.googleData.business.phone && <div style={{ fontSize: '12px', color: '#475569', marginBottom: '4px' }}>📞 {result.googleData.business.phone}</div>}
-                {result.googleData.business.rating && <div style={{ fontSize: '12px', color: '#475569', marginBottom: '12px' }}>⭐ {result.googleData.business.rating} ({result.googleData.business.reviewCount} reviews)</div>}
+                <div style={{ fontWeight: 700, fontSize: '16px', marginBottom: '8px', color: '#0F172A' }}>{result.googleData.business.name}</div>
+                {result.googleData.business.address && <div style={detailStyle}>Address: {result.googleData.business.address}</div>}
+                {result.googleData.business.phone && <div style={detailStyle}>Phone: {result.googleData.business.phone}</div>}
+                {result.googleData.business.rating && <div style={{ ...detailStyle, marginBottom: '12px' }}>Rating: {result.googleData.business.rating} ({result.googleData.business.reviewCount} reviews)</div>}
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginBottom: '12px' }}>
                   {[
-                    { label: 'Business Name', done: result.googleData.breakdown.name },
-                    { label: 'Address Listed', done: result.googleData.breakdown.address },
-                    { label: 'Phone Number', done: result.googleData.breakdown.phone },
-                    { label: 'Business Hours', done: result.googleData.breakdown.hours },
-                    { label: 'Website Link', done: result.googleData.breakdown.website },
-                    { label: 'Star Rating', done: result.googleData.breakdown.rating },
-                    { label: 'Customer Reviews', done: result.googleData.breakdown.reviews },
-                    { label: 'Photos Added', done: result.googleData.breakdown.photos },
-                    { label: 'Business Category', done: result.googleData.breakdown.category },
+                    { label: 'Business name', done: result.googleData.breakdown.name },
+                    { label: 'Address listed', done: result.googleData.breakdown.address },
+                    { label: 'Phone number', done: result.googleData.breakdown.phone },
+                    { label: 'Business hours', done: result.googleData.breakdown.hours },
+                    { label: 'Website link', done: result.googleData.breakdown.website },
+                    { label: 'Star rating', done: result.googleData.breakdown.rating },
+                    { label: 'Customer reviews', done: result.googleData.breakdown.reviews },
+                    { label: 'Photos added', done: result.googleData.breakdown.photos },
+                    { label: 'Business category', done: result.googleData.breakdown.category },
                   ].map(item => (
-                    <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0', fontSize: '12px' }}>
-                      <span style={{ color: item.done ? '#00aa55' : '#ff4444', fontWeight: 700 }}>{item.done ? '✓' : '✗'}</span>
+                    <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 0', fontSize: '13px' }}>
+                      <span style={{ color: item.done ? '#059669' : '#DC2626', fontWeight: 700 }}>{item.done ? '✓' : '✗'}</span>
                       <span style={{ color: '#475569' }}>{item.label}</span>
                     </div>
                   ))}
                 </div>
 
                 {!result.googleData.breakdown.website && (
-                  <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '8px', padding: '12px' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#9A3412', marginBottom: '4px' }}>No website found</div>
-                    <div style={{ fontSize: '12px', color: '#475569' }}>A free Cloutinet page counts as your website and boosts your Google score.</div>
+                  <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '12px', padding: '12px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#92400E', marginBottom: '4px' }}>No website found</div>
+                    <div style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>Adding a website link, such as your free Cloutinet page, improves this score.</div>
                   </div>
                 )}
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '16px 0' }}>
-                <div style={{ fontSize: '48px', fontWeight: 800, color: '#ff4444', marginBottom: '6px' }}>0</div>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#ff4444', marginBottom: '8px' }}>No Google Business Profile Found</div>
-                <div style={{ fontSize: '12px', color: '#64748B' }}>This checks Google Maps/Business Profile specifically. Your website can still rank in Google Search separately — add a Business Profile at business.google.com to boost local visibility further.</div>
+                <div style={{ fontSize: '48px', fontWeight: 800, color: '#DC2626', marginBottom: '6px' }}>0</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#DC2626', marginBottom: '8px' }}>No Google Business Profile found</div>
+                <div style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.5 }}>This checks Google Maps and Business Profile specifically. A website can still rank in Google Search separately. Add a Business Profile at business.google.com to improve local visibility further.</div>
               </div>
             )}
           </div>
 
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#475569', textTransform: 'uppercase' as const, marginBottom: '12px' }}>Cloutinet Page Status</div>
+          <div style={cardStyle}>
+            <div style={cardLabelStyle}>Cloutinet page status</div>
 
             {result.cloutProfile ? (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00aa55' }}></div>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#00aa55' }}>Listed on Cloutinet</span>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#059669' }}></div>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#059669' }}>On Cloutinet</span>
                 </div>
-                <div style={{ fontSize: '13px', color: '#0F172A', fontWeight: 600, marginBottom: '4px' }}>{result.cloutProfile.business_name}</div>
-                <div style={{ fontSize: '12px', color: '#475569', marginBottom: '10px' }}>Score: {result.cloutScore}/100 · {result.productCount} products</div>
-                <a href={'/store/' + result.cloutProfile.business_slug} style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '8px 16px', borderRadius: '6px', textDecoration: 'none', fontSize: '12px', fontWeight: 700 }}>View Store →</a>
+                <div style={{ fontSize: '14px', color: '#0F172A', fontWeight: 600, marginBottom: '4px' }}>{result.cloutProfile.business_name}</div>
+                <div style={{ fontSize: '13px', color: '#475569', marginBottom: '12px' }}>Score: {result.cloutScore}/100 · {result.productCount} products</div>
+                <a href={'/store/' + result.cloutProfile.business_slug} style={smallButtonStyle}>View public page</a>
               </div>
             ) : (
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff4444' }}></div>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#ff4444' }}>Not on Cloutinet Yet</span>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#DC2626' }}></div>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#DC2626' }}>Not on Cloutinet yet</span>
                 </div>
-                <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '12px' }}>Create a free Cloutinet page — get Google indexed, list products, receive WhatsApp leads.</div>
-                <Link href="/auth" style={{ display: 'inline-block', background: '#0F172A', color: '#fff', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontSize: '13px', fontWeight: 700 }}>Create Free Page →</Link>
+                <div style={{ fontSize: '13px', color: '#64748B', marginBottom: '14px', lineHeight: 1.5 }}>
+                  Create a free Cloutinet page to make your business easier to find and contact: a public page search engines can index, your products and services, and WhatsApp contact.
+                </div>
+                <Link href="/auth" style={smallButtonStyle}>Create a free page</Link>
               </div>
             )}
           </div>
 
           {result.googleData.found && result.googleData.googleScore < 100 && (
-            <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#166534', marginBottom: '10px' }}>How to improve your Google score:</div>
-              {!result.googleData.breakdown.website && <div style={{ fontSize: '12px', color: '#166534', marginBottom: '6px' }}>• Add a website — create your free Cloutinet page</div>}
-              {!result.googleData.breakdown.hours && <div style={{ fontSize: '12px', color: '#166534', marginBottom: '6px' }}>• Add business hours to Google Business Profile</div>}
-              {!result.googleData.breakdown.photos && <div style={{ fontSize: '12px', color: '#166534', marginBottom: '6px' }}>• Add photos to Google Business Profile</div>}
-              {!result.googleData.breakdown.reviews && <div style={{ fontSize: '12px', color: '#166534', marginBottom: '6px' }}>• Ask customers to leave you Google reviews</div>}
-              {!result.cloutProfile && <div style={{ fontSize: '12px', color: '#166534', marginBottom: '6px' }}>• Create a free Cloutinet page to add a website link</div>}
+            <div style={{ ...cardStyle, background: '#F0FDF4', borderColor: '#BBF7D0' }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#166534', marginBottom: '10px' }}>How to improve your Google score</div>
+              {!result.googleData.breakdown.website && <div style={tipStyle}>• Add a website. Your free Cloutinet page works.</div>}
+              {!result.googleData.breakdown.hours && <div style={tipStyle}>• Add business hours to your Google Business Profile</div>}
+              {!result.googleData.breakdown.photos && <div style={tipStyle}>• Add photos to your Google Business Profile</div>}
+              {!result.googleData.breakdown.reviews && <div style={tipStyle}>• Ask customers to leave you Google reviews</div>}
+              {!result.cloutProfile && <div style={tipStyle}>• Create a free Cloutinet page to add a website link</div>}
             </div>
           )}
 
           {!result.googleData.found && (
-            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#dc2626', marginBottom: '10px' }}>Steps to get found on Google:</div>
-              <div style={{ fontSize: '12px', color: '#475569', marginBottom: '6px' }}>• Create a free Google Business Profile at business.google.com</div>
-              <div style={{ fontSize: '12px', color: '#475569', marginBottom: '6px' }}>• Create a free Cloutinet page to add a website immediately</div>
-              <div style={{ fontSize: '12px', color: '#475569', marginBottom: '6px' }}>• Add your business address, phone, and hours</div>
-              <div style={{ fontSize: '12px', color: '#475569', marginBottom: '6px' }}>• Ask your first customers to leave Google reviews</div>
+            <div style={{ ...cardStyle, background: '#FEF2F2', borderColor: '#FECACA' }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#B91C1C', marginBottom: '10px' }}>Steps to get found on Google</div>
+              <div style={{ ...tipStyle, color: '#475569' }}>• Create a free Google Business Profile at business.google.com</div>
+              <div style={{ ...tipStyle, color: '#475569' }}>• Create a free Cloutinet page to add a website straight away</div>
+              <div style={{ ...tipStyle, color: '#475569' }}>• Add your business address, phone, and hours</div>
+              <div style={{ ...tipStyle, color: '#475569' }}>• Ask your first customers to leave Google reviews</div>
             </div>
           )}
 
           <button
             onClick={() => { setResult(null); setBusinessName(''); setCity('') }}
-            style={{ width: '100%', background: '#F8FAFC', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit' }}
+            style={{ ...ghostButtonStyle, width: '100%', marginBottom: '16px' }}
           >
-            Check Another Business
+            Check another business
           </button>
 
+          <BeyondVisibility />
         </section>
       )}
 
       {!result && !loading && (
-        <section style={{ maxWidth: '520px', margin: '0 auto', padding: '32px 20px', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px', color: '#0F172A' }}>What this tool checks</h2>
-          <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '24px' }}>We check both your Google Search visibility and your Google Business Profile across 9 key factors.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', textAlign: 'left' as const }}>
-            {['Business Name', 'Address Listed', 'Phone Number', 'Business Hours', 'Website Link', 'Star Rating', 'Customer Reviews', 'Photos Added', 'Business Category'].map(item => (
-              <div key={item} style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '12px', color: '#475569' }}>
-                <span style={{ color: '#0F172A', fontWeight: 700 }}>✓</span> {item}
+        <section style={{ ...resultsWrapStyle, textAlign: 'center' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', color: '#0F172A' }}>What this tool checks</h2>
+          <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '24px', lineHeight: 1.5 }}>
+            We check both Google Search visibility and the Google Business Profile across 9 key factors.
+          </p>
+          <div style={{ ...cardStyle, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', textAlign: 'left' }}>
+            {['Business name', 'Address listed', 'Phone number', 'Business hours', 'Website link', 'Star rating', 'Customer reviews', 'Photos added', 'Business category'].map(item => (
+              <div key={item} style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '13px', color: '#475569' }}>
+                <span style={{ color: '#059669', fontWeight: 700 }}>✓</span> {item}
               </div>
             ))}
+          </div>
+          <div style={{ textAlign: 'left', marginTop: '16px' }}>
+            <BeyondVisibility />
           </div>
         </section>
       )}
 
-      <footer style={{ background: '#F8FAFC', padding: '24px', textAlign: 'center', borderTop: '1px solid #E2E8F0', marginTop: '20px' }}>
-        <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>Cloutinet</div>
-        <p style={{ fontSize: '12px', color: '#94A3B8' }}>Nigeria's free business visibility platform — cloutinet.online</p>
+      <footer style={footerStyle}>
+        <Link href="/" style={{ ...wordmarkStyle, fontSize: '18px' }}>Cloutinet</Link>
+        <p style={{ fontSize: '13px', color: '#94A3B8', margin: '8px 0 0' }}>
+          The Business Operating System · cloutinet.online
+        </p>
       </footer>
 
     </div>
   )
+}
+
+function BeyondVisibility() {
+  return (
+    <div style={{ background: '#0A0E27', borderRadius: '16px', padding: '20px' }}>
+      <div style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '6px' }}>
+        Visibility is one part of Cloutinet
+      </div>
+      <p style={{ fontSize: '13px', color: '#94A3B8', lineHeight: 1.5, margin: '0 0 14px' }}>
+        Run customers, payments, documents and your team from the same place as your public page.
+      </p>
+      <Link href="/" style={{ color: '#34D399', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>
+        See the platform
+      </Link>
+    </div>
+  )
+}
+
+const pageStyle: React.CSSProperties = {
+  fontFamily: 'inherit',
+  background: '#F5F7FB',
+  color: '#0F172A',
+  minHeight: '100vh',
+}
+
+const navStyle: React.CSSProperties = {
+  padding: '0 20px',
+  height: '60px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  background: '#0A0E27',
+  borderBottom: '1px solid rgba(255,255,255,0.05)',
+}
+
+const wordmarkStyle: React.CSSProperties = {
+  fontSize: '22px',
+  fontWeight: 900,
+  letterSpacing: '-0.01em',
+  color: '#fff',
+  textDecoration: 'none',
+}
+
+const navButtonStyle: React.CSSProperties = {
+  background: '#2563EB',
+  color: '#fff',
+  padding: '8px 16px',
+  borderRadius: '8px',
+  textDecoration: 'none',
+  fontSize: '13px',
+  fontWeight: 600,
+}
+
+const heroStyle: React.CSSProperties = {
+  background: '#0A0E27',
+  backgroundImage:
+    'radial-gradient(ellipse 700px 500px at 10% -10%, rgba(29,78,216,0.35), transparent 70%), radial-gradient(ellipse 600px 600px at 100% 0%, rgba(37,99,235,0.28), transparent 70%)',
+  padding: '56px 20px 64px',
+  textAlign: 'center',
+  color: '#fff',
+}
+
+const heroTitleStyle: React.CSSProperties = {
+  fontSize: '32px',
+  fontWeight: 800,
+  letterSpacing: '-0.02em',
+  margin: '0 0 10px',
+  lineHeight: 1.1,
+}
+
+const heroTextStyle: React.CSSProperties = {
+  fontSize: '15px',
+  color: '#94A3B8',
+  maxWidth: '420px',
+  margin: '0 auto 28px',
+  lineHeight: 1.5,
+}
+
+const heroInputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '14px 16px',
+  minHeight: '48px',
+  borderRadius: '8px',
+  border: '1px solid rgba(255,255,255,0.15)',
+  background: 'rgba(255,255,255,0.06)',
+  color: '#fff',
+  fontSize: '16px',
+  marginBottom: '10px',
+  outline: 'none',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+}
+
+const primaryButtonStyle: React.CSSProperties = {
+  padding: '14px',
+  minHeight: '48px',
+  background: '#2563EB',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '8px',
+  fontSize: '15px',
+  fontWeight: 600,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+}
+
+const ghostButtonStyle: React.CSSProperties = {
+  background: '#fff',
+  color: '#0F172A',
+  border: '1px solid #E2E8F0',
+  borderRadius: '8px',
+  padding: '12px',
+  minHeight: '44px',
+  cursor: 'pointer',
+  fontSize: '14px',
+  fontWeight: 600,
+  fontFamily: 'inherit',
+}
+
+const smallButtonStyle: React.CSSProperties = {
+  display: 'inline-block',
+  background: '#2563EB',
+  color: '#fff',
+  padding: '10px 18px',
+  borderRadius: '8px',
+  textDecoration: 'none',
+  fontSize: '13px',
+  fontWeight: 600,
+}
+
+const resultsWrapStyle: React.CSSProperties = {
+  maxWidth: '560px',
+  margin: '0 auto',
+  padding: '32px 20px',
+}
+
+const cardStyle: React.CSSProperties = {
+  background: '#fff',
+  border: '1px solid #E2E8F0',
+  borderRadius: '16px',
+  padding: '20px',
+  marginBottom: '16px',
+}
+
+const cardLabelStyle: React.CSSProperties = {
+  fontSize: '13px',
+  fontWeight: 700,
+  color: '#475569',
+  marginBottom: '10px',
+}
+
+const detailStyle: React.CSSProperties = {
+  fontSize: '13px',
+  color: '#475569',
+  marginBottom: '4px',
+}
+
+const tipStyle: React.CSSProperties = {
+  fontSize: '13px',
+  color: '#166534',
+  marginBottom: '6px',
+  lineHeight: 1.45,
+}
+
+const footerStyle: React.CSSProperties = {
+  background: '#0A0E27',
+  padding: '28px 20px',
+  textAlign: 'center',
+  marginTop: '24px',
 }
