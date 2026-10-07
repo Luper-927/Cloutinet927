@@ -37,6 +37,7 @@ export default function PaymentRequestsPage() {
   const [saving, setSaving] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => { load() }, [])
 
@@ -82,145 +83,85 @@ export default function PaymentRequestsPage() {
     load()
   }
 
-  function copyLink(token: string) {
+  function copyLink(id: string, token: string) {
     const link = window.location.origin + '/pay/' + token
     navigator.clipboard.writeText(link)
-    alert('Link copied: ' + link)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
   }
 
   if (loading) {
     return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>Loading...</p>
+      <div className="ui-wrap">
+        <p className="ui-sub">Loading...</p>
       </div>
     )
   }
 
   if (noPermission) {
     return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>You don&rsquo;t have permission to create payment requests.</p>
+      <div className="ui-wrap">
+        <p className="ui-sub">You don&rsquo;t have permission to create payment requests.</p>
       </div>
     )
   }
 
   if (!hasAccess) {
     return (
-      <div style={wrapStyle}>
-        <Link href="/dashboard/payments" style={backStyle}>Back to payments</Link>
-        <div style={{ padding: '36px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: '36px', marginBottom: '12px' }}>💰</div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-            Payment requests are not included in your plan
-          </h2>
-          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.5, marginBottom: '24px' }}>
-            You&rsquo;re currently on the {tierName} plan. Upgrade to send payment requests to your customers.
-          </p>
-          <Link href="/dashboard/billing" style={upgradeButtonStyle}>View Plans</Link>
+      <div className="ui-wrap">
+        <Link href="/dashboard/payments" className="ui-back">Back to payments</Link>
+        <div className="ui-upgrade">
+          <h2>Payment requests are not included in your plan</h2>
+          <p>You&rsquo;re currently on the {tierName} plan. Upgrade to send payment requests to your customers.</p>
+          <Link href="/dashboard/billing" className="ui-btn">View plans</Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={wrapStyle}>
-      <Link href="/dashboard/payments" style={backStyle}>Back to payments</Link>
-      <h1 style={titleStyle}>Payment requests</h1>
+    <div className="ui-wrap">
+      <Link href="/dashboard/payments" className="ui-back">Back to payments</Link>
+      <h1 className="ui-title">Payment requests</h1>
 
-      <button
-        onClick={() => setShowForm(!showForm)}
-        style={{
-          width: '100%',
-          background: '#0F172A',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '12px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          fontWeight: 700,
-          fontFamily: 'inherit',
-          marginBottom: '16px',
-          minHeight: '44px',
-        }}
-      >
+      <button onClick={() => setShowForm(!showForm)} className="ui-btn ui-block" style={{ marginBottom: '16px' }}>
         {showForm ? 'Cancel' : '+ Create payment request'}
       </button>
 
       {showForm && (
-        <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
-          <input placeholder="Customer name" value={customerName} onChange={e => setCustomerName(e.target.value)} style={inputStyle} />
-          <input placeholder="Amount (NGN)" type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
-          <input placeholder="Description (e.g. Office chairs x2)" value={description} onChange={e => setDescription(e.target.value)} style={inputStyle} />
-          <label style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>Due date (optional)</label>
-          <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={{ ...inputStyle, marginTop: '6px' }} />
+        <div className="ui-card" style={{ marginBottom: '20px' }}>
+          <input className="ui-input tight" placeholder="Customer name" value={customerName} onChange={e => setCustomerName(e.target.value)} />
+          <input className="ui-input tight" placeholder="Amount (NGN)" type="number" value={amount} onChange={e => setAmount(e.target.value)} />
+          <input className="ui-input tight" placeholder="Description (e.g. Office chairs x2)" value={description} onChange={e => setDescription(e.target.value)} />
+          <label className="ui-label">Due date (optional)</label>
+          <input className="ui-input" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
 
           {error && (
-            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '10px', marginBottom: '12px' }}>
-              <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
-            </div>
+            <div className="ui-error"><p>{error}</p></div>
           )}
 
-          <button
-            onClick={handleCreate}
-            disabled={saving}
-            style={{
-              width: '100%',
-              background: '#0F172A',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '12px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 700,
-              fontFamily: 'inherit',
-              opacity: saving ? 0.7 : 1,
-              minHeight: '44px',
-            }}
-          >
+          <button onClick={handleCreate} disabled={saving} className="ui-btn ui-block">
             {saving ? 'Creating...' : 'Create request'}
           </button>
         </div>
       )}
 
       {requests.length === 0 ? (
-        <p style={{ color: '#64748B', fontSize: '13px', textAlign: 'center', padding: '20px' }}>No payment requests yet.</p>
+        <div className="ui-empty">No payment requests yet.</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="ui-list">
           {requests.map(r => (
-            <div key={r.id} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', color: '#0F172A' }}>{r.customer_name}</div>
-                <div style={{ fontWeight: 700, fontSize: '14px', color: '#0F172A' }}>{r.currency} {Number(r.amount).toLocaleString()}</div>
+            <div key={r.id} className="ui-card">
+              <div className="ui-between">
+                <div className="ui-name">{r.customer_name}</div>
+                <div className="ui-name" style={{ flexShrink: 0 }}>{r.currency} {Number(r.amount).toLocaleString()}</div>
               </div>
-              {r.description && <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '6px' }}>{r.description}</div>}
-              {r.due_date && <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '6px' }}>Due {new Date(r.due_date).toLocaleDateString()}</div>}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{
-                  fontSize: '11px',
-                  padding: '2px 10px',
-                  borderRadius: '999px',
-                  fontWeight: 700,
-                  textTransform: 'capitalize',
-                  background: r.status === 'paid' ? '#F0FDF4' : '#FFF7ED',
-                  color: r.status === 'paid' ? '#166534' : '#9A3412',
-                }}>{r.status}</span>
-                <button
-                  onClick={() => copyLink(r.public_token)}
-                  style={{
-                    fontSize: '12px',
-                    padding: '6px 12px',
-                    minHeight: '32px',
-                    borderRadius: '6px',
-                    background: '#fff',
-                    color: '#0F172A',
-                    border: '1px solid #E2E8F0',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  Copy link
+              {r.description && <div className="ui-note">{r.description}</div>}
+              {r.due_date && <div className="ui-meta">Due {new Date(r.due_date).toLocaleDateString()}</div>}
+              <div className="ui-contacted">
+                <span className={'ui-badge ' + (r.status === 'paid' ? 'ui-badge-good' : 'ui-badge-warn')}>{r.status}</span>
+                <button onClick={() => copyLink(r.id, r.public_token)} className="ui-btn ui-btn-ghost ui-btn-sm">
+                  {copiedId === r.id ? 'Copied' : 'Copy link'}
                 </button>
               </div>
             </div>
@@ -229,57 +170,4 @@ export default function PaymentRequestsPage() {
       )}
     </div>
   )
-}
-
-const wrapStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  fontFamily: 'Segoe UI, system-ui, sans-serif',
-}
-
-const backStyle: React.CSSProperties = {
-  display: 'inline-block',
-  color: '#475569',
-  fontSize: '13px',
-  textDecoration: 'none',
-  marginBottom: '12px',
-  padding: '6px 0',
-}
-
-const titleStyle: React.CSSProperties = {
-  fontSize: '22px',
-  fontWeight: 800,
-  color: '#0F172A',
-  margin: '0 0 14px',
-  letterSpacing: '-0.01em',
-}
-
-const mutedStyle: React.CSSProperties = {
-  color: '#64748B',
-  fontSize: '14px',
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  background: '#fff',
-  border: '1px solid #E2E8F0',
-  borderRadius: '8px',
-  padding: '10px 12px',
-  color: '#0F172A',
-  fontSize: '14px',
-  marginBottom: '10px',
-  outline: 'none',
-  fontFamily: 'inherit',
-  boxSizing: 'border-box',
-}
-
-const upgradeButtonStyle: React.CSSProperties = {
-  display: 'inline-block',
-  background: '#0F172A',
-  color: '#fff',
-  borderRadius: '8px',
-  padding: '12px 24px',
-  fontSize: '14px',
-  fontWeight: 700,
-  textDecoration: 'none',
 }
