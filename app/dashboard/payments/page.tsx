@@ -1,49 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { supabase } from '../../../lib/supabase'
 import { logActivity } from '../../../lib/permissions'
-import Link from 'next/link'
 import { useDashboard } from '../../components/DashboardShell'
-import {
-  loadingTextStyle,
-  noPermissionTextStyle,
-  upgradeContentWrapStyle,
-  upgradeIconStyle,
-  upgradeHeadingStyle,
-  upgradeTextStyle,
-  upgradeButtonStyle,
-  contentWrapStyle,
-  locationBannerStyle,
-  statsGridStyle,
-  statCardGreenStyle,
-  statLabelGreenStyle,
-  statValueGreenStyle,
-  statCardOrangeStyle,
-  statLabelOrangeStyle,
-  statValueOrangeStyle,
-  statCardNeutralStyle,
-  statLabelNeutralStyle,
-  statValueNeutralStyle,
-  toggleFormButtonStyle,
-  formBoxStyle,
-  inputStyle,
-  statusRowStyle,
-  statusButtonStyle,
-  errorBoxStyle,
-  errorTextStyle,
-  saveButtonStyle,
-  sectionLabelStyle,
-  emptyTextStyle,
-  recordsListStyle,
-  recordCardStyle,
-  recordNameStyle,
-  recordMetaStyle,
-  recordMetaNoteStyle,
-  recordAmountWrapStyle,
-  recordAmountStyle,
-  statusBadgeStyle,
-} from './styles'
 
 type PaymentRecord = {
   id: string
@@ -57,26 +18,15 @@ type PaymentRecord = {
   created_at: string
 }
 
-const pageTitleStyle: React.CSSProperties = {
-  fontSize: '22px',
-  fontWeight: 800,
-  color: '#0F172A',
-  margin: '0 0 14px',
-  letterSpacing: '-0.01em',
-}
+const STATUSES = ['paid', 'pending', 'partial', 'failed', 'refunded', 'cancelled'] as const
 
-const requestsLinkStyle: React.CSSProperties = {
-  display: 'block',
-  textAlign: 'center',
-  padding: '12px',
-  marginBottom: '12px',
-  border: '1px solid #E2E8F0',
-  borderRadius: '8px',
-  background: '#fff',
-  color: '#0F172A',
-  fontSize: '14px',
-  fontWeight: 600,
-  textDecoration: 'none',
+const BADGE: Record<string, string> = {
+  paid: 'ui-badge-good',
+  pending: 'ui-badge-warn',
+  partial: 'ui-badge-warn',
+  failed: 'ui-badge-bad',
+  refunded: 'ui-badge-mute',
+  cancelled: 'ui-badge-mute',
 }
 
 export default function PaymentsPage() {
@@ -95,7 +45,7 @@ export default function PaymentsPage() {
 
   const [customerName, setCustomerName] = useState('')
   const [amount, setAmount] = useState('')
-  const [status, setStatus] = useState<'paid' | 'pending' | 'partial' | 'failed' | 'refunded' | 'cancelled'>('paid')
+  const [status, setStatus] = useState<(typeof STATUSES)[number]>('paid')
   const [method, setMethod] = useState('')
   const [reference, setReference] = useState('')
   const [note, setNote] = useState('')
@@ -159,34 +109,29 @@ export default function PaymentsPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={loadingTextStyle}>Loading...</p>
+      <div className="ui-wrap">
+        <p className="ui-sub">Loading...</p>
       </div>
     )
   }
 
   if (noPermission) {
     return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={noPermissionTextStyle}>You don&rsquo;t have permission to view payments.</p>
+      <div className="ui-wrap">
+        <p className="ui-sub">You don&rsquo;t have permission to view payments.</p>
       </div>
     )
   }
 
   if (!hasAccess) {
     return (
-      <div style={upgradeContentWrapStyle}>
-        <h1 style={pageTitleStyle}>Payments</h1>
-        <div style={upgradeIconStyle}>💰</div>
-        <h2 style={upgradeHeadingStyle}>
-          Payment tracking is not included in your plan
-        </h2>
-        <p style={upgradeTextStyle}>
-          You&rsquo;re currently on the {tierName} plan. Upgrade to track money coming into your business.
-        </p>
-        <Link href="/dashboard/billing" style={upgradeButtonStyle}>
-          View Plans
-        </Link>
+      <div className="ui-wrap">
+        <h1 className="ui-title">Payments</h1>
+        <div className="ui-upgrade">
+          <h2>Payment tracking is not included in your plan</h2>
+          <p>You&rsquo;re currently on the {tierName} plan. Upgrade to track money coming into your business.</p>
+          <Link href="/dashboard/billing" className="ui-btn">View plans</Link>
+        </div>
       </div>
     )
   }
@@ -199,109 +144,92 @@ export default function PaymentsPage() {
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && r.status === 'paid'
   }).reduce((sum, r) => sum + Number(r.amount), 0)
 
-  const statusColors: Record<string, { bg: string; color: string }> = {
-    paid: { bg: '#F0FDF4', color: '#166534' },
-    pending: { bg: '#FFF7ED', color: '#9A3412' },
-    partial: { bg: '#FFF7ED', color: '#9A3412' },
-    failed: { bg: '#FEF2F2', color: '#dc2626' },
-    refunded: { bg: '#F8FAFC', color: '#64748B' },
-    cancelled: { bg: '#F8FAFC', color: '#64748B' },
-  }
-
   return (
-    <div style={contentWrapStyle}>
-      <h1 style={pageTitleStyle}>Payments</h1>
+    <div className="ui-wrap">
+      <h1 className="ui-title">Payments</h1>
 
       {locationName && (
-        <div style={locationBannerStyle}>
-          📍 Showing payments for {locationName} only
-        </div>
+        <div className="ui-banner">Showing payments for {locationName} only</div>
       )}
 
-      <div style={statsGridStyle}>
-        <div style={statCardGreenStyle}>
-          <div style={statLabelGreenStyle}>Money Received</div>
-          <div style={statValueGreenStyle}>₦{moneyReceived.toLocaleString()}</div>
+      <div className="ui-stats">
+        <div className="ui-stat ui-stat-good">
+          <div className="ui-stat-label">Money received</div>
+          <div className="ui-stat-value">₦{moneyReceived.toLocaleString()}</div>
         </div>
-        <div style={statCardOrangeStyle}>
-          <div style={statLabelOrangeStyle}>Pending</div>
-          <div style={statValueOrangeStyle}>₦{pending.toLocaleString()}</div>
+        <div className="ui-stat ui-stat-warn">
+          <div className="ui-stat-label">Pending</div>
+          <div className="ui-stat-value">₦{pending.toLocaleString()}</div>
         </div>
-        <div style={statCardNeutralStyle}>
-          <div style={statLabelNeutralStyle}>Transactions</div>
-          <div style={statValueNeutralStyle}>{records.length}</div>
+        <div className="ui-stat">
+          <div className="ui-stat-label">Transactions</div>
+          <div className="ui-stat-value">{records.length}</div>
         </div>
-        <div style={statCardNeutralStyle}>
-          <div style={statLabelNeutralStyle}>This Month</div>
-          <div style={statValueNeutralStyle}>₦{thisMonth.toLocaleString()}</div>
+        <div className="ui-stat">
+          <div className="ui-stat-label">This month</div>
+          <div className="ui-stat-value">₦{thisMonth.toLocaleString()}</div>
         </div>
       </div>
 
-      <Link href="/dashboard/payments/requests" style={requestsLinkStyle}>
-        Payment requests
-      </Link>
-
-      <button
-        onClick={() => setShowForm(!showForm)}
-        style={toggleFormButtonStyle}
-      >
-        {showForm ? 'Cancel' : '+ Record a Payment'}
-      </button>
+      <div className="ui-stack">
+        <Link href="/dashboard/payments/requests" className="ui-btn ui-btn-ghost ui-block">
+          Payment requests
+        </Link>
+        <button onClick={() => setShowForm(!showForm)} className="ui-btn ui-block">
+          {showForm ? 'Cancel' : '+ Record a payment'}
+        </button>
+      </div>
 
       {showForm && (
-        <div style={formBoxStyle}>
-          <input placeholder="Customer name" value={customerName} onChange={e => setCustomerName(e.target.value)} style={inputStyle} />
-          <input placeholder="Amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} style={inputStyle} />
+        <div className="ui-card" style={{ marginBottom: '20px' }}>
+          <input className="ui-input tight" placeholder="Customer name" value={customerName} onChange={e => setCustomerName(e.target.value)} />
+          <input className="ui-input tight" placeholder="Amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} />
 
-          <div style={statusRowStyle}>
-            {(['paid', 'pending', 'partial', 'failed', 'refunded', 'cancelled'] as const).map(s => (
+          <div className="ui-pills">
+            {STATUSES.map(s => (
               <button
                 key={s}
                 onClick={() => setStatus(s)}
-                style={statusButtonStyle(status === s)}
+                className={'ui-pill' + (status === s ? ' is-on' : '')}
               >{s}</button>
             ))}
           </div>
 
-          <input placeholder="Method (cash, transfer, POS...)" value={method} onChange={e => setMethod(e.target.value)} style={inputStyle} />
-          <input placeholder="Reference (optional)" value={reference} onChange={e => setReference(e.target.value)} style={inputStyle} />
-          <input placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} style={{ ...inputStyle, marginBottom: '12px' }} />
+          <input className="ui-input tight" placeholder="Method (cash, transfer, POS...)" value={method} onChange={e => setMethod(e.target.value)} />
+          <input className="ui-input tight" placeholder="Reference (optional)" value={reference} onChange={e => setReference(e.target.value)} />
+          <input className="ui-input" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} />
 
           {error && (
-            <div style={errorBoxStyle}>
-              <p style={errorTextStyle}>{error}</p>
-            </div>
+            <div className="ui-error"><p>{error}</p></div>
           )}
 
-          <button
-            onClick={handleAdd}
-            disabled={saving}
-            style={saveButtonStyle(saving)}
-          >
-            {saving ? 'Saving...' : 'Save Record'}
+          <button onClick={handleAdd} disabled={saving} className="ui-btn ui-block">
+            {saving ? 'Saving...' : 'Save record'}
           </button>
         </div>
       )}
 
-      <div style={sectionLabelStyle}>
-        Recent Transactions
-      </div>
+      <div className="ui-section-label">Recent transactions</div>
 
       {records.length === 0 ? (
-        <p style={emptyTextStyle}>No payment records yet.</p>
+        <div className="ui-empty">No payment records yet.</div>
       ) : (
-        <div style={recordsListStyle}>
+        <div className="ui-list">
           {records.map(r => (
-            <div key={r.id} style={recordCardStyle}>
-              <div>
-                <div style={recordNameStyle}>{r.customer_name}</div>
-                <div style={recordMetaStyle}>{new Date(r.created_at).toLocaleDateString()} {r.method ? '· ' + r.method : ''}</div>
-                {r.reference && <div style={recordMetaStyle}>Ref: {r.reference}</div>}
-                {r.note && <div style={recordMetaNoteStyle}>{r.note}</div>}
-              </div>
-              <div style={recordAmountWrapStyle}>
-                <div style={recordAmountStyle}>{r.currency} {Number(r.amount).toLocaleString()}</div>
-                <span style={statusBadgeStyle(statusColors[r.status]?.bg, statusColors[r.status]?.color)}>{r.status}</span>
+            <div key={r.id} className="ui-card">
+              <div className="ui-between">
+                <div style={{ minWidth: 0 }}>
+                  <div className="ui-name">{r.customer_name}</div>
+                  <div className="ui-meta">
+                    {new Date(r.created_at).toLocaleDateString()}{r.method ? ' · ' + r.method : ''}
+                  </div>
+                  {r.reference && <div className="ui-meta">Ref: {r.reference}</div>}
+                  {r.note && <div className="ui-meta">{r.note}</div>}
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div className="ui-name">{r.currency} {Number(r.amount).toLocaleString()}</div>
+                  <span className={'ui-badge ' + (BADGE[r.status] || 'ui-badge-mute')}>{r.status}</span>
+                </div>
               </div>
             </div>
           ))}
