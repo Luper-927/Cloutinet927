@@ -190,8 +190,14 @@ export default async function StorePage({ params }: { params: { slug: string } }
     },
   ]
 
+  const infoRow = (label: string, value: string) => (
+    <div style={{ fontSize: '14px', color: '#475569', marginBottom: '6px', lineHeight: 1.5 }}>
+      <span style={{ color: '#94A3B8' }}>{label}: </span>{value}
+    </div>
+  )
+
   return (
-    <div style={{ fontFamily: 'Segoe UI, system-ui, sans-serif', background: '#fff', color: '#0F172A' }}>
+    <div style={{ fontFamily: 'inherit', background: '#fff', color: '#0F172A' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
@@ -200,50 +206,60 @@ export default async function StorePage({ params }: { params: { slug: string } }
         <FloatingWhatsAppButton href={whatsappLink} businessSlug={params.slug} />
       )}
 
-      <nav style={{ padding: '0 20px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-          <div style={{ width: '28px', height: '28px', background: '#0F172A', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '14px' }}>C</div>
-          <span style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A' }}>Cloutinet</span>
-        </Link>
-        <Link href="/auth" style={{ fontSize: '11px', fontWeight: 700, color: '#0F172A', textDecoration: 'none', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '5px 10px' }}>
-          Get Your Free Page →
-        </Link>
+      <nav style={{ background: '#0A0E27', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '0 20px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link href="/" style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '-0.01em', color: '#fff', textDecoration: 'none' }}>
+            Cloutinet
+          </Link>
+          <Link href="/auth" style={{ fontSize: '13px', fontWeight: 600, color: '#fff', textDecoration: 'none', background: '#2563EB', borderRadius: '8px', padding: '8px 14px' }}>
+            Create your page
+          </Link>
+        </div>
       </nav>
 
-      <section style={{ background: '#0F172A', padding: '40px 20px', textAlign: 'center', color: '#fff' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '6px' }}>{profile.business_name}</h1>
-        {profile.business_category && <div style={{ fontSize: '12px', color: '#94A3B8', marginBottom: '6px' }}>{profile.business_category}</div>}
-        {profile.tagline && <p style={{ fontSize: '13px', color: '#CBD5E1' }}>{profile.tagline}</p>}
-        {profile.location && <p style={{ fontSize: '12px', color: '#64748B', marginTop: '6px' }}>📍 {profile.location}</p>}
+      <section
+        style={{
+          background: '#0A0E27',
+          backgroundImage:
+            'radial-gradient(ellipse 700px 500px at 10% -10%, rgba(29,78,216,0.35), transparent 70%), radial-gradient(ellipse 600px 600px at 100% 0%, rgba(37,99,235,0.28), transparent 70%)',
+          padding: '48px 20px 52px',
+          textAlign: 'center',
+          color: '#fff',
+        }}
+      >
+        <h1 style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px', lineHeight: 1.1 }}>{profile.business_name}</h1>
+        {profile.business_category && <div style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '6px' }}>{profile.business_category}</div>}
+        {profile.tagline && <p style={{ fontSize: '15px', color: '#CBD5E1', margin: '8px auto 0', maxWidth: '520px', lineHeight: 1.5 }}>{profile.tagline}</p>}
+        {profile.location && <p style={{ fontSize: '13px', color: '#94A3B8', margin: '8px 0 0' }}>{profile.location}</p>}
       </section>
 
       {whatsappLink && (
-        <div style={{ textAlign: 'center', padding: '20px' }}>
+        <div style={{ textAlign: 'center', padding: '24px 20px' }}>
           <WhatsAppButton href={whatsappLink} businessSlug={params.slug} label="Contact on WhatsApp" />
         </div>
       )}
 
       {(profile.business_hours || servicesList.length > 0 || socialLinks.length > 0 || profile.phone) && (
         <section style={{ maxWidth: '700px', margin: '0 auto 24px', padding: '0 16px' }}>
-          <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px' }}>
-            <h2 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '10px', color: '#0F172A' }}>Business Info</h2>
-            {profile.location && <div style={{ fontSize: '13px', color: '#475569', marginBottom: '6px' }}>📍 {profile.location}</div>}
-            {profile.phone && <div style={{ fontSize: '13px', color: '#475569', marginBottom: '6px' }}>📞 {profile.phone}</div>}
-            {profile.business_hours && <div style={{ fontSize: '13px', color: '#475569', marginBottom: '6px' }}>🕐 {profile.business_hours}</div>}
+          <div style={{ background: '#F5F7FB', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '20px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, margin: '0 0 12px', color: '#0F172A' }}>Business info</h2>
+            {profile.location && infoRow('Location', profile.location)}
+            {profile.phone && infoRow('Phone', profile.phone)}
+            {profile.business_hours && infoRow('Hours', profile.business_hours)}
             {servicesList.length > 0 && (
-              <div style={{ marginTop: '10px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>Services & Products</div>
+              <div style={{ marginTop: '12px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', marginBottom: '8px' }}>Services and products</div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' as const }}>
                   {servicesList.map((s: string, i: number) => (
-                    <span key={i} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '3px 10px', fontSize: '12px', color: '#475569' }}>{s}</span>
+                    <span key={i} style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '999px', padding: '4px 12px', fontSize: '12px', color: '#475569' }}>{s}</span>
                   ))}
                 </div>
               </div>
             )}
             {socialLinks.length > 0 && (
-              <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' as const }}>
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' as const }}>
                 {socialLinks.map(s => (
-                  <a key={s.label} href={s.url!} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#0F172A', textDecoration: 'none', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '4px', padding: '3px 10px' }}>{s.label}</a>
+                  <a key={s.label} href={s.url!} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', fontWeight: 600, color: '#2563EB', textDecoration: 'none', background: '#fff', border: '1px solid #E2E8F0', borderRadius: '999px', padding: '4px 12px' }}>{s.label}</a>
                 ))}
               </div>
             )}
@@ -252,15 +268,15 @@ export default async function StorePage({ params }: { params: { slug: string } }
       )}
 
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 16px 24px' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: '#0F172A' }}>Products & Services</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.01em', margin: '0 0 16px', color: '#0F172A' }}>Products and services</h2>
         {products.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#94A3B8', fontSize: '13px' }}>No products listed yet.</p>
+          <p style={{ textAlign: 'center', color: '#94A3B8', fontSize: '14px' }}>No products listed yet.</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
             {products.map((p: any, index: number) => (
-              <Link key={p.id} href={'/store/' + params.slug + '/' + p.slug} style={{ textDecoration: 'none', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden' }}>
+              <Link key={p.id} href={'/store/' + params.slug + '/' + p.slug} style={{ textDecoration: 'none', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '16px', overflow: 'hidden', background: '#fff' }}>
                 {p.image_url && (
-                  <div style={{ position: 'relative' as const, width: '100%', height: '110px' }}>
+                  <div style={{ position: 'relative' as const, width: '100%', height: '120px' }}>
                     <Image
                       src={p.image_url}
                       alt={p.name}
@@ -272,9 +288,9 @@ export default async function StorePage({ params }: { params: { slug: string } }
                     />
                   </div>
                 )}
-                <div style={{ padding: '10px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '4px' }}>{p.name}</div>
-                  {p.price && <div style={{ fontSize: '12px', color: '#475569', fontWeight: 600 }}>{p.currency} {Number(p.price).toLocaleString()}</div>}
+                <div style={{ padding: '12px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '4px' }}>{p.name}</div>
+                  {p.price && <div style={{ fontSize: '13px', color: '#475569', fontWeight: 600 }}>{p.currency} {Number(p.price).toLocaleString()}</div>}
                 </div>
               </Link>
             ))}
@@ -284,18 +300,18 @@ export default async function StorePage({ params }: { params: { slug: string } }
 
       {similarBusinesses.length > 0 && (
         <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 16px 24px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: '#0F172A' }}>
-            Similar Businesses{profile.location ? ' Near ' + profile.location : ''}
+          <h2 style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.01em', margin: '0 0 16px', color: '#0F172A' }}>
+            Similar businesses{profile.location ? ' near ' + profile.location : ''}
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
             {similarBusinesses.map((b) => (
               <Link
                 key={b.business_slug}
                 href={'/store/' + b.business_slug}
-                style={{ textDecoration: 'none', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '10px', overflow: 'hidden', display: 'block' }}
+                style={{ textDecoration: 'none', color: '#0F172A', border: '1px solid #E2E8F0', borderRadius: '16px', overflow: 'hidden', display: 'block', background: '#fff' }}
               >
                 {b.logo_url ? (
-                  <div style={{ position: 'relative' as const, width: '100%', height: '90px', background: '#F8FAFC' }}>
+                  <div style={{ position: 'relative' as const, width: '100%', height: '90px', background: '#F5F7FB' }}>
                     <Image
                       src={b.logo_url}
                       alt={b.business_name}
@@ -306,14 +322,14 @@ export default async function StorePage({ params }: { params: { slug: string } }
                     />
                   </div>
                 ) : (
-                  <div style={{ width: '100%', height: '90px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', fontWeight: 800, color: '#CBD5E1' }}>
+                  <div style={{ width: '100%', height: '90px', background: '#F5F7FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 800, color: '#CBD5E1' }}>
                     {b.business_name.charAt(0)}
                   </div>
                 )}
-                <div style={{ padding: '10px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '2px' }}>{b.business_name}</div>
-                  {b.business_category && <div style={{ fontSize: '11px', color: '#64748B' }}>{b.business_category}</div>}
-                  {b.resolvedLocation && <div style={{ fontSize: '11px', color: '#94A3B8' }}>📍 {b.resolvedLocation}</div>}
+                <div style={{ padding: '12px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '2px' }}>{b.business_name}</div>
+                  {b.business_category && <div style={{ fontSize: '12px', color: '#64748B' }}>{b.business_category}</div>}
+                  {b.resolvedLocation && <div style={{ fontSize: '12px', color: '#94A3B8' }}>{b.resolvedLocation}</div>}
                 </div>
               </Link>
             ))}
@@ -322,16 +338,16 @@ export default async function StorePage({ params }: { params: { slug: string } }
       )}
 
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 16px 40px' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: '#0F172A' }}>
-          Common Questions About {profile.business_name}
+        <h2 style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.01em', margin: '0 0 16px', color: '#0F172A' }}>
+          Common questions about {profile.business_name}
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {faqs.map((faq, i) => (
-            <div key={i} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '14px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>
+            <div key={i} style={{ background: '#F5F7FB', border: '1px solid #E2E8F0', borderRadius: '16px', padding: '16px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A', marginBottom: '6px' }}>
                 {faq.q}
               </div>
-              <div style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+              <div style={{ fontSize: '14px', color: '#475569', lineHeight: 1.55 }}>
                 {faq.a}
               </div>
             </div>
@@ -339,15 +355,15 @@ export default async function StorePage({ params }: { params: { slug: string } }
         </div>
       </section>
 
-      <footer style={{ background: '#0F172A', padding: '32px 20px', textAlign: 'center' }}>
-        <div style={{ fontSize: '15px', color: '#fff', fontWeight: 800, marginBottom: '8px' }}>
+      <footer style={{ background: '#0A0E27', padding: '40px 20px', textAlign: 'center' }}>
+        <div style={{ fontSize: '20px', color: '#fff', fontWeight: 800, letterSpacing: '-0.01em', marginBottom: '8px' }}>
           Want a page like this for your business?
         </div>
-        <p style={{ fontSize: '13px', color: '#94A3B8', marginBottom: '18px', maxWidth: '360px', margin: '0 auto 18px' }}>
-          {profile.business_name} built this Google-searchable page for free on Cloutinet. Yours takes about 5 minutes.
+        <p style={{ fontSize: '14px', color: '#94A3B8', margin: '0 auto 20px', maxWidth: '380px', lineHeight: 1.5 }}>
+          {profile.business_name} has a public page on Cloutinet, the Business Operating System. Create yours free.
         </p>
-        <Link href="/auth" style={{ display: 'inline-block', background: '#2563EB', color: '#fff', padding: '13px 28px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>
-          Create Your Free Page →
+        <Link href="/auth" style={{ display: 'inline-block', background: '#2563EB', color: '#fff', padding: '13px 28px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 600 }}>
+          Create Your Free Page
         </Link>
       </footer>
     </div>
