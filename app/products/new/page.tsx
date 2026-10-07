@@ -1,14 +1,38 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import { getBusinessTier } from '../../../lib/tiers'
-import { getActingContext, logActivity } from '../../../lib/permissions'
-import Link from 'next/link'
+import { logActivity } from '../../../lib/permissions'
+import DashboardShell, { useDashboard } from '../../components/DashboardShell'
+import { uiCss } from '../../dashboard/ui'
 
 const currencies = ['NGN', 'USD', 'GBP', 'EUR', 'GHS']
 
 export default function NewProductPage() {
+  return (
+    <>
+      <style>{uiCss}</style>
+      <DashboardShell>
+        <NewProductForm />
+      </DashboardShell>
+    </>
+  )
+}
+
+function NewProductForm() {
+  const router = useRouter()
+  const { context, profile, tierLimits } = useDashboard()
+
+  const ownerId = context.ownerId
+  const actorName = context.employeeName || 'Owner'
+  const locationId = context.locationId
+  const noAccess = !context.permissions.products
+  const productLimit: number = tierLimits?.productLimit ?? 5
+  const tierName: string = tierLimits?.name || 'Free'
+
   const [name, setName] = useState('')
   const [currency, setCurrency] = useState('NGN')
   const [price, setPrice] = useState('')
@@ -18,51 +42,18 @@ export default function NewProductPage() {
   const [saving, setSaving] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
+  const [productCount, setProductCount] = useState<number | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const savingLock = useRef(false)
 
-  const [productCount, setProductCount] = useState<number | null>(null)
-  const [productLimit, setProductLimit] = useState<number>(5)
-  const [tierName, setTierName] = useState<string>('Free')
-  const [checkingLimit, setCheckingLimit] = useState(true)
-  const [ownerId, setOwnerId] = useState<string>('')
-  const [actorName, setActorName] = useState<string>('')
-  const [locationId, setLocationId] = useState<string | null>(null)
-  const [noAccess, setNoAccess] = useState(false)
-
   useEffect(() => {
-    checkProductCount()
-  }, [])
-
-  async function checkProductCount() {
-    const { data: userData } = await supabase.auth.getUser()
-    if (!userData.user) { window.location.href = '/auth'; return }
-
-    const context = await getActingContext(userData.user.id)
-    if (!context) { window.location.href = '/onboarding'; return }
-
-    if (!context.permissions.products) {
-      setNoAccess(true)
-      setCheckingLimit(false)
-      return
-    }
-
-    setOwnerId(context.ownerId)
-    setActorName(context.employeeName || 'Owner')
-    setLocationId(context.locationId)
-
-    const { count } = await supabase
+    if (noAccess) return
+    supabase
       .from('products')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', context.ownerId)
-
-    const { limits } = await getBusinessTier(context.ownerId)
-    setProductLimit(limits.productLimit)
-    setTierName(limits.name)
-
-    setProductCount(count ?? 0)
-    setCheckingLimit(false)
-  }
+      .eq('user_id', ownerId)
+      .then(({ count }) => setProductCount(count ?? 0))
+  }, [])
 
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -111,12 +102,6 @@ export default function NewProductPage() {
     setGenerating(true)
     setError('')
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('business_name, business_category, location, phone')
-        .eq('id', ownerId)
-        .single()
-
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
 
@@ -169,17 +154,9 @@ export default function NewProductPage() {
       setSaving(false)
       savingLock.current = false
       setProductCount(count ?? 0)
-      setProductLimit(limits.productLimit)
-      setTierName(limits.name)
       setError('You\u2019ve reached your ' + limits.name + ' plan limit of ' + limits.productLimit + ' products.')
       return
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('business_name, location, business_slug')
-      .eq('id', ownerId)
-      .single()
 
     let imageUrl = ''
     if (imageFile) {
@@ -234,163 +211,82 @@ export default function NewProductPage() {
       }).catch(() => {})
     }
 
-    window.location.href = '/dashboard'
-  }
-
-  if (checkingLimit) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>Loading...</p>
-      </div>
-    )
+    router.push('/dashboard')
   }
 
   if (noAccess) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <p style={{ color: '#64748B', fontSize: '14px', fontFamily: 'Segoe UI, system-ui, sans-serif', textAlign: 'center' as const }}>You don&rsquo;t have permission to manage products.</p>
-      </div>
-    )
+    return <div className="ui-wrap"><p className="ui-sub">You don&rsquo;t have permission to manage products.</p></div>
   }
 
-  if (productCount !== null && productCount >= productLimit) {
+  if (productCount === null) {
+    return <div className="ui-wrap"><p className="ui-sub">Loading...</p></div>
+  }
+
+  if (productCount >= productLimit) {
     return (
-      <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-        <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Add Product</div>
-          <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Cancel</Link>
-        </div>
-        <div style={{ maxWidth: '480px', margin: '0 auto', padding: '48px 20px', textAlign: 'center' }}>
-          <div style={{ fontSize: '36px', marginBottom: '12px' }}>📦</div>
-          <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
-            You&rsquo;ve reached your {tierName} plan limit
-          </h2>
-          <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.5, marginBottom: '24px' }}>
-            Your {tierName} Cloutinet account can list up to {productLimit} products. You currently have {productCount} listed.
-            Upgrade your plan to list more.
-          </p>
-          <Link href="/dashboard/billing" style={{
-            display: 'inline-block', background: '#0F172A', color: '#fff',
-            borderRadius: '8px', padding: '12px 24px', fontSize: '14px',
-            fontWeight: 700, textDecoration: 'none'
-          }}>
-            View Plans
-          </Link>
+      <div className="ui-wrap">
+        <Link href="/dashboard" className="ui-back">Back to dashboard</Link>
+        <div className="ui-upgrade">
+          <h2>You&rsquo;ve reached your {tierName} plan limit</h2>
+          <p>Your {tierName} account can list up to {productLimit} products. You currently have {productCount} listed. Upgrade your plan to list more.</p>
+          <Link href="/dashboard/billing" className="ui-btn">View plans</Link>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', fontFamily: 'Segoe UI, system-ui, sans-serif' }}>
-      <div style={{ background: '#0F172A', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Add Product</div>
-        <Link href="/dashboard" style={{ color: '#94A3B8', fontSize: '13px', textDecoration: 'none' }}>Cancel</Link>
+    <div className="ui-wrap">
+      <Link href="/dashboard" className="ui-back">Back to dashboard</Link>
+      <h1 className="ui-title">Add product</h1>
+
+      <p className="ui-sub">{productCount} of {productLimit} products used ({tierName} plan)</p>
+
+      <div
+        onClick={() => fileRef.current?.click()}
+        style={{
+          width: '100%', height: '180px', background: 'rgba(255,255,255,.04)',
+          border: '2px dashed rgba(255,255,255,.2)', borderRadius: '16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', marginBottom: '16px', overflow: 'hidden',
+        }}
+      >
+        {imagePreview ? (
+          <img src={imagePreview} alt="Product preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ fontSize: '14px', color: '#94A3B8', fontWeight: 600 }}>Tap to add a product photo</div>
+        )}
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" onChange={handleImageSelect} style={{ display: 'none' }} />
+
+      <label className="ui-label">Product or service name *</label>
+      <input className="ui-input" placeholder="e.g. Rice 50kg Bag" value={name} onChange={e => setName(e.target.value)} />
+
+      <label className="ui-label">Price</label>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <select className="ui-input" value={currency} onChange={e => setCurrency(e.target.value)} style={{ marginBottom: 0, width: '110px', flexShrink: 0 }}>
+          {currencies.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <input className="ui-input" placeholder="0.00" value={price} onChange={e => setPrice(e.target.value)} type="number" style={{ marginBottom: 0, flex: 1 }} />
       </div>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px' }}>
+      <label className="ui-label">Description</label>
+      <textarea
+        className="ui-input tight"
+        placeholder="Describe your product or service..."
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        style={{ minHeight: '110px' }}
+      />
+      <button onClick={generateDescription} disabled={generating} className="ui-btn ui-btn-ghost ui-block" style={{ marginBottom: '20px' }}>
+        {generating ? 'Generating...' : 'Generate SEO description with AI'}
+      </button>
 
-        {productCount !== null && (
-          <p style={{ fontSize: '12px', color: '#94A3B8', fontWeight: 600, marginBottom: '16px' }}>
-            {productCount} / {productLimit} products used ({tierName} plan)
-          </p>
-        )}
+      {error && <div className="ui-error"><p>{error}</p></div>}
 
-        <div
-          onClick={() => fileRef.current?.click()}
-          style={{
-            width: '100%', height: '180px', background: '#F8FAFC',
-            border: '2px dashed #E2E8F0', borderRadius: '10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', marginBottom: '16px', overflow: 'hidden'
-          }}
-        >
-          {imagePreview ? (
-            <img src={imagePreview} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '28px', marginBottom: '8px' }}>📷</div>
-              <div style={{ fontSize: '13px', color: '#64748B', fontWeight: 600 }}>Tap to add product photo</div>
-            </div>
-          )}
-        </div>
-        <input ref={fileRef} type="file" accept="image/*" onChange={handleImageSelect} style={{ display: 'none' }} />
-
-        <label style={labelStyle}>Product / Service Name *</label>
-        <input
-          placeholder="e.g. Rice 50kg Bag"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          style={inputStyle}
-        />
-
-        <label style={labelStyle}>Price</label>
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-          <select value={currency} onChange={e => setCurrency(e.target.value)} style={{ ...inputStyle, marginBottom: '0', width: '100px', flexShrink: 0 }}>
-            {currencies.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <input
-            placeholder="0.00"
-            value={price}
-            onChange={e => setPrice(e.target.value)}
-            type="number"
-            style={{ ...inputStyle, marginBottom: '0', flex: 1 }}
-          />
-        </div>
-
-        <label style={labelStyle}>Description</label>
-        <textarea
-          placeholder="Describe your product or service..."
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' as const }}
-        />
-        <button
-          onClick={generateDescription}
-          disabled={generating}
-          style={aiButtonStyle}
-        >
-          {generating ? '⏳ Generating...' : '✨ Generate SEO Description with AI'}
-        </button>
-
-        {error && (
-          <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-            <p style={{ color: '#dc2626', fontSize: '12px', margin: 0 }}>{error}</p>
-          </div>
-        )}
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            width: '100%', background: '#0F172A', color: '#fff', border: 'none',
-            borderRadius: '8px', padding: '14px', cursor: 'pointer',
-            fontSize: '15px', fontWeight: 700, fontFamily: 'inherit',
-            opacity: saving ? 0.7 : 1
-          }}
-        >
-          {saving ? 'Saving...' : 'Save Product'}
-        </button>
-      </div>
+      <button onClick={handleSave} disabled={saving} className="ui-btn ui-block">
+        {saving ? 'Saving...' : 'Save product'}
+      </button>
     </div>
   )
-}
-
-const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#475569', fontSize: '12px',
-  fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase'
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0',
-  borderRadius: '8px', padding: '12px 14px', color: '#0F172A',
-  fontSize: '14px', marginBottom: '16px', outline: 'none', fontFamily: 'inherit',
-  boxSizing: 'border-box'
-}
-
-const aiButtonStyle: React.CSSProperties = {
-  width: '100%', background: '#F0FDF4', color: '#166534',
-  border: '1px solid #BBF7D0', borderRadius: '8px', padding: '11px',
-  fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-  fontFamily: 'inherit', marginBottom: '16px'
 }
