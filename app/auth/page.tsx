@@ -3,6 +3,12 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
+function getRedirect() {
+  if (typeof window === 'undefined') return '/dashboard'
+  const r = new URLSearchParams(window.location.search).get('redirect')
+  return r && r.startsWith('/') && !r.startsWith('//') ? r : '/dashboard'
+}
+
 export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('signup')
   const [email, setEmail] = useState('')
@@ -24,7 +30,7 @@ export default function AuthPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      window.location.href = '/dashboard'
+      window.location.href = getRedirect()
     }
   }
 
@@ -65,7 +71,7 @@ export default function AuthPage() {
         })
       })
     }
-    window.location.href = '/dashboard'
+    window.location.href = getRedirect()
   }
 
   const submit = () => (mode === 'login' ? handleLogin() : handleSignup())
