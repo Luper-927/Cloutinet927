@@ -1,44 +1,35 @@
 import type { Metadata, Viewport } from "next";
 import SearchBar from "./components/SearchBar";
 import {
-  Star,
-  Phone,
-  MessageCircle,
-  Navigation,
-  Globe,
-  MapPin,
-  Store,
-  Package,
-  BarChart3,
-  TrendingUp,
   ArrowRight,
   PlayCircle,
-  Gift,
-  CreditCard,
-  Clock,
   CheckCircle2,
-  Quote,
-  ClipboardList,
-  Rocket,
-  Users,
-  Search,
+  MessageCircle,
+  Package,
+  CreditCard,
   Megaphone,
   Plug,
   Zap,
-  Layers,
-  Workflow,
-  Sparkles,
-  Building2,
+  Users,
+  Briefcase,
   FileText,
-  ShieldCheck,
+  Activity,
+  Layers,
+  Code,
+  Sparkles,
+  Globe,
+  Quote,
+  Building2,
+  BarChart3,
+  Store,
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cloutinet — The Business Operating System",
+  title: "Cloutinet - The Business Operating System",
   description:
-    "Cloutinet is the operating system for modern companies — run your operations, teams, customers and growth from one connected platform.",
+    "Run your operations, teams, customers and growth from one connected platform. Cloutinet brings customers, payments, documents, marketing and your public business presence together.",
   alternates: {
-    canonical: '/',
+    canonical: "/",
   },
 };
 
@@ -50,120 +41,92 @@ export const viewport: Viewport = {
 const NAV_LINKS = [
   { label: "Platform", href: "#platform" },
   { label: "AI", href: "#ai" },
+  { label: "How it works", href: "#workflow" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Testimonials", href: "#testimonials" },
 ];
 
-const PROBLEM_TOOLS = [
-  "Customers", "Employees", "Payments", "Documents",
-  "Marketing", "Operations", "Analytics", "Automation",
+const TOOLS = [
+  "Customers",
+  "Employees",
+  "Payments",
+  "Documents",
+  "Marketing",
+  "Operations",
+  "Analytics",
+  "Automation",
 ];
 
-const PLATFORM_AREAS = [
+const AREAS = [
   {
-    key: "run",
-    icon: Layers,
-    accent: "text-blue-400",
-    title: "RUN",
-    subtitle: "Operate the business",
-    items: ["Employees & Permissions", "Documents", "Locations", "AI Insights & Automation"],
+    key: "RUN",
+    badge: "bg-blue-100 text-blue-700",
+    tagline: "Operate the business.",
+    items: [
+      { icon: Briefcase, title: "Employees and permissions", text: "Invite staff and managers and choose exactly what each person can access." },
+      { icon: FileText, title: "Documents", text: "Keep invoices, contracts and records in one place." },
+      { icon: Activity, title: "Activity log", text: "See who did what across your business." },
+      { icon: Sparkles, title: "Intelligence", text: "Ask questions about your business and get insights." },
+    ],
   },
   {
-    key: "grow",
-    icon: TrendingUp,
-    accent: "text-emerald-400",
-    title: "GROW",
-    subtitle: "Build relationships and revenue",
-    items: ["Customers (CRM)", "Products & Commerce", "Payments", "Marketing Campaigns"],
+    key: "GROW",
+    badge: "bg-emerald-100 text-emerald-700",
+    tagline: "Build relationships and commercial activity.",
+    items: [
+      { icon: Users, title: "Customers", text: "Customer records with tags and follow-up flags." },
+      { icon: CreditCard, title: "Payments", text: "Send payment requests with a shareable link and record payments." },
+      { icon: Package, title: "Products", text: "List your products and services with photos and prices." },
+      { icon: Megaphone, title: "Marketing", text: "Create campaigns with AI-generated copy and track the results." },
+    ],
   },
   {
-    key: "connect",
-    icon: Workflow,
-    accent: "text-amber-400",
-    title: "CONNECT",
-    subtitle: "Reach customers and systems",
-    items: ["Public Business Page", "Search Visibility", "WhatsApp Contact", "Developer API"],
+    key: "CONNECT",
+    badge: "bg-slate-200 text-slate-700",
+    tagline: "Connect the business to customers, search and other systems.",
+    items: [
+      { icon: Globe, title: "Public business page", text: "A page for your business that Google can find." },
+      { icon: MessageCircle, title: "Customer contact", text: "WhatsApp and call buttons, with every tap tracked." },
+      { icon: Plug, title: "Integrations", text: "WhatsApp Business API, analytics tools and custom webhooks." },
+      { icon: Code, title: "Developer API", text: "API keys and a Trust-Score API for your own systems." },
+    ],
   },
 ];
 
-const WORKFLOW_STEPS = [
-  "Customer discovers your business",
-  "Contacts you directly on WhatsApp",
-  "Enters your CRM automatically",
-  "Your team follows up and sends a payment request",
-  "Payment is recorded",
-  "Activity appears on your dashboard",
-  "AI surfaces what needs your attention",
+const AI_POINTS = [
+  "Ask Cloutinet about your business: how it is performing, which customers to follow up with, what to improve this week.",
+  "Insights appear on your dashboard, so you see what matters without digging through pages.",
+  "Generate taglines, service lists and marketing copy for your campaigns.",
 ];
 
-const ENTERPRISE_CAPABILITIES = [
-  { icon: Building2, text: "Multiple business locations" },
-  { icon: Users, text: "Employee roles & permissions" },
-  { icon: FileText, text: "Centralized document storage" },
-  { icon: Zap, text: "AI-powered automation" },
-  { icon: Plug, text: "Developer API access" },
-  { icon: ShieldCheck, text: "Scales with your business" },
+const AI_SUGGESTIONS = [
+  "How is my business performing?",
+  "Find customers I should follow up with",
+  "Create a marketing message for new stock",
+  "What should I improve this week?",
 ];
 
-const FEATURES = [
-  {
-    icon: Store,
-    iconBg: "bg-emerald-100 text-emerald-600",
-    title: "Google-Searchable Page",
-    description:
-      "We create an SEO-optimized page for your business that shows up on Google.",
-  },
-  {
-    icon: MessageCircle,
-    iconBg: "bg-blue-100 text-blue-600",
-    title: "WhatsApp Integration",
-    description: "Customers can chat with you instantly on WhatsApp with one tap.",
-  },
-  {
-    icon: Package,
-    iconBg: "bg-violet-100 text-violet-600",
-    title: "Products & Services",
-    description:
-      "Showcase your products and services with photos, prices and details.",
-  },
-  {
-    icon: BarChart3,
-    iconBg: "bg-rose-100 text-rose-600",
-    title: "Visibility Score",
-    description:
-      "Get a score and actionable tips to improve your visibility on Google.",
-  },
-  {
-    icon: Megaphone,
-    iconBg: "bg-orange-100 text-orange-600",
-    title: "Marketing Campaigns",
-    description:
-      "Create AI-generated promotional campaigns and track views, clicks and WhatsApp conversions.",
-  },
-  {
-    icon: TrendingUp,
-    iconBg: "bg-teal-100 text-teal-600",
-    title: "Analytics Dashboard",
-    description: "Track views, clicks and WhatsApp messages in real-time.",
-  },
-  {
-    icon: CreditCard,
-    iconBg: "bg-indigo-100 text-indigo-600",
-    title: "Payments & Documents",
-    description: "Accept payments and manage business documents, all from one dashboard.",
-  },
-  {
-    icon: Plug,
-    iconBg: "bg-cyan-100 text-cyan-600",
-    title: "Developer API",
-    description: "Query a business's visibility score programmatically, pay-as-you-go.",
-  },
-  {
-    icon: Users,
-    iconBg: "bg-amber-100 text-amber-600",
-    title: "Employees & Permissions",
-    description: "Add team members with role-based access, scoped by location.",
-  },
+const JOURNEY = [
+  { title: "Be found", text: "A Google-searchable business page with your products, services and contact details." },
+  { title: "Get contacted", text: "Customers reach you by WhatsApp or phone. Page views and WhatsApp taps are tracked." },
+  { title: "Keep the relationship", text: "Save customers, tag them and see who is due a follow-up." },
+  { title: "Get paid", text: "Send payment requests with a shareable link and record payments as they arrive." },
+  { title: "Know what changed", text: "Your dashboard brief summarises revenue, customers and visits. The activity log shows who did what." },
+];
+
+const VISIBILITY_POINTS = [
+  { icon: Store, title: "Public business page", text: "A page for your business that search engines can read." },
+  { icon: Package, title: "Products and services", text: "Photos, prices and details customers can browse." },
+  { icon: MessageCircle, title: "Customer contact", text: "WhatsApp and call buttons on every page." },
+  { icon: BarChart3, title: "Visibility score and analytics", text: "See how complete your presence is, with tips, plus views and WhatsApp taps." },
+];
+
+const SCALE_POINTS = [
+  { icon: Building2, title: "Multiple locations", text: "Add branches and limit employees and data to a location." },
+  { icon: Briefcase, title: "Roles and permissions", text: "Staff and manager roles, with access chosen feature by feature." },
+  { icon: Layers, title: "Centralized data", text: "Customers, payments, documents and products live in one business record." },
+  { icon: Activity, title: "Activity log", text: "A record of who did what, visible to the business owner." },
+  { icon: Code, title: "API and webhooks", text: "API keys, a Trust-Score API and custom webhooks." },
+  { icon: Users, title: "Seats that grow with you", text: "Employee seats rise with each plan, unlimited on Enterprise." },
 ];
 
 const PLANS = [
@@ -193,7 +156,6 @@ const PLANS = [
       "Up to 40 products or services",
       "Full visibility score + tips",
       "Customer records (CRM)",
-      "Trust-Score API access",
       "70 AI content generations/month",
     ],
     cta: "Start Startup Plan",
@@ -261,19 +223,19 @@ const API_PRICING = [
 
 const FOOTER_COLUMNS = [
   {
-    title: "Platform",
+    title: "Product",
     links: [
-      { label: "Run", href: "#platform" },
-      { label: "Grow", href: "#platform" },
-      { label: "Connect", href: "#platform" },
+      { label: "Platform", href: "#platform" },
+      { label: "AI", href: "#ai" },
       { label: "Pricing", href: "#pricing" },
+      { label: "Check Score", href: "/checker" },
+      { label: "Trust-Score API", href: "/docs/trust-score" },
     ],
   },
   {
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Testimonials", href: "#testimonials" },
       { label: "Contact", href: "mailto:cloutinet.hello@gmail.com" },
     ],
   },
@@ -294,12 +256,12 @@ export default function Home() {
       <Problem />
       <Platform />
       <AiSection />
-      <WorkflowSection />
-      <VisibilitySection />
-      <Enterprise />
+      <Workflow />
+      <Visibility />
+      <Scale />
       <Pricing />
       <ApiPricing />
-      <Testimonials />
+      <UserQuote />
       <FinalCta />
       <Footer />
     </main>
@@ -371,32 +333,23 @@ function Hero() {
           "radial-gradient(ellipse 700px 500px at 10% -10%, rgba(29,78,216,0.35), transparent 70%), radial-gradient(ellipse 600px 600px at 100% 0%, rgba(37,99,235,0.28), transparent 70%)",
       }}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 [background-image:radial-gradient(rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_70%_70%_at_70%_40%,black_30%,transparent_75%)] lg:block"
-      />
-
-      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:gap-14 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8">
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 sm:gap-14 sm:px-6 lg:grid-cols-2 lg:gap-12 lg:px-8">
         <div className="text-center lg:text-left">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5 text-[11px] font-medium text-emerald-400 sm:mb-6 sm:px-4 sm:text-xs">
-            <Layers className="h-3 w-3" />
-            The Business Operating System
+            One connected platform
           </div>
 
-          <h1 className="text-4xl font-extrabold leading-[0.95] tracking-tight text-white xs:text-5xl sm:text-6xl lg:text-7xl">
-            Run Your Business
-            <br />
-            From <span className="text-emerald-400">One Place.</span>
+          <h1 className="text-4xl font-extrabold leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-6xl xl:text-7xl">
+            The Business Operating System for{" "}
+            <span className="text-emerald-400">Modern Companies</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
-            Cloutinet connects your operations, team, customers and growth into one
-            platform — so your business runs on a system, not ten disconnected tools.
+            Run your operations, teams, customers and growth from one connected
+            platform.
           </p>
 
-          <SearchBar />
-
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
+          <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
             <a
               href="/auth"
               className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
@@ -405,7 +358,7 @@ function Hero() {
               <ArrowRight className="h-4 w-4" />
             </a>
             <a
-              href="#platform"
+              href="#workflow"
               className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
             >
               <PlayCircle className="h-4 w-4" />
@@ -413,183 +366,139 @@ function Hero() {
             </a>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:justify-start sm:gap-x-6 sm:text-xs">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400 sm:mt-7 sm:gap-x-6 sm:text-xs lg:justify-start">
             <span className="flex items-center gap-1.5">
-              <Gift className="h-4 w-4 text-emerald-400" />
-              Free to Start
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              Free plan available
             </span>
             <span className="flex items-center gap-1.5">
-              <CreditCard className="h-4 w-4 text-emerald-400" />
-              No Credit Card
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4 text-emerald-400" />
-              Setup in 5 Minutes
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+              No credit card required
             </span>
           </div>
         </div>
 
-        <div className="relative mx-auto flex w-full max-w-[260px] flex-col items-center gap-5 pt-2 sm:max-w-xs sm:flex-row sm:items-start sm:justify-center sm:gap-0 sm:pt-4 lg:max-w-none lg:justify-end lg:pr-6">
-          <PhoneMockup />
-          <ScoreCard />
-        </div>
+        <DashboardPreview />
       </div>
     </section>
   );
 }
 
-function PhoneMockup() {
+function Skeleton({ className = "" }: { className?: string }) {
+  return <div className={`rounded bg-white/15 ${className}`} />;
+}
+
+function DashboardPreview() {
   return (
-    <div className="w-full max-w-[230px] rounded-[1.75rem] border-4 border-slate-800 bg-white p-2 shadow-2xl sm:max-w-[280px] sm:rounded-[2rem] lg:max-w-[320px]">
-      <div className="overflow-hidden rounded-[1.25rem] sm:rounded-[1.5rem]">
-        <div className="px-3 pb-2.5 pt-3 sm:px-4 sm:pb-3 sm:pt-4">
-          <p className="text-center text-lg font-medium sm:text-xl">
-            <span className="text-blue-500">G</span>
-            <span className="text-red-500">o</span>
-            <span className="text-amber-500">o</span>
-            <span className="text-blue-500">g</span>
-            <span className="text-emerald-500">l</span>
-            <span className="text-red-500">e</span>
-          </p>
-          <div className="mt-2.5 flex items-center justify-between rounded-full border border-slate-200 px-3 py-1.5 sm:mt-3 sm:py-2">
-            <span className="text-[10px] text-slate-600 sm:text-[12px]">
-              Best cakes in Lagos
-            </span>
-            <Search className="h-3 w-3 text-blue-500 sm:h-3.5 sm:w-3.5" />
+    <div className="relative mx-auto w-full max-w-xl">
+      <div aria-hidden className="absolute -inset-4 rounded-[2rem] bg-blue-600/20 blur-3xl" />
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#0D1230] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+            <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
           </div>
-          <div className="mt-2 flex gap-3 border-b border-slate-100 pb-2 text-[9px] font-medium text-slate-500 sm:gap-4 sm:text-[10px]">
-            <span className="border-b-2 border-blue-500 pb-1.5 text-blue-600">
-              All
-            </span>
-            <span>Images</span>
-            <span>Maps</span>
-            <span>Videos</span>
-            <span>News</span>
-          </div>
+          <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[10px] font-medium text-slate-300">
+            Product preview
+          </span>
         </div>
 
-        <div className="px-3 pb-3 pt-1 sm:px-4 sm:pb-4">
-          <p className="text-[12px] font-semibold text-slate-900 sm:text-[13px]">
-            Sweet Cravings Cakes
-          </p>
-          <div className="mt-1 flex items-center gap-1">
-            <span className="text-[10px] font-medium text-slate-600 sm:text-[11px]">4.8</span>
-            <div className="flex text-amber-400">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="h-2 w-2 fill-current sm:h-2.5 sm:w-2.5" />
-              ))}
-            </div>
-            <span className="text-[10px] text-slate-400 sm:text-[11px]">(128)</span>
-          </div>
-          <p className="mt-0.5 text-[10px] text-slate-500 sm:text-[11px]">
-            Cake Shop in Lagos · <span className="text-emerald-600">Open</span>
-          </p>
-
-          <div className="mt-2 grid grid-cols-3 gap-1.5 sm:mt-2.5">
-            <div className="h-11 rounded-md bg-gradient-to-br from-pink-200 to-rose-300 sm:h-14" />
-            <div className="h-11 rounded-md bg-gradient-to-br from-amber-700 to-amber-900 sm:h-14" />
-            <div className="h-11 rounded-md bg-gradient-to-br from-pink-100 to-fuchsia-200 sm:h-14" />
-          </div>
-
-          <div className="mt-2.5 grid grid-cols-4 gap-1 text-center sm:mt-3">
+        <div className="flex">
+          <div className="hidden w-32 shrink-0 border-r border-white/10 p-3 sm:block">
+            <p className="text-[11px] font-bold text-white">Cloutinet</p>
             {[
-              { icon: Phone, label: "Call", color: "text-blue-600 bg-blue-50" },
-              { icon: MessageCircle, label: "WhatsApp", color: "text-emerald-600 bg-emerald-50" },
-              { icon: Navigation, label: "Directions", color: "text-blue-600 bg-blue-50" },
-              { icon: Globe, label: "Website", color: "text-blue-600 bg-blue-50" },
-            ].map(({ icon: Icon, label, color }) => (
-              <div key={label} className="flex flex-col items-center gap-1">
-                <span className={`flex h-7 w-7 items-center justify-center rounded-full sm:h-8 sm:w-8 ${color}`}>
-                  <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                </span>
-                <span className="text-[8px] text-slate-500 sm:text-[9px]">{label}</span>
+              { group: "Run", items: ["Documents", "Employees"] },
+              { group: "Grow", items: ["Customers", "Payments"] },
+              { group: "Connect", items: ["Visibility", "Integrations"] },
+            ].map((g) => (
+              <div key={g.group} className="mt-3">
+                <p className="text-[10px] font-semibold text-slate-500">{g.group}</p>
+                {g.items.map((item) => (
+                  <p key={item} className="mt-1.5 text-[11px] text-slate-400">
+                    {item}
+                  </p>
+                ))}
               </div>
             ))}
           </div>
 
-          <p className="mt-2.5 text-[10px] leading-relaxed text-slate-500 sm:mt-3 sm:text-[11px]">
-            Delicious cakes for all occasions. Custom cakes, pastries and
-            more. Lagos, Nigeria
-          </p>
+          <div className="min-w-0 flex-1 p-4 sm:p-5">
+            <div className="rounded-xl border border-white/10 bg-gradient-to-br from-blue-600/20 to-transparent p-4">
+              <p className="text-sm font-semibold text-white">
+                Here is what changed in your business
+              </p>
+              <div className="mt-3 space-y-2.5 text-[12px] leading-snug text-slate-300">
+                <p className="border-t border-white/10 pt-2.5">
+                  Payments recorded over the last 30 days.
+                </p>
+                <p className="border-t border-white/10 pt-2.5">
+                  A payment request is waiting to be paid.
+                </p>
+                <p className="border-t border-white/10 pt-2.5">
+                  Your public page had new visits this week.
+                </p>
+              </div>
+            </div>
 
-          <div className="mt-2 flex h-12 items-center justify-center rounded-lg bg-slate-100 sm:mt-2.5 sm:h-16">
-            <MapPin className="h-4 w-4 text-rose-500" />
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {["Revenue", "Customers", "Pending", "Visits"].map((label) => (
+                <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
+                  <p className="text-[9px] text-slate-500 sm:text-[10px]">{label}</p>
+                  <Skeleton className="mt-2 h-3 w-8" />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03]">
+              <p className="px-3 pt-3 text-[11px] font-semibold text-white">
+                Needs your attention
+              </p>
+              {["Payment request past due", "Customer not contacted in 30+ days"].map((row) => (
+                <div key={row} className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 px-3 py-2.5">
+                  <span className="flex items-center gap-2 text-[11px] text-slate-300">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                    {row}
+                  </span>
+                  <span className="text-[11px] font-semibold text-emerald-400">Review</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ScoreCard() {
-  return (
-    <div className="static mx-auto w-32 rounded-xl border border-slate-100 bg-white p-3 shadow-xl sm:absolute sm:-right-4 sm:top-8 sm:mx-0 sm:w-36 sm:rounded-2xl sm:p-4 lg:-right-6 lg:top-10 lg:w-40">
-      <p className="text-[10px] font-medium leading-snug text-slate-500 sm:text-[11px]">
-        Your Business Visibility Score
-      </p>
-      <div className="relative mt-2 flex items-center justify-center sm:mt-3">
-        <svg className="h-16 w-16 -rotate-90 sm:h-20 sm:w-20" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r="34" fill="none" stroke="#E2E8F0" strokeWidth="6" />
-          <circle
-            cx="40"
-            cy="40"
-            r="34"
-            fill="none"
-            stroke="#22C55E"
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={2 * Math.PI * 34}
-            strokeDashoffset={2 * Math.PI * 34 * (1 - 0.85)}
-          />
-        </svg>
-        <div className="absolute flex flex-col items-center">
-          <span className="text-base font-bold text-emerald-500 sm:text-xl">85%</span>
-        </div>
-      </div>
-      <p className="mt-1 text-center text-[10px] font-medium text-emerald-500 sm:text-[11px]">
-        Great Job!
-      </p>
-      <svg viewBox="0 0 100 30" className="mt-1.5 h-5 w-full text-emerald-500 sm:mt-2 sm:h-6">
-        <polyline
-          points="0,25 20,20 40,22 60,10 80,12 100,2"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
     </div>
   );
 }
 
 function Problem() {
   return (
-    <section className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
-      <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-          Your business shouldn't run across{" "}
-          <span className="text-blue-600">ten disconnected tools.</span>
-        </h2>
-        <p className="mt-4 text-sm leading-relaxed text-slate-500 sm:text-base">
-          Most companies piece together separate systems for every part of the business —
-          and none of them talk to each other.
-        </p>
-
-        <div className="mt-10 flex flex-wrap justify-center gap-2.5 sm:mt-14">
-          {PROBLEM_TOOLS.map((tool) => (
-            <span
-              key={tool}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-500"
-            >
-              {tool}
-            </span>
-          ))}
+    <section className="bg-white py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+            Your business shouldn&apos;t run across ten disconnected tools.
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-slate-500 sm:text-base">
+            Most businesses keep customers in one app, payments in another,
+            documents in a folder and staff on a group chat. Nothing talks to
+            anything else, and nobody sees the whole picture.
+          </p>
+          <p className="mt-3 text-sm font-semibold text-slate-900 sm:text-base">
+            Cloutinet connects these workflows.
+          </p>
         </div>
 
-        <p className="mt-10 text-base font-semibold text-slate-900 sm:text-lg">
-          Cloutinet connects these workflows into one system.
-        </p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {TOOLS.map((tool) => (
+            <div
+              key={tool}
+              className="rounded-xl border border-dashed border-slate-300 bg-[#F5F7FB] px-3 py-4 text-center text-sm font-medium text-slate-600"
+            >
+              {tool}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -597,54 +506,38 @@ function Problem() {
 
 function Platform() {
   return (
-    <section id="platform" className="bg-white py-14 sm:py-20 lg:py-28">
+    <section id="platform" className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
-            <Layers className="h-3 w-3" />
-            ONE OPERATING SYSTEM
-          </span>
-          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-            Every Part of Your Business, Connected
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+            One operating system. <span className="text-blue-600">Every part of your business.</span>
           </h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
+            Three areas, one login, one set of business data.
+          </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:mt-14 md:grid-cols-3">
-          {PLATFORM_AREAS.map((area) => (
-            <div
-              key={area.key}
-              className="rounded-2xl border border-slate-100 bg-[#0A0E27] p-6 sm:p-7"
-            >
-              <area.icon className={`h-6 w-6 ${area.accent}`} />
-              <h3 className="mt-4 text-lg font-bold text-white">{area.title}</h3>
-              <p className="mt-1 text-sm text-slate-400">{area.subtitle}</p>
-              <ul className="mt-5 space-y-2.5">
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:mt-14 lg:grid-cols-3">
+          {AREAS.map((area) => (
+            <div key={area.key} className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+              <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${area.badge}`}>
+                {area.key}
+              </span>
+              <p className="mt-3 text-lg font-semibold text-slate-900">{area.tagline}</p>
+
+              <ul className="mt-5 space-y-4">
                 {area.items.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-slate-300">
-                    <CheckCircle2 className={`mt-0.5 h-4 w-4 shrink-0 ${area.accent}`} />
-                    {item}
+                  <li key={item.title} className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+                      <item.icon className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-slate-900">{item.title}</span>
+                      <span className="block text-sm leading-relaxed text-slate-500">{item.text}</span>
+                    </span>
                   </li>
                 ))}
               </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-14 grid grid-cols-1 gap-4 sm:mt-20 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-          {FEATURES.map((feature) => (
-            <div
-              key={feature.title}
-              className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6"
-            >
-              <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-full sm:mb-4 sm:h-11 sm:w-11 ${feature.iconBg}`}>
-                <feature.icon className="h-5 w-5" />
-              </div>
-              <h3 className="text-sm font-semibold text-slate-900 sm:text-base">
-                {feature.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-500">
-                {feature.description}
-              </p>
             </div>
           ))}
         </div>
@@ -656,37 +549,46 @@ function Platform() {
 function AiSection() {
   return (
     <section id="ai" className="bg-[#0A0E27] py-14 sm:py-20 lg:py-28">
-      <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-slate-300 sm:text-xs">
-          <Sparkles className="h-3 w-3" />
-          AI ACROSS YOUR BUSINESS
-        </span>
-        <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:mt-4 sm:text-3xl lg:text-4xl">
-          AI That Works Across Your Business
-        </h2>
-        <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-slate-400 sm:text-base">
-          Not just a content generator — AI that watches what's happening in your business
-          and tells you what needs attention.
-        </p>
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
+        <div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-[11px] font-semibold text-blue-300 sm:text-xs">
+            <Sparkles className="h-3 w-3" />
+            Cloutinet Intelligence
+          </span>
+          <h2 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+            AI that works across your business.
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-slate-400 sm:text-base">
+            Cloutinet AI understands the customers, payments and activity in
+            your account, so it can help you act on them instead of just
+            writing text.
+          </p>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 text-left sm:mt-14 sm:grid-cols-3 sm:gap-5">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm font-semibold text-white">Business Brief</p>
-            <p className="mt-2 text-sm text-slate-400">
-              Surfaces what changed in your business — traffic shifts, new activity, things worth knowing.
-            </p>
+          <ul className="mt-6 space-y-3">
+            {AI_POINTS.map((point) => (
+              <li key={point} className="flex items-start gap-3 text-sm leading-relaxed text-slate-300">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                {point}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-5 text-xs text-slate-500">
+            AI features and monthly generation limits depend on your plan.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+          <p className="text-xs font-semibold text-slate-400">Ask Cloutinet</p>
+          <div className="mt-3 rounded-lg border border-white/10 bg-[#0A0E27] px-4 py-3 text-sm text-slate-500">
+            Ask Cloutinet anything about your business...
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm font-semibold text-white">Generated Content</p>
-            <p className="mt-2 text-sm text-slate-400">
-              AI-written taglines, product descriptions and marketing copy, tuned to your business.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm font-semibold text-white">Visibility Guidance</p>
-            <p className="mt-2 text-sm text-slate-400">
-              Clear, scored recommendations for what to fix to improve how easily customers find you.
-            </p>
+          <p className="mt-5 text-xs font-semibold text-slate-400">Suggested</p>
+          <div className="mt-2 space-y-2">
+            {AI_SUGGESTIONS.map((s) => (
+              <div key={s} className="rounded-lg border border-white/10 px-4 py-3 text-sm text-slate-200">
+                {s}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -694,32 +596,29 @@ function AiSection() {
   );
 }
 
-function WorkflowSection() {
+function Workflow() {
   return (
-    <section className="bg-white py-14 sm:py-20 lg:py-28">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
-            <Workflow className="h-3 w-3" />
-            CONNECTED, NOT SCATTERED
-          </span>
-          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-            One Workflow, Start to Finish
+    <section id="workflow" className="bg-white py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+            From first contact to <span className="text-blue-600">business insight</span>
           </h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
+            The same system carries a customer from discovery to payment, and
+            shows you what happened along the way.
+          </p>
         </div>
 
-        <div className="mt-10 sm:mt-14">
-          {WORKFLOW_STEPS.map((step, i) => (
-            <div key={step} className="flex items-start gap-4">
-              <div className="flex flex-col items-center">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
-                  {i + 1}
-                </span>
-                {i !== WORKFLOW_STEPS.length - 1 && (
-                  <span className="h-8 w-px bg-slate-200" />
-                )}
-              </div>
-              <p className="pb-6 pt-0.5 text-sm text-slate-600 sm:text-base">{step}</p>
+        <div className="relative mt-10 grid grid-cols-1 gap-8 sm:mt-14 lg:grid-cols-5 lg:gap-6">
+          <div aria-hidden className="absolute left-0 right-0 top-4 hidden border-t-2 border-dashed border-slate-200 lg:block" />
+          {JOURNEY.map((step, i) => (
+            <div key={step.title} className="relative">
+              <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                {i + 1}
+              </span>
+              <h3 className="mt-4 text-base font-semibold text-slate-900">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">{step.text}</p>
             </div>
           ))}
         </div>
@@ -728,60 +627,75 @@ function WorkflowSection() {
   );
 }
 
-function VisibilitySection() {
+function Visibility() {
   return (
-    <section className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
-          <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-700 sm:text-xs">
-              CONNECT
-            </span>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-              Make Your Business Accessible
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-slate-500 sm:text-base">
-              Every business on Cloutinet gets a Google-searchable page, product listings,
-              and a direct WhatsApp contact point — so customers, search engines and
-              other systems can find and reach you.
-            </p>
-            <a
-              href="/checker"
-              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
-            >
-              Check Your Visibility
-              <ArrowRight className="h-4 w-4" />
-            </a>
-          </div>
-          <div className="mx-auto flex w-full max-w-xs justify-center">
-            <PhoneMockup />
-          </div>
+    <section id="visibility" className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+            Make your business <span className="text-blue-600">accessible.</span>
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-slate-500 sm:text-base">
+            Give customers, search engines and other systems a clear way to
+            understand your business and reach you.
+          </p>
+
+          <ul className="mt-6 space-y-4">
+            {VISIBILITY_POINTS.map((p) => (
+              <li key={p.title} className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600 shadow-sm">
+                  <p.icon className="h-4 w-4" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-slate-900">{p.title}</span>
+                  <span className="block text-sm leading-relaxed text-slate-500">{p.text}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-5 text-xs text-slate-400">
+            A better public presence makes you easier to find and contact. It
+            does not guarantee leads or customers.
+          </p>
+        </div>
+
+        <div className="rounded-2xl bg-[#0A0E27] p-6 sm:p-8">
+          <p className="text-sm font-semibold text-white">Look up a business</p>
+          <SearchBar />
+          <a
+            href="/checker"
+            className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
+          >
+            Check a business&apos;s visibility score
+            <ArrowRight className="h-4 w-4" />
+          </a>
         </div>
       </div>
     </section>
   );
 }
 
-function Enterprise() {
+function Scale() {
   return (
-    <section className="bg-white py-14 sm:py-20 lg:py-28">
-      <div className="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
-          <Building2 className="h-3 w-3" />
-          BUILT TO SCALE
-        </span>
-        <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-          Grows With Your Company
-        </h2>
+    <section className="bg-[#0A0E27] py-14 sm:py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+            Built for the way companies <span className="text-emerald-400">grow</span>
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-400 sm:text-base">
+            Add people, locations and connections without moving to a new system.
+          </p>
+        </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 text-left sm:mt-14 sm:grid-cols-2 lg:grid-cols-3">
-          {ENTERPRISE_CAPABILITIES.map((cap) => (
-            <div
-              key={cap.text}
-              className="flex items-center gap-3 rounded-xl border border-slate-100 bg-[#F5F7FB] p-4"
-            >
-              <cap.icon className="h-5 w-5 shrink-0 text-blue-600" />
-              <span className="text-sm font-medium text-slate-700">{cap.text}</span>
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:mt-14 sm:grid-cols-2 lg:grid-cols-3">
+          {SCALE_POINTS.map((p) => (
+            <div key={p.title} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/15 text-blue-300">
+                <p.icon className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 text-base font-semibold text-white">{p.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">{p.text}</p>
             </div>
           ))}
         </div>
@@ -792,7 +706,7 @@ function Enterprise() {
 
 function Pricing() {
   return (
-    <section id="pricing" className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
+    <section id="pricing" className="bg-white py-14 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-[11px] font-semibold text-blue-700 sm:text-xs">
@@ -802,44 +716,32 @@ function Pricing() {
             Plans for every stage of your business
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
-            Start free. Upgrade whenever you're ready to grow.
+            Start free. Upgrade when you need more people, locations and tools.
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:mt-14 md:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:mt-14 md:grid-cols-2 xl:grid-cols-5">
           {PLANS.map((plan) => (
             <div
               key={plan.name}
-              className={`flex flex-col rounded-2xl border p-6 sm:p-7 ${
+              className={`flex flex-col rounded-2xl border p-6 ${
                 plan.highlighted
                   ? "border-blue-600 bg-blue-600 text-white shadow-xl"
                   : "border-slate-200 bg-white"
               }`}
             >
-              <p
-                className={`text-sm font-semibold ${
-                  plan.highlighted ? "text-blue-100" : "text-slate-500"
-                }`}
-              >
+              <p className={`text-sm font-semibold ${plan.highlighted ? "text-blue-100" : "text-slate-500"}`}>
                 {plan.name}
               </p>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className={`text-3xl font-bold ${plan.highlighted ? "text-white" : "text-slate-900"}`}>
                   {plan.price}
                 </span>
-                <span
-                  className={`text-sm ${
-                    plan.highlighted ? "text-blue-100" : "text-slate-400"
-                  }`}
-                >
+                <span className={`text-sm ${plan.highlighted ? "text-blue-100" : "text-slate-400"}`}>
                   {plan.period}
                 </span>
               </div>
-              <p
-                className={`mt-2 text-sm leading-relaxed ${
-                  plan.highlighted ? "text-blue-100" : "text-slate-500"
-                }`}
-              >
+              <p className={`mt-2 text-sm leading-relaxed ${plan.highlighted ? "text-blue-100" : "text-slate-500"}`}>
                 {plan.description}
               </p>
 
@@ -851,9 +753,7 @@ function Pricing() {
                         plan.highlighted ? "text-emerald-300" : "text-emerald-500"
                       }`}
                     />
-                    <span className={plan.highlighted ? "text-white" : "text-slate-600"}>
-                      {feature}
-                    </span>
+                    <span className={plan.highlighted ? "text-white" : "text-slate-600"}>{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -878,7 +778,7 @@ function Pricing() {
 
 function ApiPricing() {
   return (
-    <section className="bg-white py-14 sm:py-20 lg:py-28">
+    <section className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold text-emerald-700 sm:text-xs">
@@ -886,19 +786,19 @@ function ApiPricing() {
             PAY AS YOU GO
           </span>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:mt-4 sm:text-3xl lg:text-4xl">
-            Developer OS: Trust-Score API
+            Trust-Score API
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
-            Let your own systems check a business's Cloutinet visibility score programmatically. Only pay for what you actually call — no bundles, no waste.
+            Let your own systems check a business&apos;s Cloutinet visibility score programmatically. Only pay for what you actually call, with no bundles and no waste.
           </p>
         </div>
 
-        <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-[#F5F7FB] sm:mt-14">
+        <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white sm:mt-14">
           {API_PRICING.map((tier, i) => (
             <div
               key={tier.range}
               className={`flex items-center justify-between px-6 py-4 sm:px-8 ${
-                i !== API_PRICING.length - 1 ? "border-b border-slate-200" : ""
+                i !== API_PRICING.length - 1 ? "border-b border-slate-100" : ""
               }`}
             >
               <span className="text-sm text-slate-600">{tier.range}</span>
@@ -916,7 +816,7 @@ function ApiPricing() {
         <div className="mt-6 flex justify-center">
           <a
             href="/docs/trust-score"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-white"
           >
             View API Documentation
             <ArrowRight className="h-4 w-4" />
@@ -927,57 +827,23 @@ function ApiPricing() {
   );
 }
 
-function Testimonials() {
+function UserQuote() {
   return (
-    <section id="testimonials" className="bg-white py-14 sm:py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-[#0A0E27] px-5 py-10 sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
-          <div className="mx-auto max-w-xl text-center">
-            <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold text-slate-300 sm:text-xs">
-              WHY TEAMS CHOOSE CLOUTINET
-            </span>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:mt-4 sm:text-3xl lg:text-4xl">
-              Built to Move Fast
-            </h2>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-12 sm:gap-5 md:grid-cols-3">
-            <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
-              <Quote className="h-5 w-5 text-blue-400" />
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
-                Cloutinet made it easy to have an online presence. I was able to create a professional business page, showcase my products, and share it with customers in just a few minutes.
-              </p>
-              <div className="mt-6 flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20 text-xs font-semibold text-blue-300">
-                  MO
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">Michael Obi</p>
-                  <p className="text-xs text-slate-500">Cloutinet user</p>
-                </div>
-              </div>
+    <section className="bg-white py-14 sm:py-20 lg:py-24">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        {/* Real customer quote, verified via Cloutinet feedback. Name and words unchanged. */}
+        <div className="rounded-2xl border border-slate-200 bg-[#F5F7FB] p-6 sm:p-8">
+          <Quote className="h-6 w-6 text-blue-600" />
+          <p className="mt-4 text-base leading-relaxed text-slate-700 sm:text-lg">
+            Cloutinet made it easy to have an online presence. I was able to create a professional business page, showcase my products, and share it with customers in just a few minutes.
+          </p>
+          <div className="mt-6 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">
+              MO
             </div>
-
-            <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
-              <Zap className="h-5 w-5 text-emerald-400" />
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
-                Built for teams that need to move from idea to live page in minutes — not weeks of back-and-forth with a web developer.
-              </p>
-              <div className="mt-6">
-                <p className="text-sm font-medium text-white">Speed to launch</p>
-                <p className="text-xs text-slate-500">What Cloutinet is built for</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6">
-              <TrendingUp className="h-5 w-5 text-amber-400" />
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-300">
-                Real analytics on every page view and WhatsApp click — no guessing whether things are actually working.
-              </p>
-              <div className="mt-6">
-                <p className="text-sm font-medium text-white">Real tracking</p>
-                <p className="text-xs text-slate-500">What Cloutinet is built for</p>
-              </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Michael Obi</p>
+              <p className="text-xs text-slate-500">Cloutinet user</p>
             </div>
           </div>
         </div>
@@ -988,31 +854,31 @@ function Testimonials() {
 
 function FinalCta() {
   return (
-    <section className="bg-white pb-14 sm:pb-20 lg:pb-28">
+    <section id="get-started" className="bg-white pb-14 sm:pb-20 lg:pb-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-2xl bg-[#0A0E27] px-5 py-10 text-center sm:rounded-3xl sm:px-12 sm:py-14 lg:py-16">
+        <div className="relative overflow-hidden rounded-2xl bg-[#0A0E27] px-5 py-12 text-center sm:rounded-3xl sm:px-12 sm:py-16">
           <div
             aria-hidden
             className="pointer-events-none absolute -left-20 -top-20 h-[400px] w-[400px] rounded-full bg-blue-700/25 blur-[110px]"
           />
-          <div className="relative">
-            <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
-              Run Your Business From One Place
+          <div className="relative mx-auto max-w-2xl">
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+              Run your business from one place.
             </h2>
-            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 sm:mt-4 sm:text-base">
-              One connected system for operations, customers and growth.
+            <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-slate-400 sm:text-base">
+              Start free, then add customers, payments, documents and your public page as you grow.
             </p>
-            <div className="mt-6 flex flex-col items-center gap-3 sm:mt-8 sm:flex-row sm:justify-center">
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <a
                 href="/auth"
-                className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:py-3.5"
+                className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
               >
                 Start Free
                 <ArrowRight className="h-4 w-4" />
               </a>
               <a
                 href="/checker"
-                className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
+                className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
               >
                 Check Your Score Free
               </a>
@@ -1028,13 +894,13 @@ function Footer() {
   return (
     <footer className="border-t border-white/5 bg-[#0A0E27] pt-12 sm:pt-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 pb-10 sm:grid-cols-3 sm:gap-10 sm:pb-12 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-8 pb-10 sm:grid-cols-3 sm:gap-10 sm:pb-12 lg:grid-cols-5">
           <div className="col-span-2 sm:col-span-3 lg:col-span-2">
             <a href="#" className="flex items-center gap-2">
               <span className="text-lg font-black text-white">Cloutinet</span>
             </a>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-              The business operating system — run your operations, customers and growth from one place.
+              The Business Operating System. Run operations, customers and growth from one connected platform.
             </p>
           </div>
 
@@ -1044,10 +910,7 @@ function Footer() {
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-slate-500 transition-colors hover:text-white"
-                    >
+                    <a href={link.href} className="text-sm text-slate-500 transition-colors hover:text-white">
                       {link.label}
                     </a>
                   </li>
@@ -1057,11 +920,10 @@ function Footer() {
           ))}
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/5 py-6 sm:flex-row sm:gap-4">
+        <div className="border-t border-white/5 py-6">
           <p className="text-xs text-slate-500">
             © {new Date().getFullYear()} Cloutinet. All rights reserved.
           </p>
-          <p className="text-xs text-slate-500">Built for modern companies 🇳🇬</p>
         </div>
       </div>
     </footer>
