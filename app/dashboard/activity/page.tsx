@@ -19,15 +19,10 @@ export default function ActivityLogPage() {
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    load()
-  }, [])
+  useEffect(() => { load() }, [])
 
   async function load() {
-    if (!context.isOwner) {
-      setLoading(false)
-      return
-    }
+    if (!context.isOwner) { setLoading(false); return }
 
     const { data } = await supabase
       .from('activity_log')
@@ -40,62 +35,31 @@ export default function ActivityLogPage() {
     setLoading(false)
   }
 
-  if (loading) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>Loading...</p>
-      </div>
-    )
-  }
+  if (loading) return <div className="ui-wrap"><p className="ui-sub">Loading...</p></div>
 
   if (!context.isOwner) {
-    return (
-      <div style={{ padding: '24px 0' }}>
-        <p style={mutedStyle}>Only the business owner can view the activity log.</p>
-      </div>
-    )
+    return <div className="ui-wrap"><p className="ui-sub">Only the business owner can view the activity log.</p></div>
   }
 
   return (
-    <div style={wrapStyle}>
-      <h1 style={titleStyle}>Activity</h1>
+    <div className="ui-wrap">
+      <h1 className="ui-title">Activity</h1>
 
       {logs.length === 0 ? (
-        <p style={{ color: '#64748B', fontSize: '13px', textAlign: 'center', padding: '30px' }}>No activity recorded yet.</p>
+        <div className="ui-empty">No activity recorded yet.</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="ui-list" style={{ gap: '14px' }}>
           {logs.map(log => (
-            <div key={log.id} style={{ borderLeft: '2px solid #CBD5E1', paddingLeft: '12px' }}>
-              <div style={{ fontSize: '14px', color: '#0F172A', lineHeight: 1.45 }}>
-                <strong>{log.actor_name}</strong> {log.action} {log.object_type}
+            <div key={log.id} style={{ borderLeft: '2px solid rgba(96,165,250,.5)', paddingLeft: '12px' }}>
+              <div style={{ fontSize: '14px', color: '#E2E8F0', lineHeight: 1.45 }}>
+                <strong style={{ color: '#fff' }}>{log.actor_name}</strong> {log.action} {log.object_type}
                 {log.object_label ? ': ' + log.object_label : ''}
               </div>
-              <div style={{ fontSize: '12px', color: '#94A3B8', marginTop: '2px' }}>
-                {new Date(log.created_at).toLocaleString()}
-              </div>
+              <div className="ui-meta">{new Date(log.created_at).toLocaleString()}</div>
             </div>
           ))}
         </div>
       )}
     </div>
   )
-}
-
-const wrapStyle: React.CSSProperties = {
-  maxWidth: '480px',
-  margin: '0 auto',
-  fontFamily: 'Segoe UI, system-ui, sans-serif',
-}
-
-const titleStyle: React.CSSProperties = {
-  fontSize: '22px',
-  fontWeight: 800,
-  color: '#0F172A',
-  margin: '0 0 14px',
-  letterSpacing: '-0.01em',
-}
-
-const mutedStyle: React.CSSProperties = {
-  color: '#64748B',
-  fontSize: '14px',
 }
