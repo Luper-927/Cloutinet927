@@ -28,10 +28,9 @@ type Quote = {
 }
 
 const NAMES: Record<string, string> = {
-  essential: 'Essential',
+  startup: 'Startup',
   growth: 'Growth',
-  business: 'Business',
-  advanced: 'Advanced',
+  scale: 'Scale',
 }
 
 const naira = (n: number) => '₦' + n.toLocaleString('en-NG')
@@ -40,6 +39,7 @@ export default function PricingCards() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [signedIn, setSignedIn] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [starting, setStarting] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -59,6 +59,31 @@ export default function PricingCards() {
     }
     load()
   }, [])
+
+  async function pay(tier: string) {
+    setStarting(tier)
+    try {
+      const { data } = await supabase.auth.getSession()
+      const token = data.session?.access_token
+      if (!token) {
+        window.location.href = `/signup?plan=${tier}`
+        return
+      }
+      const res = await fetch('/api/paystack/initialize', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier }),
+      })
+      const json = await res.json()
+      if (json.authorization_url) {
+        window.location.href = json.authorization_url
+        return
+      }
+    } catch {
+      // fall through
+    }
+    setStarting('')
+  }
 
   const anyDiscount = quotes.some((q) => q.eligible && q.discountPercent > 0)
   const percent = quotes.find((q) => q.discountPercent > 0)?.discountPercent
@@ -110,14 +135,15 @@ export default function PricingCards() {
                     : 'Billed monthly.'}
                 </div>
 
-                <a
-                  href={signedIn ? `/dashboard?upgrade=${q.tier}` : `/signup?plan=${q.tier}`}
-                  style={{ display: 'block', textAlign: 'center', background: C.accent, color: '#fff', textDecoration: 'none', padding: '11px 0', borderRadius: 10, fontWeight: 700, fontSize: 15 }}
+                <button
+                  onClick={() => pay(q.tier)}
+                  disabled={starting === q.tier}
+                  style={{ width: '100%', background: C.accent, color: '#fff', border: 'none', padding: '11px 0', borderRadius: 10, fontWeight: 700, fontSize: 15, cursor: 'pointer', opacity: starting === q.tier ? 0.6 : 1 }}
                 >
-                  {signedIn ? 'Upgrade' : 'Get started'}
-                </a>
+                  {starting === q.tier ? 'Please wait…' : signedIn ? `Start ${NAMES[q.tier] || q.tier} Plan` : 'Get started'}
+                </button>
               </div>
-            )
+            );
           })}
         </div>
       </div>
