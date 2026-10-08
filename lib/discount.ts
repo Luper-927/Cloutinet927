@@ -4,12 +4,11 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 export const FIRST_PURCHASE_DISCOUNT_PERCENT = 20
 export const DISCOUNT_ENABLED = true
 
-// Monthly prices in Naira
+// Monthly prices in Naira. Enterprise is custom, so it is not listed here.
 export const TIER_PRICES: Record<string, number> = {
-  essential: 5000,
-  growth: 8000,
-  business: 15000,
-  advanced: 22000,
+  startup: 15000,
+  growth: 40000,
+  scale: 75000,
 }
 
 export type PriceQuote = {
