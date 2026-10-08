@@ -1,60 +1,83 @@
-// app/api/paystack/initialize/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-admin'
+import { createClient } from '@supabase/supabase-js'
+import { getPriceQuote } from '@/lib/discount'
 
-const baseUrl = 'https://cloutinet.online'
+export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
-    const { token } = await req.json()
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    const paystackKey = process.env.PAYSTACK_SECRET_KEY
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://cloutinet.online'
 
+    if (!url || !anon || !paystackKey) {
+      return NextResponse.json({ error: 'Server is missing configuration' }, { status: 500 })
+    }
+
+    const authHeader = req.headers.get('authorization') || ''
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
     if (!token) {
-      return NextResponse.json({ error: 'Missing payment request.' }, { status: 400 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: request, error } = await supabaseAdmin
-      .from('payment_requests')
-      .select('id, amount, currency, status, customer_name')
-      .eq('public_token', token)
-      .single()
+    const supabase = createClient(url, anon, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
 
-    if (error || !request) {
-      return NextResponse.json({ error: 'Payment request not found.' }, { status: 404 })
+    const { data: userData, error: userErr } = await supabase.auth.getUser(token)
+    if (userErr || !userData?.user || !userData.user.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const user = userData.user
+
+    const body = await req.json().catch(() => ({}))
+    const tier = typeof body?.tier === 'string' ? body.tier : ''
+
+    // Price is calculated on the server. The browser never sets the amount.
+    const quote = await getPriceQuote(supabase, user.id, tier)
+    if (!quote) {
+      return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 
-    if (request.status !== 'pending') {
-      return NextResponse.json({ error: 'This payment request is no longer awaiting payment.' }, { status: 409 })
-    }
+    const reference = `clt_${user.id.slice(0, 8)}_${Date.now()}`
 
-    // Paystack requires an email to start a transaction, but the payer isn't
-    // asked for one -- we generate a placeholder tied to this specific request.
-    // No receipt email will be sent by Paystack as a result; that's an accepted
-    // trade-off for a faster checkout on links mostly shared via WhatsApp.
-    const placeholderEmail = `payer+${token}@cloutinet.online`
-
-    const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {
+    const res = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${paystackKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: placeholderEmail,
-        amount: Math.round(Number(request.amount) * 100),
-        currency: request.currency,
-        callback_url: `${baseUrl}/pay/${token}/complete`,
-        metadata: { payment_request_id: request.id, public_token: token },
+        email: user.email,
+        amount: quote.finalPriceKobo,
+        currency: 'NGN',
+        reference,
+        callback_url: `${siteUrl}/dashboard?payment=done`,
+        metadata: {
+          user_id: user.id,
+          tier: quote.tier,
+          original_price: quote.originalPrice,
+          discount_percent: quote.discountPercent,
+          first_purchase_discount: quote.eligible,
+        },
       }),
     })
 
-    const paystackData = await paystackRes.json()
-
-    if (!paystackRes.ok || !paystackData.status) {
-      return NextResponse.json({ error: 'Could not start payment. Please try again.' }, { status: 502 })
+    const json = await res.json()
+    if (!res.ok || !json?.status) {
+      return NextResponse.json({ error: 'Could not start payment' }, { status: 502 })
     }
 
-    return NextResponse.json({ authorization_url: paystackData.data.authorization_url })
-  } catch (err) {
-    return NextResponse.json({ error: 'Something went wrong starting payment.' }, { status: 500 })
+    return NextResponse.json({
+      ok: true,
+      authorization_url: json.data.authorization_url,
+      reference: json.data.reference,
+      amount: quote.finalPrice,
+      discounted: quote.eligible,
+    })
+  } catch {
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
 }
