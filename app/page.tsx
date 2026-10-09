@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import SearchBar from "./components/SearchBar";
 import {
   ArrowRight,
-  PlayCircle,
   CheckCircle2,
   MessageCircle,
   Package,
@@ -17,17 +15,14 @@ import {
   Layers,
   Code,
   Sparkles,
-  Globe,
   Quote,
   Building2,
-  BarChart3,
-  Store,
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cloutinet - The Business Operating System",
+  title: "Cloutinet - Run Your Whole Business From One Place",
   description:
-    "Run your operations, teams, customers and growth from one connected platform. Cloutinet brings customers, payments, documents, marketing and your public business presence together.",
+    "Manage your team, payments, documents and AI assistant in one system, built for growing businesses. Cloutinet brings customers, payments, documents, marketing and team management together.",
   alternates: {
     canonical: "/",
   },
@@ -82,9 +77,8 @@ const AREAS = [
   {
     key: "CONNECT",
     badge: "bg-slate-200 text-slate-700",
-    tagline: "Connect the business to customers, search and other systems.",
+    tagline: "Connect the business to customers and other systems.",
     items: [
-      { icon: Globe, title: "Public business page", text: "A page for your business that Google can find." },
       { icon: MessageCircle, title: "Customer contact", text: "WhatsApp and call buttons, with every tap tracked." },
       { icon: Plug, title: "Integrations", text: "WhatsApp Business API, analytics tools and custom webhooks." },
       { icon: Code, title: "Developer API", text: "API keys and a Trust-Score API for your own systems." },
@@ -106,18 +100,11 @@ const AI_SUGGESTIONS = [
 ];
 
 const JOURNEY = [
-  { title: "Be found", text: "A Google-searchable business page with your products, services and contact details." },
+  { title: "Share your business", text: "A business page with your products, services and contact details that you can share with customers." },
   { title: "Get contacted", text: "Customers reach you by WhatsApp or phone. Page views and WhatsApp taps are tracked." },
   { title: "Keep the relationship", text: "Save customers, tag them and see who is due a follow-up." },
   { title: "Get paid", text: "Send payment requests with a shareable link and record payments as they arrive." },
   { title: "Know what changed", text: "Your dashboard brief summarises revenue, customers and visits. The activity log shows who did what." },
-];
-
-const VISIBILITY_POINTS = [
-  { icon: Store, title: "Public business page", text: "A page for your business that search engines can read." },
-  { icon: Package, title: "Products and services", text: "Photos, prices and details customers can browse." },
-  { icon: MessageCircle, title: "Customer contact", text: "WhatsApp and call buttons on every page." },
-  { icon: BarChart3, title: "Visibility score and analytics", text: "See how complete your presence is, with tips, plus views and WhatsApp taps." },
 ];
 
 const SCALE_POINTS = [
@@ -136,7 +123,7 @@ const PLANS = [
     period: "",
     description: "For businesses just getting started online.",
     features: [
-      "1 Google-searchable page",
+      "1 shareable business page",
       "Up to 5 products or services",
       "WhatsApp contact button",
       "Basic visibility score",
@@ -257,7 +244,6 @@ export default function Home() {
       <Platform />
       <AiSection />
       <Workflow />
-      <Visibility />
       <Scale />
       <Pricing />
       <ApiPricing />
@@ -292,10 +278,10 @@ function Navbar() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <a
-            href="/checker"
+            href="/contact?topic=demo"
             className="rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition-colors hover:border-white/40 hover:bg-white/5"
           >
-            Check Score
+            Book a Demo
           </a>
           <a
             href="/auth"
@@ -307,14 +293,8 @@ function Navbar() {
 
         <div className="flex items-center gap-1.5 lg:hidden">
           <a
-            href="/checker"
-            className="rounded-full border border-white/20 px-2.5 py-1.5 text-[11px] font-medium text-white"
-          >
-            Check Score
-          </a>
-          <a
             href="/auth"
-            className="rounded-lg bg-blue-600 px-2.5 py-1.5 text-[11px] font-semibold text-white"
+            className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white"
           >
             Start Free
           </a>
@@ -340,13 +320,13 @@ function Hero() {
           </div>
 
           <h1 className="text-4xl font-extrabold leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-6xl xl:text-7xl">
-            The Business Operating System for{" "}
-            <span className="text-emerald-400">Modern Companies</span>
+            Run your whole business{" "}
+            <span className="text-emerald-400">from one place.</span>
           </h1>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-slate-400 sm:mt-6 sm:text-base lg:mx-0 lg:text-lg">
-            Run your operations, teams, customers and growth from one connected
-            platform.
+            Manage your team, payments, documents and AI assistant in one
+            system, built for growing businesses.
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
@@ -358,11 +338,10 @@ function Hero() {
               <ArrowRight className="h-4 w-4" />
             </a>
             <a
-              href="#workflow"
+              href="/contact?topic=demo"
               className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5 sm:py-3.5"
             >
-              <PlayCircle className="h-4 w-4" />
-              See How It Works
+              Book a Demo
             </a>
           </div>
 
@@ -410,7 +389,7 @@ function DashboardPreview() {
             {[
               { group: "Run", items: ["Documents", "Employees"] },
               { group: "Grow", items: ["Customers", "Payments"] },
-              { group: "Connect", items: ["Visibility", "Integrations"] },
+              { group: "Connect", items: ["Integrations", "API"] },
             ].map((g) => (
               <div key={g.group} className="mt-3">
                 <p className="text-[10px] font-semibold text-slate-500">{g.group}</p>
@@ -436,13 +415,13 @@ function DashboardPreview() {
                   A payment request is waiting to be paid.
                 </p>
                 <p className="border-t border-white/10 pt-2.5">
-                  Your public page had new visits this week.
+                  New customers were added this week.
                 </p>
               </div>
             </div>
 
             <div className="mt-3 grid grid-cols-4 gap-2">
-              {["Revenue", "Customers", "Pending", "Visits"].map((label) => (
+              {["Revenue", "Customers", "Pending", "Documents"].map((label) => (
                 <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
                   <p className="text-[9px] text-slate-500 sm:text-[10px]">{label}</p>
                   <Skeleton className="mt-2 h-3 w-8" />
@@ -605,8 +584,8 @@ function Workflow() {
             From first contact to <span className="text-blue-600">business insight</span>
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-500 sm:text-base">
-            The same system carries a customer from discovery to payment, and
-            shows you what happened along the way.
+            The same system carries a customer from first contact to payment,
+            and shows you what happened along the way.
           </p>
         </div>
 
@@ -621,54 +600,6 @@ function Workflow() {
               <p className="mt-2 text-sm leading-relaxed text-slate-500">{step.text}</p>
             </div>
           ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Visibility() {
-  return (
-    <section id="visibility" className="bg-[#F5F7FB] py-14 sm:py-20 lg:py-28">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-            Make your business <span className="text-blue-600">accessible.</span>
-          </h2>
-          <p className="mt-4 text-sm leading-relaxed text-slate-500 sm:text-base">
-            Give customers, search engines and other systems a clear way to
-            understand your business and reach you.
-          </p>
-
-          <ul className="mt-6 space-y-4">
-            {VISIBILITY_POINTS.map((p) => (
-              <li key={p.title} className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600 shadow-sm">
-                  <p.icon className="h-4 w-4" />
-                </span>
-                <span>
-                  <span className="block text-sm font-semibold text-slate-900">{p.title}</span>
-                  <span className="block text-sm leading-relaxed text-slate-500">{p.text}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-5 text-xs text-slate-400">
-            A better public presence makes you easier to find and contact. It
-            does not guarantee leads or customers.
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-[#0A0E27] p-6 sm:p-8">
-          <p className="text-sm font-semibold text-white">Look up a business</p>
-          <SearchBar />
-          <a
-            href="/checker"
-            className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-emerald-400 transition-colors hover:text-emerald-300"
-          >
-            Check a business&apos;s visibility score
-            <ArrowRight className="h-4 w-4" />
-          </a>
         </div>
       </div>
     </section>
@@ -863,10 +794,10 @@ function FinalCta() {
           />
           <div className="relative mx-auto max-w-2xl">
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              Run your business from one place.
+              Run your whole business from one place.
             </h2>
             <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-slate-400 sm:text-base">
-              Start free, then add customers, payments, documents and your public page as you grow.
+              Start free, then add customers, payments, documents and your team as you grow.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <a
@@ -877,10 +808,10 @@ function FinalCta() {
                 <ArrowRight className="h-4 w-4" />
               </a>
               <a
-                href="/checker"
+                href="/contact?topic=demo"
                 className="flex items-center justify-center gap-2 rounded-lg border border-white/20 px-7 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
               >
-                Check Your Score Free
+                Book a Demo
               </a>
             </div>
           </div>
@@ -900,7 +831,7 @@ function Footer() {
               <span className="text-lg font-black text-white">Cloutinet</span>
             </a>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
-              The Business Operating System. Run operations, customers and growth from one connected platform.
+              Run your whole business from one place. Team, payments, documents and AI in one connected platform.
             </p>
           </div>
 
