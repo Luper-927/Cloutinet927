@@ -9,16 +9,21 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+    const response = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
       headers: {
         Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
       },
+      cache: 'no-store',
     });
 
     const data = await response.json();
 
-    if (!data.status || data.data.status !== 'success') {
+    if (!data.status || !data.data || data.data.status !== 'success') {
       return NextResponse.json({ verified: false, message: data.data?.gateway_response || 'Payment not successful' });
+    }
+
+    if (data.data.reference !== reference) {
+      return NextResponse.json({ verified: false, message: 'Payment reference mismatch.' });
     }
 
     const paidAmount = data.data.amount / 100;
@@ -39,40 +44,45 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ verified: false, message: 'Payment request no longer exists.' });
     }
 
-    // Guard against amount/currency tampering: only trust what Paystack actually
-    // confirms was paid, checked against what this specific request expects.
+    // Only trust what Paystack confirms was paid, checked against what this request expects.
     const expectedAmountKobo = Math.round(Number(paymentRequest.amount) * 100);
     if (Math.round(paidAmount * 100) !== expectedAmountKobo || paidCurrency !== paymentRequest.currency) {
       return NextResponse.json({ verified: false, message: 'Paid amount does not match this request. Contact the business.' });
     }
 
-    // Idempotent: only flips pending -> paid once. If this reference was already
-    // processed (e.g. the payer refreshed the completion page), this matches
-    // zero rows, which is fine -- we don't treat that as an error.
+    // Step 1: save the payment record first (skip if this reference was already saved).
+    const { data: existingRecord } = await supabaseAdmin
+      .from('payment_records')
+      .select('id')
+      .eq('reference', reference)
+      .maybeSingle();
+
+    if (!existingRecord) {
+      const { error: insertError } = await supabaseAdmin
+        .from('payment_records')
+        .insert({
+          owner_id: paymentRequest.owner_id,
+          customer_name: paymentRequest.customer_name,
+          amount: paymentRequest.amount,
+          currency: paymentRequest.currency,
+          status: 'paid',
+          method: 'paystack',
+          reference,
+          payment_request_id: paymentRequest.id,
+        });
+
+      // 23505 = duplicate reference, meaning it was already recorded. Not a real failure.
+      if (insertError && insertError.code !== '23505') {
+        return NextResponse.json({ error: 'Payment succeeded but could not be recorded. Contact support.' }, { status: 500 });
+      }
+    }
+
+    // Step 2: only after the record is safe, mark the request as paid (pending -> paid once).
     await supabaseAdmin
       .from('payment_requests')
       .update({ status: 'paid' })
       .eq('id', paymentRequest.id)
       .eq('status', 'pending');
-
-    const { error: insertError } = await supabaseAdmin
-      .from('payment_records')
-      .insert({
-        owner_id: paymentRequest.owner_id,
-        customer_name: paymentRequest.customer_name,
-        amount: paymentRequest.amount,
-        currency: paymentRequest.currency,
-        status: 'paid',
-        method: 'paystack',
-        reference,
-        payment_request_id: paymentRequest.id,
-      });
-
-    // A unique-constraint violation on `reference` just means this transaction
-    // was already recorded (e.g. a duplicate verify call) -- not a real failure.
-    if (insertError && insertError.code !== '23505') {
-      return NextResponse.json({ error: 'Payment succeeded but could not be recorded. Contact support.' }, { status: 500 });
-    }
 
     return NextResponse.json({
       verified: true,
