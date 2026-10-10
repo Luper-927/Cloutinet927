@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { emitEvent } from '@/lib/automation/engine'
 
 export async function GET(request: NextRequest) {
   const reference = request.nextUrl.searchParams.get('reference');
@@ -83,6 +84,24 @@ export async function GET(request: NextRequest) {
       .update({ status: 'paid' })
       .eq('id', paymentRequest.id)
       .eq('status', 'pending');
+
+    // Step 3: tell the automation engine a payment was confirmed.
+    // The reference is used as the duplicate key, so refreshing this page
+    // can never trigger the same automation twice. This call never throws.
+    await emitEvent(
+      paymentRequest.owner_id,
+      'payment.confirmed',
+      {
+        payment: {
+          amount: paymentRequest.amount,
+          currency: paymentRequest.currency,
+          customer_name: paymentRequest.customer_name,
+          reference,
+          request_id: paymentRequest.id,
+        },
+      },
+      `payment.confirmed:${reference}`
+    );
 
     return NextResponse.json({
       verified: true,
