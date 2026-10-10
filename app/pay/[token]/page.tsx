@@ -5,11 +5,35 @@ import { supabase } from '../../../lib/supabase'
 
 export default function PublicPaymentRequestPage({ params }: { params: { token: string } }) {
   const [loading, setLoading] = useState(true)
+  const [verifying, setVerifying] = useState(false)
   const [details, setDetails] = useState<any>(null)
   const [submitting, setSubmitting] = useState(false)
   const [payError, setPayError] = useState('')
+  const [justConfirmed, setJustConfirmed] = useState(false)
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { init() }, [])
+
+  async function init() {
+    // After paying, Paystack sends the customer back here with ?reference=...
+    const reference = new URLSearchParams(window.location.search).get('reference')
+    if (reference) {
+      setVerifying(true)
+      try {
+        const res = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`)
+        const data = await res.json()
+        if (data.verified) {
+          setJustConfirmed(true)
+        } else {
+          setPayError(data.message || data.error || 'We could not confirm this payment yet.')
+        }
+      } catch {
+        setPayError('We could not confirm this payment yet.')
+      }
+      window.history.replaceState({}, '', window.location.pathname)
+      setVerifying(false)
+    }
+    await load()
+  }
 
   async function load() {
     const { data } = await supabase.rpc('get_payment_request', { token: params.token })
@@ -21,7 +45,7 @@ export default function PublicPaymentRequestPage({ params }: { params: { token: 
     setPayError('')
     setSubmitting(true)
     try {
-      const res = await fetch('/api/paystack/initialize', {
+      const res = await fetch('/api/paystack/initialize-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: params.token }),
@@ -48,8 +72,12 @@ export default function PublicPaymentRequestPage({ params }: { params: { token: 
     </div>
   )
 
-  if (loading) {
-    return shell(<p style={{ color: '#94A3B8', fontSize: '14px', margin: 0, textAlign: 'center' }}>Loading...</p>)
+  if (loading || verifying) {
+    return shell(
+      <p style={{ color: '#94A3B8', fontSize: '14px', margin: 0, textAlign: 'center' }}>
+        {verifying ? 'Confirming your payment...' : 'Loading...'}
+      </p>
+    )
   }
 
   if (!details?.found) {
@@ -67,7 +95,7 @@ export default function PublicPaymentRequestPage({ params }: { params: { token: 
 
       {details.status === 'paid' ? (
         <div style={{ background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.30)', borderRadius: '10px', padding: '14px', color: '#34D399', fontWeight: 700, fontSize: '14px' }}>
-          This payment has been marked as paid
+          {justConfirmed ? 'Payment confirmed. Thank you!' : 'This payment has been marked as paid'}
         </div>
       ) : (
         <div>
